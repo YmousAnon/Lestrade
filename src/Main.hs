@@ -1,4 +1,5 @@
 import Control.Monad (unless, when)
+import Control.Monad.Trans.State
 import Graphics.Rendering.OpenGL
 import qualified Graphics.UI.GLFW as G
 
@@ -33,8 +34,9 @@ import Game.Board
 --  G.setWindowShouldClose window True
 
 main :: IO()
-main = putStrLn "21"
-    --(mkStdGen <$> read <$> head <$> getArgs) >>= \g-> print (fst (getSolution g))
+main =
+    (mkStdGen <$> read <$> head <$> getArgs) >>= \g->
+    print ((evalState (genSolution 3 3) g))
     --let seed =
     --G.setErrorCallback (Just errorCallback)
     --successfulInit <- G.init

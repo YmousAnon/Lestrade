@@ -6,7 +6,6 @@ module Game.Board
 ) where
 
     import Control.Monad.Trans.State
-    import Control.Monad
 
     import Data.List
 
@@ -31,8 +30,9 @@ module Game.Board
 
     --genSolution :: Int -> Int -> StdGen -> Board
     --genSolution nR nC g = Board $ map (\r -> genSolvedRow r nC g) [0..nR-1]
-    genSolution :: Int -> Int -> State StdGen [Row]
-    genSolution nR nC = mapM (\r -> state $ genSolvedRow r nC) [0..nC-1]
+    genSolution :: Int -> Int -> State StdGen Board
+    genSolution nR nC = fmap Board
+                      $ mapM (\r -> state $ genSolvedRow r nC) [0..nC-1]
     --mapM state $ (\r -> genSolvedRow r nC g) [0..nR-1]
     --genSolution = 12
 
