@@ -2,7 +2,7 @@ module Game.Board
 (
     Board,
 
-    genSolution,
+    genSolvedBoard,
 ) where
 
     import Control.Monad.Trans.State
@@ -30,9 +30,14 @@ module Game.Board
 
     --genSolution :: Int -> Int -> StdGen -> Board
     --genSolution nR nC g = Board $ map (\r -> genSolvedRow r nC g) [0..nR-1]
-    genSolution :: Int -> Int -> State StdGen Board
-    genSolution nR nC = fmap Board
-                      $ mapM (\r -> state $ genSolvedRow r nC) [0..nC-1]
+    genSolvedBoard :: Int -> Int -> State StdGen Board
+    genSolvedBoard nR nC = fmap Board
+                      $ mapM (genSolvedRow' nC) [0..nR-1]
+        where
+            genSolvedRow' :: Int -> Int -> State StdGen Row
+            genSolvedRow' nC i = state $ \g ->
+                let (r, ([],g')) = runState (genSolvedRow i nC) ([0..nC-1],g)
+                in  (r,g')
     --mapM state $ (\r -> genSolvedRow r nC g) [0..nR-1]
     --genSolution = 12
 

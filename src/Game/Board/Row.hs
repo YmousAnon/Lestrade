@@ -8,12 +8,14 @@ module Game.Board.Row
     genSolvedRow,
 ) where
 
-    import Game.Board.Square
+    import Control.Monad
+    import Control.Monad.Trans.State
 
     import Data.List
 
     import System.Random
 
+    import Game.Board.Square
 
     data Row = Row
                 { squares :: [Square]
@@ -29,20 +31,30 @@ module Game.Board.Row
     colMap f (Row ps) = Row $ map (\p -> f (col p) p) ps
 
 
-    --genSolvedRow :: Int -> Int -> StdGen -> ([Square],StdGen)
-    --genSolvedRow r [] g = ([]                             ,g  )
-    --genSolvedRow r c g = (newSquare [cs!!i] r [cs!!i]:cs',g'')
-    --genSolvedRow = 12
-    genSolvedRow :: Int -> Int -> StdGen -> (Row,StdGen)
-    genSolvedRow r nC g =
-            let (vs,g') = scrambleCols [0..nC-1] g
-            in  (Row $ map (\(v,c) -> newSquare [v] r c) $ zip vs [0..nC], g')
-        where
+    genSolvedRow :: Int -> Int -> State ([Int],StdGen) Row
+    genSolvedRow r nC = fmap Row $ replicateM nC $ genSolvedSquare r nC
 
-            scrambleCols :: [Int] -> StdGen -> ([Int], StdGen)
-            scrambleCols [] g = ([],g)
-            scrambleCols cs g = (cs!!i:cs', g')
-                where
-                    (i  ,g' ) = randomR      (0,length cs-1)     g
-                    (cs',g'') = scrambleCols (delete (cs!!i) cs) g'
+    --genSolvedRow :: Int -> Int -> State StdGen Row
+    --genSolvedRow r nC g =
+    --        let (vs,g') = scrambleCols [0..nC-1] g
+    --        in  (Row $ map (\(v,c) -> newSquare [v] r c) $ zip vs [0..nC], g')
+    --    where
 
+    --        scrambleCols :: [Int] -> StdGen -> ([Int], StdGen)
+    --        scrambleCols [] g = ([],g)
+    --        scrambleCols cs g = (cs!!i:cs', g')
+    --            where
+    --                (i  ,g' ) = randomR      (0,length cs-1)     g
+    --                (cs',g'') = scrambleCols (delete (cs!!i) cs) g'
+    --genSolvedRow :: Int -> Int -> StdGen -> (Row,StdGen)
+    --genSolvedRow r nC g =
+    --        let (vs,g') = scrambleCols [0..nC-1] g
+    --        in  (Row $ map (\(v,c) -> newSquare [v] r c) $ zip vs [0..nC], g')
+    --    where
+
+    --        scrambleCols :: [Int] -> StdGen -> ([Int], StdGen)
+    --        scrambleCols [] g = ([],g)
+    --        scrambleCols cs g = (cs!!i:cs', g')
+    --            where
+    --                (i  ,g' ) = randomR      (0,length cs-1)     g
+    --                (cs',g'') = scrambleCols (delete (cs!!i) cs) g'

@@ -7,11 +7,17 @@ module Game.Board.Square
     newSquare,
 
     removeVal,
+
+    genSolvedSquare,
 ) where
+
+    import Control.Monad.Trans.State
 
     import Data.List
 
     import Game.Board.Value
+
+    import System.Random
 
     data Square = Solution
                 { val  :: Value
@@ -41,3 +47,11 @@ module Game.Board.Square
         , col  = col             p
         }
 
+
+
+    genSolvedSquare :: Int -> Int -> State ([Int],StdGen) Square
+    genSolvedSquare r nC = state $ \(vs,g) ->
+        let ig     = randomR (0, length vs-1) g
+            (v,g') = (vs !! fst ig, snd ig)
+            c      = nC - length vs
+        in  (newSquare [v] r c, (delete v vs, g'))

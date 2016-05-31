@@ -36,7 +36,8 @@ import Game.Board
 main :: IO()
 main =
     (mkStdGen <$> read <$> head <$> getArgs) >>= \g->
-    print ((evalState (genSolution 3 3) g))
+    let (b,g') = runState (genSolvedBoard 3 3) g
+    in  print b
     --let seed =
     --G.setErrorCallback (Just errorCallback)
     --successfulInit <- G.init
