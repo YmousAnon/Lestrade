@@ -1,15 +1,19 @@
 import Control.Monad (unless, when)
 import Control.Monad.Trans.State
 import Graphics.Rendering.OpenGL
-import qualified Graphics.UI.GLFW as G
+import qualified Graphics.UI.GLFW
 
 import System.Random
 import System.Exit
 import System.IO
 import System.Environment (getArgs)
 
-import Game.Board.Row
-import Game.Board
+import Game
+--import Game.Board
+--import Game.Board.Row
+
+import Settings
+
 --import Game.World
 --bool :: Bool -> a -> a -> a
 --bool b falseRes trueRes = if b then trueRes else falseRes
@@ -36,8 +40,14 @@ import Game.Board
 main :: IO()
 main =
     (mkStdGen <$> read <$> head <$> getArgs) >>= \g->
-    let (b,g') = runState (genSolvedBoard 3 3) g
-    in  print b
+
+    read <$> getVal "columns" >>= \nC ->
+    read <$> getVal "rows"    >>= \nR ->
+
+    --let (b,g') = runState (genSolvedBoard nR nC) g
+    let (game,g') = newGame nR nC g--runState (genSolvedBoard nR nC) g
+
+    in  print game
     --let seed =
     --G.setErrorCallback (Just errorCallback)
     --successfulInit <- G.init

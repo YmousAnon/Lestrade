@@ -3,12 +3,11 @@ module Game.Board.Square
     Square,
     col,
 
-
-    newSquare,
+    square,
+    genSolvedSquare,
 
     removeVal,
 
-    genSolvedSquare,
 ) where
 
     import Control.Monad.Trans.State
@@ -27,16 +26,19 @@ module Game.Board.Square
                 { vals :: [Value]
                 , col  :: Int
                  }
-        deriving Show
+
+    instance Show Square where
+        show Solution     { val  = v } = show v
+        show Alternatives { vals = v } = show v
 
 
-    newSquare :: [Int] -> Int -> Int -> Square
-    newSquare [v] r c = Solution
-        { val  = (newValue r) v
+    square :: [Int] -> Int -> Int -> Square
+    square [v] r c = Solution
+        { val  = (value r) v
         , col  = c
         }
-    newSquare vs r c = Alternatives
-        { vals = map (newValue r) vs
+    square vs r c = Alternatives
+        { vals = map (value r) vs
         , col  = c
         }
 
@@ -54,4 +56,4 @@ module Game.Board.Square
         let ig     = randomR (0, length vs-1) g
             (v,g') = (vs !! fst ig, snd ig)
             c      = nC - length vs
-        in  (newSquare [v] r c, (delete v vs, g'))
+        in  (square [v] r c, (delete v vs, g'))

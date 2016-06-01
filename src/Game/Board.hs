@@ -1,24 +1,32 @@
 module Game.Board
 (
     Board,
-
+    newBoard,
     genSolvedBoard,
 ) where
 
     import Control.Monad.Trans.State
 
+    import Game.Board.Row
+    --import Game.Board.Square
+    --import Game.Board.Value
+
     import Data.List
 
     import System.Random
 
+    data Board = Board
+                { rows :: [Row]
+                }
 
-    import Game.Board.Row
-    import Game.Board.Square
-    import Game.Board.Value
+    instance Show Board where
+        show Board { rows = [] } = ""
+        show Board { rows = rs } = concat (map (\r -> '\n':show r) rs)
 
-    data Board = Board        [Row]
-        deriving Show
-
+    board :: [Row] -> Board
+    board rs = Board
+        { rows = rs
+        }
     --data Row   = Row          [Piece]
     --    deriving Show
 
@@ -31,13 +39,20 @@ module Game.Board
     --genSolution :: Int -> Int -> StdGen -> Board
     --genSolution nR nC g = Board $ map (\r -> genSolvedRow r nC g) [0..nR-1]
     genSolvedBoard :: Int -> Int -> State StdGen Board
-    genSolvedBoard nR nC = fmap Board
-                      $ mapM (genSolvedRow' nC) [0..nR-1]
+    genSolvedBoard nR nC = fmap board $ mapM (genSolvedRow' nC) [0..nR-1]
         where
             genSolvedRow' :: Int -> Int -> State StdGen Row
             genSolvedRow' nC i = state $ \g ->
                 let (r, ([],g')) = runState (genSolvedRow i nC) ([0..nC-1],g)
                 in  (r,g')
+
+    newBoard :: Int -> Int -> Board
+    newBoard nR nC = board $ replicate nR (newRow nC nR)
+        --where
+        --    genSolvedRow' :: Int -> Int -> State StdGen Row
+        --    genSolvedRow' nC i = state $ \g ->
+        --        let (r, ([],g')) = runState (genSolvedRow i nC) ([0..nC-1],g)
+        --        in  (r,g')
     --mapM state $ (\r -> genSolvedRow r nC g) [0..nR-1]
     --genSolution = 12
 

@@ -2,17 +2,19 @@ module Game.Board.Value
 (
     Value,
 
-    newValue,
+    value,
 ) where
 
     data Value = Value
                 { val  :: Int
                  }
-        deriving Show
+
+    instance Show Value where
+        show Value { val = v } = show v
 
     instance Eq Value where
         v == v' = (val v) == (val v')
 
-    newValue :: Int -> Int -> Value
-    newValue r v = Value v
+    value :: Int -> Int -> Value
+    value r v = Value v
 

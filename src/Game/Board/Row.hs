@@ -2,10 +2,11 @@ module Game.Board.Row
 (
     Row,
     newRow,
+    genSolvedRow,
 
     colMap,
 
-    genSolvedRow,
+    --getNewRow,
 ) where
 
     import Control.Monad
@@ -20,19 +21,24 @@ module Game.Board.Row
     data Row = Row
                 { squares :: [Square]
                 }
-        deriving(Show)
 
+    instance Show Row where
+        show Row { squares = ss } = show ss
 
     newRow :: Int -> Int -> Row
-    newRow r nC = Row $ map (newSquare [0..nC-1] r) [0..nC-1]
+    newRow r nC = Row $ map (square [0..nC-1] r) [0..nC-1]
+
+    genSolvedRow :: Int -> Int -> State ([Int],StdGen) Row
+    genSolvedRow r nC = fmap Row $ replicateM nC $ genSolvedSquare r nC
+
 
 
     colMap :: (Int -> Square -> Square) -> Row -> Row
     colMap f (Row ps) = Row $ map (\p -> f (col p) p) ps
 
 
-    genSolvedRow :: Int -> Int -> State ([Int],StdGen) Row
-    genSolvedRow r nC = fmap Row $ replicateM nC $ genSolvedSquare r nC
+    --getNewRow :: Int -> Int -> Row
+    --getNewRow r nC = Row $ map (getNewSquare r nC) [0..nC-1]
 
     --genSolvedRow :: Int -> Int -> State StdGen Row
     --genSolvedRow r nC g =
