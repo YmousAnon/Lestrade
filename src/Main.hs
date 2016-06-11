@@ -2,20 +2,10 @@ import Control.Monad (unless, when)
 import Control.Monad.Trans.State
 
 import Data.Maybe
---import Data.Bitmap
---import Data.Bitmap.Pure.File
---import Data.Bitmap.OpenGL
---import Data.Bitmap.OpenGL.CubeMap
 
 --import Graphics.GLUtil
-import qualified Graphics.Rendering.OpenGL as GL
-import Graphics.Rendering.OpenGL
-import Graphics.UI.GLFW
-import qualified Graphics.UI.GLFW as GLFW
---import Graphics.Rendering.OpenGL
---import Graphics.UI.GLFW
-
---import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL as GL
+import Graphics.UI.GLFW as GLFW
 
 import System.Random
 import System.Exit
@@ -26,14 +16,16 @@ import System.Environment (getArgs)
 --
 import Interface
 import Interface.Texture
---import Game.Board
---import Game.Board.Row
 
---import Settings
+--import Game.Board
+import Game.Board.Square
+import Game.Board.Value
+
+import Settings
 
 
 main :: IO()
-main = guiInit >>= (loop 0)
+main = guiInit >>= loop 0
     --initWindow screenRes "Sherlock"
     --initGraphics screenResWidth screenResHeight
 
@@ -48,20 +40,21 @@ main = guiInit >>= (loop 0)
         screenResHeight :: GLdouble
         screenResHeight = 768.0
 
-tex32 :: IO TextureObject
-tex32 = loadTextureFromFile "tex32.png"
-tex16 :: IO TextureObject
-tex16 = loadTextureFromFile "tex16.png"
+--tex32 :: IO TextureObject
+--tex32 = loadTextureFromFile "tex32.png"
+--tex16 :: IO TextureObject
+--tex16 = loadTextureFromFile "tex16.png"
 --tex = loadGLTexture "res/Images/1.png"
+v1 = value 0 True 0
+s = square [0,1,2] 0 0 3 0.2
 
 loop :: Int -> Window -> IO()
 loop i w = GLFW.windowShouldClose w >>= \close -> unless close $ do
 
     getTime >>= (print . fromJust)
     clear [ColorBuffer, DepthBuffer]
-    tex32 >>= (drawTexture (0.1,0.1) (0.01,0.1))
-    --tex16 >>= (drawTexture (0,-0.001*(fromIntegral i)) (1,1))
-    --tex >>= (drawTexture (0,0) (i,i))
+    --draw v1 (-1,-1)
+    draw s (-1,-1)
     swapBuffers w
     pollEvents
     loop (i+1) w

@@ -11,6 +11,8 @@ module Game.Board
     --import Game.Board.Square
     --import Game.Board.Value
 
+    import Interface.Coordinates
+
     import Data.List
 
     import System.Random
@@ -21,7 +23,7 @@ module Game.Board
 
     instance Show Board where
         show Board { rows = [] } = ""
-        show Board { rows = rs } = concat (map (\r -> '\n':show r) rs)
+        show Board { rows = rs } = concatMap (\r -> '\n':show r) rs
 
     board :: [Row] -> Board
     board rs = Board
@@ -39,7 +41,7 @@ module Game.Board
     --genSolution :: Int -> Int -> StdGen -> Board
     --genSolution nR nC g = Board $ map (\r -> genSolvedRow r nC g) [0..nR-1]
     genSolvedBoard :: Int -> Int -> State StdGen Board
-    genSolvedBoard nR nC = fmap board $ mapM (genSolvedRow' nC) [0..nR-1]
+    genSolvedBoard nR nC = board <$> mapM (genSolvedRow' nC) [0..nR-1]
         where
             genSolvedRow' :: Int -> Int -> State StdGen Row
             genSolvedRow' nC i = state $ \g ->

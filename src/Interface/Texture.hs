@@ -1,27 +1,31 @@
 module Interface.Texture
 (
+    Textured,
+    draw,
+
     drawTexture,
     loadTextureFromFile,
 ) where
     import Graphics.GLUtil
     import Graphics.Rendering.OpenGL
-    --import Graphics.UI.GLFW
+
+    class Textured a where
+        draw :: a -> (GLfloat,GLfloat) -> IO()
+
 
     drawTexture :: (GLfloat,GLfloat) -> (GLfloat,GLfloat) -> TextureObject -> IO()
-    drawTexture (x,y) (w,h) t = do
+    drawTexture (x,x') (y,y') tex = do
 
-        texture Texture2D        $= Enabled
-        textureBinding Texture2D $= Just t
+        textureBinding Texture2D $= Just tex
 
         renderPrimitive Quads $ do
-            tex 0 1 >> ver (x)     (y - h)
-            tex 1 1 >> ver (x + w) (y - h)
-            tex 1 0 >> ver (x + w) (y)
-            tex 0 0 >> ver (x)     (y)
-
-        texture Texture2D $= Disabled
+            txc 1 1 >> ver y' x
+            txc 1 0 >> ver y' x'
+            txc 0 0 >> ver y  x'
+            txc 0 1 >> ver y  x
             where ver x y = vertex (Vertex2 x y :: Vertex2 GLfloat)
-                  tex u v = texCoord (TexCoord2 u v :: TexCoord2 GLfloat)
+                  txc u v = texCoord (TexCoord2 u v :: TexCoord2 GLfloat)
+
 
     loadTextureFromFile :: FilePath -> IO TextureObject
     loadTextureFromFile f = do

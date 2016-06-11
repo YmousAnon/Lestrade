@@ -11,5 +11,6 @@ module Settings
     cp = forceEither <$> readfile emptyCP "sherlockrc"
 
 
-    getVal :: String -> IO String
-    getVal key = (\cp' -> forceEither $ get cp' "DEFAULT" key) <$> cp
+    getVal :: String -> String -> IO String
+    --getVal :: Read a => String -> String -> IO a
+    getVal sect key = (\cp' -> forceEither $ get cp' sect key) <$> cp
