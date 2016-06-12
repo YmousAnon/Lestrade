@@ -45,8 +45,10 @@ main = guiInit >>= loop 0
 --tex16 :: IO TextureObject
 --tex16 = loadTextureFromFile "tex16.png"
 --tex = loadGLTexture "res/Images/1.png"
-v1 = value 0 True 0
-s = square [0,1,2] 0 0 3 0.2
+v :: Value
+v = value 0 True 0
+s :: Square
+s = square [0..5] 1 0 6 0.2
 
 loop :: Int -> Window -> IO()
 loop i w = GLFW.windowShouldClose w >>= \close -> unless close $ do

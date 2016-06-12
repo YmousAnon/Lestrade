@@ -21,19 +21,18 @@ module Interface
         successfulInit <- GLFW.init
         unless successfulInit exitFailure
 
-        --print =<< getVal "GRAPHICS" "screenres"
-        --(w,h)          <- getVal "GRAPHICS" "screenres"
         (w,h)          <- read <$> getVal "GRAPHICS" "screenres"
         mw             <- createWindow w h "Sherlock" Nothing Nothing
         case mw of
             Nothing -> terminate >> exitFailure
             Just w  -> makeContextCurrent mw
 
-        clearColor        $= Color4 0 0 0 1.0
+        [r,g,b]        <- map (/255) . read <$> getVal "GRAPHICS" "bgrgb"
+
+        clearColor        $= Color4 r g b 1.0
         depthFunc         $= Just Lequal
         blendFunc         $= (SrcAlpha, OneMinusSrcAlpha)
         normalize         $= Enabled
-        texture Texture2D $= Enabled
         shadeModel        $= Smooth
 
         return (fromJust mw)

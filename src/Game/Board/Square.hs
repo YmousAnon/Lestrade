@@ -19,16 +19,21 @@ module Game.Board.Square
     import Graphics.GLUtil
     import Graphics.Rendering.OpenGL
 
+    import Interface.Graphics
     import Interface.Texture
+
+    import Settings
 
     import System.Random
 
     data Square = Solution
-                { val   :: Value
-                , col   :: Int
-                , cols  :: Int
-                , height:: GLfloat
-                , width :: GLfloat
+                { val    :: Value
+                , col    :: Int
+                , cols   :: Int
+                , height :: GLfloat
+                , width  :: GLfloat
+                , bgrgb  :: IO [Double]
+                , bgtile :: IO TextureObject
                  }
                | Alternatives
                 { vals   :: [Value]
@@ -36,6 +41,8 @@ module Game.Board.Square
                 , cols   :: Int
                 , height :: GLfloat
                 , width  :: GLfloat
+                , bgrgb  :: IO [Double]
+                , bgtile :: IO TextureObject
                  }
 
     instance Show Square where
@@ -43,20 +50,47 @@ module Game.Board.Square
         show Alternatives { vals = v } = show v
 
     instance Textured Square where
-        draw Solution     { val  = v , height = h, cols = nC } p =
-            draw  v (solPos nC h p)
-        draw Alternatives { vals = vs, height = h, cols = nC } p =
-            mapM_ (\v -> draw v $ altPos nC (vali v) h p) vs
- --vs
+        draw Solution
+            { val    = v
+            , height = h
+            , width  = w
+            , cols   = nC
+            , bgtile = bgt
+            } p = do
+                bgt >>= drawBG nC h w p
+                draw v (solPos nC h w p)
 
-    solPos :: Int -> GLfloat -> (GLfloat,GLfloat) -> (GLfloat,GLfloat)
-    solPos nC h (x,y)
-        | nC `mod` 2 == 0 = (x+h*realToFrac (fromIntegral (nC-4)/8),y)
-        | otherwise       = solPos (nC+1) h (x,y)
+        draw Alternatives
+            { vals  = vs
+            , height = h
+            , width  = w
+            , cols   = nC
+            , bgtile = bgt
+            } p = do
+                bgt >>= drawBG nC h w p
+                mapM_ (\v -> draw v $ altPos nC (vali v) h w p) vs
 
 
-    altPos :: Int -> Int -> GLfloat -> (GLfloat,GLfloat) -> (GLfloat,GLfloat)
-    altPos nC v h (x,y) = (x+(h/2)*dx,y+(h/2)*dy)
+    drawBG :: Int -> GLfloat -> GLfloat -> (GLfloat,GLfloat) ->
+              TextureObject -> IO()
+    drawBG nC h w (x,y) bgt = do
+        rgb <- map (/255) . read <$> getVal "GRAPHICS" "tilergb"
+        drawSquare  (x ,x +w) (y ,y +w) rgb
+        drawTexture (x',x'+h) (y',y'+h) bgt
+        where
+            (x',y') = solPos nC h w (x,y)
+
+
+    solPos :: Int -> GLfloat -> GLfloat -> (GLfloat,GLfloat) ->
+              (GLfloat,GLfloat)
+    solPos nC h w (x,y)
+        | nC `mod` 2 == 0 = (x+h*realToFrac (fromIntegral (nC-4)/8),(w-h)/2+y)
+        | otherwise       = solPos (nC+1) h w (x,y)
+
+
+    altPos :: Int -> Int -> GLfloat -> GLfloat -> (GLfloat,GLfloat) ->
+              (GLfloat,GLfloat)
+    altPos nC v h w (x,y) = (x+(h/2)*dx,(w-h)/2+y+(h/2)*dy)
         where
             dx | mod nC 2 == 0 && v <  div nC 2 ||
                  mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
@@ -75,20 +109,26 @@ module Game.Board.Square
             , col        = c
             , cols       = nC
             , height     = h
-            , width      = w
+            , width      = w nC
+            , bgrgb      = bgc
+            , bgtile     = bgt
             }
         | otherwise      = Alternatives
             { vals       = map (value r False) vs
             , col        = c
             , cols       = nC
             , height     = h
-            , width      = w
+            , width      = w nC
+            , bgrgb      = bgc
+            , bgtile     = bgt
             }
-        where w
-                | nC `mod` 2 == 0 = w*realToFrac (  div nC 2)
-                | otherwise       = w*realToFrac (1+div nC 2)
-        --where w
-        --        | cs == 2 = 2
+        where w nC'
+                | nC' `mod` 2 == 0 = (h/2)*realToFrac (  div nC' 2)
+                | otherwise        = w (nC'+1)
+              bgc = map (/255) . read <$> getVal "GRAPHICS" "tilergb"
+              bgt = loadTextureFromFile
+                        =<< (\ts -> "res/tilesets/"++ts++"/bg.png")
+                        <$> getVal "GRAPHICS" "tileset"
 
 
     removeVal :: Value -> Square -> Square
@@ -98,8 +138,9 @@ module Game.Board.Square
         , cols       = cols            p
         , height     = height          p
         , width      = width           p
+        , bgrgb      = bgrgb           p
+        , bgtile     = bgtile          p
         }
-
 
 
     genSolvedSquare :: Int -> Int -> GLfloat -> State ([Int],StdGen) Square
