@@ -10,12 +10,13 @@ module Interface.Texture
     import Graphics.Rendering.OpenGL
 
     class Textured a where
-        draw :: a -> (GLfloat,GLfloat) -> IO()
+        draw :: a -> IO()
 
 
     drawTexture :: (GLfloat,GLfloat) -> (GLfloat,GLfloat) -> TextureObject ->
                    IO()
-    drawTexture (x,x') (y,y') tex = textureBinding Texture2D $= Just tex >>
+    drawTexture (x,x') (y,y') tex = do
+        textureBinding Texture2D $= Just tex
         renderPrimitive Quads $ do
             col
             txc 1 1 >> ver y' x

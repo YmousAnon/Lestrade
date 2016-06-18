@@ -13,9 +13,10 @@ module Game.Board.Value
     import Settings
 
     data Value = Value
-                { vali  :: Int
+                { pos   :: (GLfloat,GLfloat)
+                , vali  :: Int
                 , row   :: Int
-                , size  :: (GLfloat,GLfloat)
+                , width :: GLfloat
                 , tex   :: IO TextureObject
                 , alone :: Bool
                  }
@@ -27,27 +28,24 @@ module Game.Board.Value
         v == v' = vali v == vali v'
 
     instance Textured Value where
-        draw v (x,y) = tex v >>= drawTexture (y,y') (x,x')
+        draw v = tex v >>= drawTexture (y,y+w) (x,x+w)
             where
-                (x',y')
-                    | alone v   = (x+w,  y+h  )
-                    | otherwise = (x+w/2,y+h/2)
-                (w,h) = size v
+                (x,y) = pos   v
+                w     = if alone v then width v else width v/2
 
 
-    value :: Int -> Bool -> Int -> Value
-    value r a v = Value
-        { vali  = v
+    value :: GLfloat -> Int -> Bool -> (GLfloat,GLfloat) -> Int ->
+             Value
+    value width r a pos v = Value
+        { pos   = pos
+        , vali  = v
         , row   = r
         , tex   = getValueTexture r v
-        , size  = (0.2,0.2)
+        , width = width
         , alone = a
         }
 
-    --minSize ::
-    --getValueTexture :: Int -> Int -> IO TextureObject
-    --getValueTexture r v = loadTextureFromFile =<< (getVal "GRAPHICS" "tileset" >>=
-    --     \ts -> return $ "res/tilesets/"++ts++"/row"++show r++"/col"++show v++".png")
+
     getValueTexture :: Int -> Int -> IO TextureObject
     getValueTexture r v = loadTextureFromFile =<<
         (\ts -> "res/tilesets/"++ts++"/row"++show r++"/col"++show v++".png")

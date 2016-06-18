@@ -33,6 +33,7 @@ module Interface
         depthFunc         $= Just Lequal
         blendFunc         $= (SrcAlpha, OneMinusSrcAlpha)
         normalize         $= Enabled
+        texture Texture2D $= Enabled
         shadeModel        $= Smooth
 
         return (fromJust mw)
