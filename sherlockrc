@@ -1,6 +1,6 @@
 [GAME]
-columns: 3
-rows: 2
+olumns: 3
+ows: 2
 
 [GRAPHICS]
 screenres: (1024,768)

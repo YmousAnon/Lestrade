@@ -3,9 +3,11 @@ import Control.Monad.Trans.State
 
 import Data.Maybe
 
---import Graphics.GLUtil
-import Graphics.Rendering.OpenGL as GL
-import Graphics.UI.GLFW as GLFW
+import Graphics.GLUtil
+import Graphics.Rendering.OpenGL
+import Graphics.UI.GLUT
+--import Graphics.UI.GLFW
+import qualified Graphics.UI.GLFW as GLFW
 
 import System.Random
 import System.Exit
@@ -18,6 +20,7 @@ import Interface
 import Interface.Texture
 
 --import Game.Board
+import Game.Board.Row
 import Game.Board.Square
 import Game.Board.Value
 
@@ -25,23 +28,32 @@ import Settings
 
 --v :: Value
 --v = value 0 True 0
-s :: Square
+--s :: Square
 --s = square [1] 1 0 8 0.2 (-1,-1)
-s = square [0,1,3,4,6] 1 0 8 0.2 (-1,-1)
+--s = square [1,3,4,6] 0 8 0.1 (-1,-1)
+--s :: Square
+--s = square [1..8] 1 8 0.1 (-1,-1)
+r = newRow 1 8 0.1 (-1,-1)
+--r1 = newRow 1 8 0.1 (-1,-1)
+--as = replicate 8 $ newRow 1 8 0.1 (0,0)
 
 main :: IO()
-main = guiInit >>= loop
-    where
-        loop :: Window -> IO()
-        loop w = GLFW.windowShouldClose w >>= \close -> unless close $ do
+--main = return()--guiInit >>= loop 0
+main = guiInit >> mainLoop-- = loop 0
+    --where
+    --    loop :: Int -> Window -> IO()
+    --    loop i w = do
+    --    --loop i w = windowShouldClose w >>= \close -> unless close $ do
 
-            getTime >>= (print . fromJust)
-            clear [ColorBuffer, DepthBuffer]
-            draw s
-            --draw v (-1,-1)
-            swapBuffers w
-            pollEvents
-            loop w
+    --        GLFW.getTime >>= (print . fromJust)
+    --        --clear [ColorBuffer, DepthBuffer]
+    --        --render r
+    --        --draw s
+    --        --draw r1
+    --        --draw v
+    --        swapBuffers w
+    --        --pollEvents
+    --        loop (i+1) w
     --initWindow screenRes "Sherlock"
     --initGraphics screenResWidth screenResHeight
 

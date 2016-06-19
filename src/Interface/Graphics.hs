@@ -10,10 +10,10 @@ module Interface.Graphics
     drawSquare (x,x') (y,y') [r,g,b] =
         renderPrimitive Quads $ do
             col
-            ver y' x
-            ver y' x'
-            ver y  x'
-            ver y  x
+            ver x' y
+            ver x' y'
+            ver x  y'
+            ver x  y
             where col     = color  (Color3 r g b :: Color3  GLfloat)
                   ver x y = vertex (Vertex2 x y  :: Vertex2 GLfloat)
 

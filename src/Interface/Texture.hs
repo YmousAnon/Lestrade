@@ -1,6 +1,7 @@
 module Interface.Texture
 (
     Textured,
+    --getTexture,
     draw,
 
     drawTexture,
@@ -8,8 +9,13 @@ module Interface.Texture
 ) where
     import Graphics.GLUtil
     import Graphics.Rendering.OpenGL
+    import Graphics.UI.GLUT          as GLUT
+
 
     class Textured a where
+        --getTexture :: a -> IO [((GLfloat,GLfloat),
+        --                        (GLfloat,GLfloat),
+        --                        TextureObject)]
         draw :: a -> IO()
 
 
@@ -33,5 +39,6 @@ module Interface.Texture
         gt <- readTexture f
         textureFilter Texture2D $= ((Linear', Nothing), Linear')
         --textureFilter Texture2D $= ((Linear', Nothing), Linear')
-        texture2DWrap $= (Mirrored, ClampToEdge)
+        --texture2DWrap $= (Mirrored, ClampToEdge)
+        get elapsedTime >>= print
         return $ either error id gt

@@ -4,19 +4,24 @@ module Game.Board.Row
     newRow,
     genSolvedRow,
 
-    colMap,
+    --colMap,
 
     --getNewRow,
 ) where
 
     import Control.Monad
+    import Control.Monad.Extra
     import Control.Monad.Trans.State
+
+    import Graphics.Rendering.OpenGL
 
     import Data.List
 
     import System.Random
 
     import Game.Board.Square
+
+    import Interface.Texture
 
     data Row = Row
                 { squares :: [Square]
@@ -25,16 +30,28 @@ module Game.Board.Row
     instance Show Row where
         show Row { squares = ss } = show ss
 
-    newRow :: Int -> Int -> Row
-    newRow r nC = Row $ map (square [0..nC-1] r) [0..nC-1]
+    instance Textured Row where
+        --getTexture Row { squares = ss } = concatMapM getTexture ss
+        draw Row { squares = ss } = mapM_ draw ss
 
-    genSolvedRow :: Int -> Int -> State ([Int],StdGen) Row
-    genSolvedRow r nC = fmap Row $ replicateM nC $ genSolvedSquare r nC
+    newRow :: Int -> Int -> GLfloat -> (GLfloat,GLfloat) -> Row
+    newRow r nC w (x,y) = Row $ map (square [1..nC] r nC w) xys
+        where
+            xys = map (\c -> (x+w*2.2*(fromIntegral c),y)) [1..nC]
+    --newRow r nC w (x,y) = Row $ map (uncurry (square [0..nC-1] r)) [0..nC-1]
+
+    genSolvedRow :: Int -> Int -> GLfloat -> (GLfloat,GLfloat) ->
+                    State ([Int],StdGen) Row
+    genSolvedRow r nC w (x,y) = fmap Row $ mapM (genSolvedSquare r nC w) xys
+        where
+            xys = map (\c -> (x+w*1.1*fromIntegral c,y)) [0..nC-1]
 
 
 
-    colMap :: (Int -> Square -> Square) -> Row -> Row
-    colMap f (Row ps) = Row $ map (\p -> f (col p) p) ps
+
+
+    --colMap :: (Int -> Square -> Square) -> Row -> Row
+    --colMap f (Row ps) = Row $ map (\p -> f (col p) p) ps
 
 
     --getNewRow :: Int -> Int -> Row
