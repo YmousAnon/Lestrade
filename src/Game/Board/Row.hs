@@ -10,10 +10,9 @@ module Game.Board.Row
 ) where
 
     import Control.Monad
-    import Control.Monad.Extra
     import Control.Monad.Trans.State
 
-    import Graphics.Rendering.OpenGL
+    --import Graphics.Rendering.OpenGL
 
     import Data.List
 
@@ -21,7 +20,7 @@ module Game.Board.Row
 
     import Game.Board.Square
 
-    import Interface.Texture
+    import Interface.Render
 
     data Row = Row
                 { squares :: [Square]
@@ -30,17 +29,17 @@ module Game.Board.Row
     instance Show Row where
         show Row { squares = ss } = show ss
 
-    instance Textured Row where
+    instance Renderable Row where
         --getTexture Row { squares = ss } = concatMapM getTexture ss
-        draw Row { squares = ss } = mapM_ draw ss
+        render Row { squares = ss } = mapM_ render ss
 
-    newRow :: Int -> Int -> GLfloat -> (GLfloat,GLfloat) -> Row
+    newRow :: Int -> Int -> Float -> (Float,Float) -> Row
     newRow r nC w (x,y) = Row $ map (square [1..nC] r nC w) xys
         where
             xys = map (\c -> (x+w*2.2*(fromIntegral c),y)) [1..nC]
     --newRow r nC w (x,y) = Row $ map (uncurry (square [0..nC-1] r)) [0..nC-1]
 
-    genSolvedRow :: Int -> Int -> GLfloat -> (GLfloat,GLfloat) ->
+    genSolvedRow :: Int -> Int -> Float -> (Float,Float) ->
                     State ([Int],StdGen) Row
     genSolvedRow r nC w (x,y) = fmap Row $ mapM (genSolvedSquare r nC w) xys
         where

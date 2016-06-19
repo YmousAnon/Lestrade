@@ -3,28 +3,28 @@ import Control.Monad.Trans.State
 
 import Data.Maybe
 
-import Graphics.GLUtil
-import Graphics.Rendering.OpenGL
-import Graphics.UI.GLUT
+--import Graphics.GLUtil
+--import Graphics.Rendering.OpenGL
+import Graphics.UI.GLUT (mainLoop)
 --import Graphics.UI.GLFW
-import qualified Graphics.UI.GLFW as GLFW
 
 import System.Random
 import System.Exit
 import System.IO
 import System.Environment (getArgs)
 
+--import Settings
 --import Game
 --
 import Interface
-import Interface.Texture
+--import Interface.Texture
 
---import Game.Board
+import Game.Board
 import Game.Board.Row
 import Game.Board.Square
 import Game.Board.Value
 
-import Settings
+--import Settings
 
 --v :: Value
 --v = value 0 True 0
@@ -33,9 +33,9 @@ import Settings
 --s = square [1,3,4,6] 0 8 0.1 (-1,-1)
 --s :: Square
 --s = square [1..8] 1 8 0.1 (-1,-1)
-r = newRow 1 8 0.1 (-1,-1)
 --r1 = newRow 1 8 0.1 (-1,-1)
 --as = replicate 8 $ newRow 1 8 0.1 (0,0)
+a = newBoard 2 8
 
 main :: IO()
 --main = return()--guiInit >>= loop 0

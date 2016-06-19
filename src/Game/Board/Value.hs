@@ -5,10 +5,12 @@ module Game.Board.Value
 
     value,
 ) where
-    import Graphics.GLUtil
-    import Graphics.Rendering.OpenGL
+    import Graphics.UI.GLUT (TextureObject)
+    --import Graphics.GLUtil
+    --import Graphics.Rendering.OpenGL as GL (TextureObject)
 
-    import Interface.Texture
+    import Interface.Render
+    import Interface.Render.Texture
 
     import Settings
 
@@ -24,10 +26,10 @@ module Game.Board.Value
     --                               | c <- [1..8]]
 
     data Value = Value
-                { pos   :: (GLfloat,GLfloat)
+                { pos   :: (Float,Float)
                 , vali  :: Int
                 , row   :: Int
-                , width :: GLfloat
+                , width :: Float
                 , tex   :: IO TextureObject
                 , alone :: Bool
                  }
@@ -38,9 +40,9 @@ module Game.Board.Value
     instance Eq Value where
         v == v' = vali v == vali v'
 
-    instance Textured Value where
+    instance Renderable Value where
         --getTexture v = (\v' -> [((x,x+w),(y,y+w),v')]) <$>  tex v
-        draw v = tex v >>= drawTexture (y,y+w) (x,x+w)
+        render v = tex v >>= renderTexture (y,y+w) (x,x+w)
             where
                 (x,y) = pos   v
                 w     = if alone v then width v else width v/2
@@ -57,23 +59,22 @@ module Game.Board.Value
         --draw v = tex v >>= drawTexture (y,y+w) (x,x+w)
 
 
-    value :: GLfloat -> Int -> Bool -> (GLfloat,GLfloat) -> Int ->
+    value :: Float -> Int -> Bool -> (Float,Float) -> Int ->
              Value
     value width r a pos v = Value
         { pos   = pos
         , vali  = v
         , row   = r
-        , tex   = getValueTexture r v
+        , tex   = getTexture r v
         , width = width
         , alone = a
         }
 
 
-    getValueTexture :: Int -> Int -> IO TextureObject
-    getValueTexture r v    = loadTextureFromFile =<<
-        (\root' -> root'++end) <$> root
+    getTexture :: Int -> Int -> IO TextureObject
+    getTexture r v    = loadTexture' =<< (\root' -> root'++end) <$> root
         where
-            root = (++)"res/tilesets/" <$> getVal "GRAPHICS" "tileset"
+            root = (++)"res/tilesets/" <$> getVal "tileset"
             end  = case v of
                         0 -> "/bg.png"
                         _ -> "/row"++show r++"/col"++show v++".png"
