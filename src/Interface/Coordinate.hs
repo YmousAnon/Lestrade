@@ -7,8 +7,12 @@ module Interface.Coordinate
 
     Area,
     newArea,
+    --getPos,
+    --getSize,
     getXRange,
     getYRange,
+    xRangeToGL,
+    yRangeToGL,
 ) where
 
     import Graphics.UI.GLUT hiding (Point)
@@ -23,24 +27,26 @@ module Interface.Coordinate
     xCoordToGL :: Coord -> IO GLfloat
     xCoordToGL x = do
         w <- fst <$> (read <$> getVal "screenres" :: IO Point)
-        return $ (-1+fromIntegral x)/fromIntegral w
+        return $ (fromIntegral x/fromIntegral w)-1
 
     yCoordToGL :: Coord -> IO GLfloat
     yCoordToGL y = do
         h <- snd <$> (read <$> getVal "screenres" :: IO Point)
-        return $ (-1+fromIntegral y)/fromIntegral h
+        return $ (fromIntegral y/fromIntegral h)-1
 
 
     type Point = (Coord,Coord)
-    --instance Show Point where
-    --    show (x,y) = "("++show x++","++show y++")"
 
     pointToGL :: Point -> IO(GLfloat,GLfloat)
     pointToGL (x,y) = do
         x' <- xCoordToGL x
         y' <- yCoordToGL y
 
-        print (x',y')
+        --putStrLn ""
+        --putStrLn ("x: "++show x++" - "++show x')
+        --putStrLn ("y: "++show y++" - "++show y')
+        --putStrLn ""
+        --putStrLn ("x: "++show h)
         return (x',y')
 
 
@@ -49,7 +55,10 @@ module Interface.Coordinate
         , wh :: Point
         }
     instance Show Area where
-        show a = show (xy a)++" - "++show (wh a)
+        show a = show (x,y)++" - "++show (x+w,x+y)
+            where (x,y) = xy a
+                  (w,h) = wh a
+
 
 
     newArea :: Point -> Coord -> Coord -> Area
@@ -57,10 +66,33 @@ module Interface.Coordinate
 
 
 
+    getXRange :: Area -> Point
     getXRange Area { xy = (x,y), wh = (w,h) } = (x,x+w)
 
     getYRange :: Area -> Point
     getYRange Area { xy = (x,y), wh = (w,h) } = (y,y+h)
+
+
+    xRangeToGL :: Point -> IO(GLfloat,GLfloat)
+    xRangeToGL (x0,x1) = do
+        x0' <- xCoordToGL x0
+        x1' <- xCoordToGL x1
+
+        return (x0',x1')
+
+    yRangeToGL :: Point -> IO(GLfloat,GLfloat)
+    yRangeToGL (y0,y1) = do
+        y0' <- yCoordToGL y0
+        y1' <- yCoordToGL y1
+
+        return (y0',y1')
+
+
+    --getPos :: Area -> Point
+    --getPos = xy
+
+    --getSize :: Area -> Point
+    --getSize = wh
 
     --b = a >+< a
     --    where

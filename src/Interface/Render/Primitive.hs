@@ -45,20 +45,32 @@ module Interface.Render.Primitive
     --        withTextures2D [tex] $ renderTexture' a tex
 
     renderTexture :: Area -> TextureObject -> IO()
-    renderTexture a tex = do
-        (x,x') <- pointToGL $ getXRange a
-        (y,y') <- pointToGL $ getYRange a
+    renderTexture area tex = do
+        (x,x') <- xRangeToGL $ getXRange area
+        (y,y') <- yRangeToGL $ getYRange area
+        --putStrLn ""
+        --print (show (c,b)++" - "++show (c',b'))
+        --print (show (x,y)++" - "++show (x',y'))
+        --putStrLn ""
+        --print (x'-x,y'-y)
+
+        putStrLn ""
+        putStrLn ("x: "++show x++" - "++show x')
+        putStrLn ("y: "++show y++" - "++show y')
+        putStrLn ""
 
         textureBinding Texture2D $= Just tex
         renderPrimitive Quads $ do
             col
-            txc 1 1 >> ver y' x
-            txc 1 0 >> ver y' x'
-            txc 0 0 >> ver y  x'
-            txc 0 1 >> ver y  x
+            txc 1 1 >> ver x' y
+            txc 1 0 >> ver x' y'
+            txc 0 0 >> ver x  y'
+            txc 0 1 >> ver x  y
         where col     = color    (Color3 1.0 1.0 1.0 :: Color3    GLfloat)
               ver x y = vertex   (Vertex2 x y        :: Vertex2   GLfloat)
               txc u v = texCoord (TexCoord2 u v      :: TexCoord2 GLfloat)
+              --(c,c') = getXRangeGL a
+              --(b,b') = getYRangeGL a
 
     loadTexture' :: FilePath -> IO TextureObject
     loadTexture' f = do
@@ -76,9 +88,14 @@ module Interface.Render.Primitive
 
 
     renderColour :: Area -> [Double] -> IO()
-    renderColour a rgb = do
-        (x,x') <- pointToGL $ getXRange a
-        (y,y') <- pointToGL $ getYRange a
+    renderColour area rgb = do
+        (x,x') <- xRangeToGL $ getXRange area
+        (y,y') <- yRangeToGL $ getYRange area
+
+        putStrLn ""
+        putStrLn ("x: "++show x++" - "++show x')
+        putStrLn ("y: "++show y++" - "++show y')
+        putStrLn ""
 
         renderPrimitive Quads $ do
             col $ map unsafeCoerce rgb

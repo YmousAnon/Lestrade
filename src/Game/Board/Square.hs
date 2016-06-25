@@ -51,8 +51,6 @@ module Game.Board.Square
         show Alternatives { vals = v } = show v
 
     instance Renderable Square where
-        --getTexture Solution     { val = v   } =            getTexture v
-        --getTexture Alternatives { vals = vs } = concatMapM getTexture vs
         render Solution
             { val    = v
             , area   = a
@@ -64,26 +62,26 @@ module Game.Board.Square
             , area   = a
             , bgtile = bgt
             , bgrgb  = rgb
-            } = render bgt >> mapM_ render vs
-            --} = renderColour a rgb >> render bgt >> mapM_ render vs
-
+            } = renderColour a rgb >> render bgt >> mapM_ render vs
 
 
     unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
     unsolvedSquare vis r nC xy = do
-        h   <- read <$> getVal "tileWidth" :: IO Coord
+        tw  <- read <$> getVal "tileWidth" :: IO Coord
         vs  <- mapM (uncurry (value r False) . \v ->
-               (altPos nC (v-1) h (w h) xy,v)) vis
-        bgt <- value r True (solPos nC h (w h) xy) 0
+               (altPos nC (v-1) tw (w tw) xy,v)) vis
+        bgt <- value r True (solPos nC tw (w tw) xy) 0
         bgc <- map (/255) . read <$> getVal "tilergb"
+
         return Alternatives
             { vals   = vs
             , cols   = nC
-            , area   = newArea xy (w h) (w h)
+            , area   = newArea xy (w tw) (w tw)
             , bgrgb  = bgc
             , bgtile = bgt
             }
         where w = w' nC :: Coord -> Coord
+              --w = w' nC :: Coord -> Coord
               w' :: Int -> Coord -> Coord
               w' nC' h'
                 | nC' `mod` 2 == 0 = (div h' 2)*(  div nC' 2)
@@ -148,23 +146,51 @@ module Game.Board.Square
     --          --          <$> getVal "GRAPHICS" "tileset"
 
     solPos :: Int -> Coord -> Coord -> Point -> Point
-    solPos nC h w (x,y)
-        | nC `mod` 2 == 0 = (x+h*div (nC-4) 8,y+div (w-h) 2)
-        | otherwise       = solPos (nC+1) h w (x,y)
-
+    solPos nC tw w (x,y)
+        | nC < 5          = (x,y)
+        | nC `mod` 2 == 0 = (x+div (tw*(nC-4)) 8,y+div (w-tw) 2)
+        | otherwise       = solPos (nC+1) tw w (x,y)
 
     altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
-    altPos nC v h w (x,y) = --(x+(div h 2)*dx,(w-h)/2+y+(div h 2)*dy)
-        (x + (div h 2)*round dx, y + (div (w-h) 2)*round dy)
+    altPos nC v tw w (x,y) = (x + (div tw 4)*dx, y + (div tw 2)*(1 + dy))
         where
             dx | mod nC 2 == 0 && v <  div nC 2 ||
-                 mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
-               | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
-               | otherwise                      = fromIntegral (v-(1+div nC 2))
-                                                  +0.5
+                 mod nC 2 == 1 && v <= div nC 2 = 2*v
+               | mod nC 2 == 0                  = 2*(v-div nC 2)
+               | otherwise                      = 2*(v-div nC 2)-1
             dy | mod nC 2 == 0 && v >= div nC 2 = 0
                |                  v >  div nC 2 = 0
                | otherwise                      = 1
+               -- | mod nC 2 == 0 && v <  div nC 2 ||
+               --   mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
+               -- | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
+               -- | otherwise                      = fromIntegral (v-(1+div nC 2))
+    --    (x + (div h 2)*round dx, y + (div (w-h) 2)*round dy)
+    --    where
+    --        dx | mod nC 2 == 0 && v <  div nC 2 ||
+    --             mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
+    --           | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
+    --           | otherwise                      = fromIntegral (v-(1+div nC 2))
+    --                                              +0.5
+    --        dy | mod nC 2 == 0 && v >= div nC 2 = 0
+    --           |                  v >  div nC 2 = 0
+    --           | otherwise                      = 1
+
+
+
+
+    --altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
+    --altPos nC v h w (x,y) = --(x+(div h 2)*dx,(w-h)/2+y+(div h 2)*dy)
+    --    (x + (div h 2)*round dx, y + (div (w-h) 2)*round dy)
+    --    where
+    --        dx | mod nC 2 == 0 && v <  div nC 2 ||
+    --             mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
+    --           | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
+    --           | otherwise                      = fromIntegral (v-(1+div nC 2))
+    --                                              +0.5
+    --        dy | mod nC 2 == 0 && v >= div nC 2 = 0
+    --           |                  v >  div nC 2 = 0
+    --           | otherwise                      = 1
 
 
     removeVal :: Value -> Square -> Square
