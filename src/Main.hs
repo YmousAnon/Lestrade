@@ -18,16 +18,19 @@ import System.Environment (getArgs)
 --
 import Interface
 --import Interface.Texture
+import Data.IORef
 
-import Game.Board
-import Game.Board.Row
+import Interface.Coordinate
+--import Game
+--import Game.Board
+--import Game.Board.Row
 import Game.Board.Square
 import Game.Board.Value
 
 --import Settings
 
---v :: Value
---v = value 0 True 0
+v :: IO Value
+v = value 1 True (0,0) 3
 --s :: Square
 --s = square [1] 1 0 8 0.2 (-1,-1)
 --s = square [1,3,4,6] 0 8 0.1 (-1,-1)
@@ -35,11 +38,16 @@ import Game.Board.Value
 --s = square [1..8] 1 8 0.1 (-1,-1)
 --r1 = newRow 1 8 0.1 (-1,-1)
 --as = replicate 8 $ newRow 1 8 0.1 (0,0)
-a = newBoard 2 8
+--a = newBoard 2 8
+
 
 main :: IO()
+main = v >>= newIORef >>= guiInit >> mainLoop
 --main = return()--guiInit >>= loop 0
-main = guiInit >> mainLoop-- = loop 0
+--main = (newIORef =<< unsolvedSquare [0,1,2,3] 1 8 (200,100)) >>= guiInit >> mainLoop-- = loop 0
+--main = (newIORef =<< unsolvedSquare [0,1,2,3] 1 8 (200,100)) >>= guiInit >> mainLoop-- = loop 0
+--main = newIORef (newBoard 2 8 0.1 (-1,-1)) >>= guiInit >> mainLoop-- = loop 0
+--main = newIORef (newBoard 2 8 0.1 (-1,-1)) >>= guiInit >> mainLoop-- = loop 0
     --where
     --    loop :: Int -> Window -> IO()
     --    loop i w = do

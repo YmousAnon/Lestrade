@@ -2,7 +2,8 @@ module Game.Board.Square
 (
     Square,
 
-    square,
+    unsolvedSquare,
+    solvedSquare,
     genSolvedSquare,
 
     removeVal,
@@ -14,6 +15,8 @@ module Game.Board.Square
 
     import Data.List
 
+    import Settings
+
     import Game.Board.Value
 
     --import Graphics.UI.GLFW
@@ -21,28 +24,25 @@ module Game.Board.Square
     --import Graphics.GLUtil
     --import Graphics.Rendering.OpenGL
 
+    import Interface.Coordinate
     import Interface.Render
-    import Interface.Render.Colour
+    import Interface.Render.Primitive
 
     --import Settings
 
     import System.Random
 
     data Square = Solution
-                { pos    :: (Float,Float)
-                , val    :: Value
+                { val    :: Value
                 , cols   :: Int
-                , height :: Float
-                , width  :: Float
-                , bgrgb  :: IO [Double]
+                , area   :: Area
+                , bgrgb  :: [Double]
                  }
                | Alternatives
-                { pos    :: (Float,Float)
-                , vals   :: [Value]
+                { vals   :: [Value]
                 , cols   :: Int
-                , height :: Float
-                , width  :: Float
-                , bgrgb  :: IO [Double]
+                , area   :: Area
+                , bgrgb  :: [Double]
                 , bgtile :: Value
                  }
 
@@ -54,71 +54,108 @@ module Game.Board.Square
         --getTexture Solution     { val = v   } =            getTexture v
         --getTexture Alternatives { vals = vs } = concatMapM getTexture vs
         render Solution
-            { pos    = p
-            , val    = v
-            , height = h
-            , width  = w
+            { val    = v
+            , area   = a
             , cols   = nC
-            } = renderBG nC h w p>> render v
+            , bgrgb  = rgb
+            } = renderColour a rgb >> render v
         render Alternatives
-            { pos    = p
-            , vals  = vs
-            , height = h
-            , width  = w
-            , cols   = nC
+            { vals   = vs
+            , area   = a
             , bgtile = bgt
-            } = renderBG nC h w p >> render bgt >> mapM_ render vs
-
-
-    renderBG :: Int -> Float -> Float -> (Float,Float) -> IO()
-    renderBG nC h w (x,y) = return [0.0,0.0,0.0] >>=
-    --renderBG nC h w (x,y) = map (/255) . read <$> getVal "GRAPHICS" "tilergb" >>=
-        renderColour (x ,x +w) (y ,y +w)
-        --renderTexture (x',x'+h) (y',y'+h) bgt
-        --where
-        --    (x',y') = solPos nC h w (x,y)
+            , bgrgb  = rgb
+            } = render bgt >> mapM_ render vs
+            --} = renderColour a rgb >> render bgt >> mapM_ render vs
 
 
 
-    square :: [Int] -> Int -> Int -> Float -> (Float,Float) ->
-              Square
-    square vs r nC h xy
-        | length vs == 1 = Solution
-            { pos        = xy
-            , val        = value h r True (solPos nC h w xy) (head vs)
-            , cols       = nC
-            , height     = h
-            , width      = w
-            , bgrgb      = bgc
+    unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
+    unsolvedSquare vis r nC xy = do
+        h   <- read <$> getVal "tileWidth" :: IO Coord
+        vs  <- mapM (uncurry (value r False) . \v ->
+               (altPos nC (v-1) h (w h) xy,v)) vis
+        bgt <- value r True (solPos nC h (w h) xy) 0
+        bgc <- map (/255) . read <$> getVal "tilergb"
+        return Alternatives
+            { vals   = vs
+            , cols   = nC
+            , area   = newArea xy (w h) (w h)
+            , bgrgb  = bgc
+            , bgtile = bgt
             }
-        | otherwise      = Alternatives
-            { pos        = xy
-            , vals       = map (uncurry (value h r False)
-                                . \v -> (altPos nC (v-1) h w xy,v)) vs
-            , cols       = nC
-            , height     = h
-            , width      = w
-            , bgrgb      = bgc
-            , bgtile     = value h r True (solPos nC h w xy) 0
-            }
-        where w   = w' nC
-              w' nC'
-                | nC' `mod` 2 == 0 = (h/2)*realToFrac (  div nC' 2)
-                | otherwise        = w' (nC'+1)
-              bgc = return [0,0,0]
-              --bgc = map (/255) . read <$> getVal "GRAPHICS" "tilergb"
-              --bgt = loadTextureFromFile
-              --          =<< (\ts -> "res/tilesets/"++ts++"/bg.png")
-              --          <$> getVal "GRAPHICS" "tileset"
+        where w = w' nC :: Coord -> Coord
+              w' :: Int -> Coord -> Coord
+              w' nC' h'
+                | nC' `mod` 2 == 0 = (div h' 2)*(  div nC' 2)
+                | otherwise        = w' (nC'+1) h'
 
-    solPos :: Int -> Float -> Float -> (Float,Float) -> (Float,Float)
+    solvedSquare :: Int -> Int -> Int -> Point -> IO Square
+    solvedSquare vi r nC xy = do
+        h   <- read <$> getVal "tileWidth" :: IO Coord
+        --vs  <- mapM (uncurry (value r False) . \v ->
+        --       (altPos nC (v-1) h (w h) xy,v)) vs
+        v   <- value r True (solPos nC h (w h) xy) vi
+        bgc <- map (/255) . read <$> getVal "tilergb"
+        return Solution
+            { val   = v
+            , cols  = nC
+            , area  = newArea xy (w h) (w h)
+            , bgrgb = bgc
+            }
+        where w = w' nC :: Coord -> Coord
+              w' :: Int -> Coord -> Coord
+              w' nC' h'
+                | nC' `mod` 2 == 0 = (div h' 2)*(  div nC' 2)
+                | otherwise        = w' (nC'+1) h'
+
+    genSolvedSquare :: Int -> Int -> Point -> State ([Int],StdGen) (IO Square)
+    genSolvedSquare r nC xy = state $ \(vs,g) ->
+        let ig     = randomR (0, length vs-1) g
+            (v,g') = (vs !! fst ig, snd ig)
+        in  (solvedSquare v r nC xy, (delete v vs, g'))
+    --square :: [Int] -> Int -> Int -> Point -> IO Square
+    --square vs r nC xy
+    --    | length vs == 1 = do
+    --        h <- read <$> getVal "tileWidth"
+    --        Solution
+    --            { val        = value h r True (solPos nC h w xy) (head vs)
+    --            , cols       = nC
+    --            , area       = newArea xy (w h) (w h)
+    --            , bgrgb      = bgc
+    --            }
+    --    | otherwise      = do
+    --        h   <- read <$> getVal "tileWidth" :: IO Coord
+    --        vs  <- mapM (uncurry (value h r False)
+    --               . \v -> (altPos nC (v-1) h w xy,v)) vs
+    --        bgt <- value (solPos nC h (w h) xy) r True 0
+
+    --        return Alternatives
+    --            { vals   = vs
+    --            , cols   = nC
+    --            , area   = newArea xy (w h) (w h)
+    --            , bgrgb  = bgc
+    --            , bgtile = bgt
+    --            }
+    --    where w = w' nC :: Coord -> Coord
+    --          w' :: Int -> Coord -> Coord
+    --          w' nC' h'
+    --            | nC' `mod` 2 == 0 = (h'/2)*realToFrac (  div nC' 2)
+    --            | otherwise        = w' (nC'+1) h'
+    --          bgc = return [0,0,0]
+    --          --bgc = map (/255) . read <$> getVal "GRAPHICS" "tilergb"
+    --          --bgt = loadTextureFromFile
+    --          --          =<< (\ts -> "res/tilesets/"++ts++"/bg.png")
+    --          --          <$> getVal "GRAPHICS" "tileset"
+
+    solPos :: Int -> Coord -> Coord -> Point -> Point
     solPos nC h w (x,y)
-        | nC `mod` 2 == 0 = (x+h*realToFrac (fromIntegral (nC-4)/8),(w-h)/2+y)
+        | nC `mod` 2 == 0 = (x+h*div (nC-4) 8,y+div (w-h) 2)
         | otherwise       = solPos (nC+1) h w (x,y)
 
 
-    altPos :: Int -> Int -> Float -> Float -> (Float,Float) -> (Float,Float)
-    altPos nC v h w (x,y) = (x+(h/2)*dx,(w-h)/2+y+(h/2)*dy)
+    altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
+    altPos nC v h w (x,y) = --(x+(div h 2)*dx,(w-h)/2+y+(div h 2)*dy)
+        (x + (div h 2)*round dx, y + (div (w-h) 2)*round dy)
         where
             dx | mod nC 2 == 0 && v <  div nC 2 ||
                  mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
@@ -132,19 +169,11 @@ module Game.Board.Square
 
     removeVal :: Value -> Square -> Square
     removeVal v p = Alternatives
-        { pos        = pos             p
-        , vals       = delete v $ vals p
+        { vals       = delete v $ vals p
         , cols       = cols            p
-        , height     = height          p
-        , width      = width           p
+        , area       = area            p
         , bgrgb      = bgrgb           p
         , bgtile     = bgtile          p
         }
 
 
-    genSolvedSquare :: Int -> Int -> Float -> (Float,Float) ->
-                       State ([Int],StdGen) Square
-    genSolvedSquare r nC h xy = state $ \(vs,g) ->
-        let ig     = randomR (0, length vs-1) g
-            (v,g') = (vs !! fst ig, snd ig)
-        in  (square [v] r nC h xy, (delete v vs, g'))

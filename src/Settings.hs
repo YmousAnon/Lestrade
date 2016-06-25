@@ -16,17 +16,17 @@ module Settings
     --getVal :: Read a => String -> String -> IO a
     getVal key = fromJust <$> (Data.Map.lookup key) <$> rc
 
-
-    rc :: IO (Map String String)
-    rc = fromList
-     <$> Prelude.map toTouples
-     <$> Prelude.filter (\s -> length s > 0)
-     <$> Prelude.map removeComments
-     <$> toLines ""
-     <$> readFile file
         where
-            file :: FilePath
-            file = "sherlockrc.hs"
+            rc :: IO(Map String String)
+            rc = fromList
+             <$> Prelude.map toTouples
+             <$> Prelude.filter (\s -> length s > 0)
+             <$> Prelude.map removeComments
+             <$> toLines ""
+             <$> readFile file
+                where
+                    file :: FilePath
+                    file = "sherlockrc.hs"
 
             toTouples :: String -> (String,String)
             toTouples s = (\[k,v] -> (k,v)) $ Prelude.map trim $ splitOn "=" s

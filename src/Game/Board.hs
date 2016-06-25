@@ -48,7 +48,7 @@ module Game.Board
         where
             rowIter :: Int -> Float -> (Float,Float) -> Int -> State StdGen Row
             rowIter nC w (x,y) ri = state $ \g ->
-                let xy' = (x,y+w*1.1*w)
+                let xy' = (x,y+w*rowDiffY nC ri)
                     (r, ([],g')) = runState (genSolvedRow ri nC w xy')
                                             ([0..nC-1],g)
                 in  (r,g')
@@ -57,7 +57,13 @@ module Game.Board
     newBoard nR nC w (x,y) = Board $ map rowIter [1..nR]
         where
             rowIter :: Int -> Row
-            rowIter ri = newRow ri nC w (x,y+w*1.1*w)
+            rowIter ri = newRow ri nC w (x,y+w*rowDiffY nC ri)
+
+
+    rowDiffY :: Int -> Int -> Float
+    rowDiffY nC ri
+        | mod nC 2 == 0 = 1.1*(fromIntegral $ div ((ri-1)*nC) 2 :: Float)
+        | otherwise     = rowDiffY (nC+1) ri
         --where
         --    genSolvedRow' :: Int -> Int -> State StdGen Row
         --    genSolvedRow' nC i = state $ \g ->

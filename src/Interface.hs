@@ -5,6 +5,7 @@ module Interface
     import Control.Monad
 
     import Data.Maybe
+    import Data.IORef
 
     import Graphics.GLUtil
     --import Graphics.UI.GLFW          as GLFW
@@ -17,23 +18,24 @@ module Interface
 
     import Interface.Render
 
-    import Game.Board.Row
-    r = newRow 1 8 0.1 (-1,-1)
+    --import Game.Board
+    --import Game.Board.Row
 
-    guiInit :: IO Window
-    guiInit = do
+    guiInit :: Renderable a => IORef a -> IO Window
+    --guiInit :: Renderable a => IORef a -> IO Window
+    guiInit ioGame = do
         --successfulInit <- init
         (_progName, _args) <- getArgsAndInitialize
         --unless successfulInit exitFailure
 
         --(w,h)          <- read <$> getVal "GRAPHICS" "screenres"
-        w              <- createWindow "Sherlock"
+        w                  <- createWindow "Sherlock"
         --case mw of
         --    Nothing -> exitFailure
         --    --Nothing -> terminate >> exitFailure
         --    Just w  -> makeContextCurrent mw
 
-        [r,g,b]        <- map (/255) . read <$> getVal "bgrgb"
+        [r,g,b]            <- map (/255) . read <$> getVal "bgrgb"
 
         --clearColor        $= Color4 1 1 1 1.0
         clearColor        $= Color4 r g b 1.0
@@ -42,10 +44,18 @@ module Interface
         normalize         $= Enabled
         texture Texture2D $= Enabled
         shadeModel        $= Smooth
-        displayCallback   $= display'
+        displayCallback   $= (display ioGame)
+        --clearColor $= Color4 0.9 0.1243 0.2544564 1.0
+        --depthFunc $= Just Lequal
+        --blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+        --normalize $= Enabled
+        --texture Texture2D $= Enabled
+        --shadeModel $= Smooth
+        pushWindow
 
         return w--(fromJust mw)
-        where display' = (display r :: DisplayCallback)
+        --where  -- :: IO (IORef Int)
+        --where display' = (display b :: DisplayCallback)
 
     --render :: Textured a => a -> DisplayCallback
     --render toDraw = do
