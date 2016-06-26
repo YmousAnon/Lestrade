@@ -22,8 +22,8 @@ import Data.IORef
 
 import Interface.Coordinate
 --import Game
---import Game.Board
---import Game.Board.Row
+--0import Game.Board
+import Game.Board.Row
 import Game.Board.Square
 import Game.Board.Value
 
@@ -32,7 +32,9 @@ import Game.Board.Value
 v :: IO Value
 v = value 1 True (0,0) 3
 s :: IO Square
-s = unsolvedSquare [] 1 7 (100,100)
+s = solvedSquare 1 1 7 (100,100)
+r :: IO Row
+r = newRow 1 7 (0,0)
 --s = unsolvedSquare [1..5] 1 5 (0,0)
 --s :: Square
 --s = square [1] 1 0 8 0.2 (-1,-1)
@@ -45,7 +47,7 @@ s = unsolvedSquare [] 1 7 (100,100)
 
 
 main :: IO()
-main = s >>= newIORef >>= guiInit >> mainLoop
+main = r >>= newIORef >>= guiInit >> mainLoop
 --main = return()--guiInit >>= loop 0
 --main = (newIORef =<< unsolvedSquare [0,1,2,3] 1 8 (200,100)) >>= guiInit >> mainLoop-- = loop 0
 --main = (newIORef =<< unsolvedSquare [0,1,2,3] 1 8 (200,100)) >>= guiInit >> mainLoop-- = loop 0

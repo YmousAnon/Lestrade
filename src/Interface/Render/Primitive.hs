@@ -48,16 +48,6 @@ module Interface.Render.Primitive
     renderTexture area tex = do
         (x,x') <- xRangeToGL $ getXRange area
         (y,y') <- yRangeToGL $ getYRange area
-        --putStrLn ""
-        --print (show (c,b)++" - "++show (c',b'))
-        --print (show (x,y)++" - "++show (x',y'))
-        --putStrLn ""
-        --print (x'-x,y'-y)
-
-        putStrLn ""
-        putStrLn ("x: "++show x++" - "++show x')
-        putStrLn ("y: "++show y++" - "++show y')
-        putStrLn ""
 
         textureBinding Texture2D $= Just tex
         renderPrimitive Quads $ do
@@ -91,11 +81,6 @@ module Interface.Render.Primitive
     renderColour area rgb = do
         (x,x') <- xRangeToGL $ getXRange area
         (y,y') <- yRangeToGL $ getYRange area
-
-        putStrLn ""
-        putStrLn ("x: "++show x++" - "++show x')
-        putStrLn ("y: "++show y++" - "++show y')
-        putStrLn ""
 
         renderPrimitive Quads $ do
             col $ map unsafeCoerce rgb

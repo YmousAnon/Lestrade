@@ -20,7 +20,7 @@ module Game.Board.Value
     --bms = mapM (mapM loadBM) rcs
     ----bms = (sequence . map) ((sequence . map) loadBM) rcs
     --    where
-    --        root         = (++)"res/tilesets/" <$> getVal "GRAPHICS" "tileset"
+    --        root         = (++)"res/tilesets/" <$> getSetting "GRAPHICS" "tileset"
     --        end r c      = "/row"++show r++"/col"++show c++".png"
     --        loadBM (r,c) = root >>= \root' ->
     --                       loadTextureFromFile (root'++end r c)
@@ -57,7 +57,7 @@ module Game.Board.Value
 
     value :: Int -> Bool -> Point -> Int -> IO Value
     value r a pt v = do
-        area' <- area <$> read <$> getVal "tileWidth"
+        area' <- area <$> read <$> getSetting "tileWidth"
 
         return Value
             { vali  = v
@@ -75,7 +75,7 @@ module Game.Board.Value
     getTexture :: Int -> Int -> IO TextureObject
     getTexture r v    = loadTexture' =<< (\root' -> root'++end) <$> root
         where
-            root = (++)"res/tilesets/" <$> getVal "tileset"
+            root = (++)"res/tilesets/" <$> getSetting "tileset"
             end  = case v of
                         0 -> "/bg.png"
                         _ -> "/row"++show r++"/col"++show v++".png"

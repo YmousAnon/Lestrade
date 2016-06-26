@@ -3,7 +3,7 @@ module Game.Board
     Board,
 
     newBoard,
-    solvedBoard,
+    --solvedBoard,
 ) where
 
     import Control.Monad.Trans.State
@@ -43,15 +43,15 @@ module Game.Board
 
     --genSolution :: Int -> Int -> StdGen -> Board
     --genSolution nR nC g = Board $ map (\r -> genSolvedRow r nC g) [0..nR-1]
-    solvedBoard :: Int -> Int -> Float -> (Float,Float) -> State StdGen Board
-    solvedBoard nR nC w xy = board <$> mapM (rowIter nC w xy) [0..nR-1]
-        where
-            rowIter :: Int -> Float -> (Float,Float) -> Int -> State StdGen Row
-            rowIter nC w (x,y) ri = state $ \g ->
-                let xy' = (x,y+w*rowDiffY nC ri)
-                    (r, ([],g')) = runState (genSolvedRow ri nC w xy')
-                                            ([0..nC-1],g)
-                in  (r,g')
+    --solvedBoard :: Int -> Int -> Float -> (Float,Float) -> State StdGen Board
+    --solvedBoard nR nC w xy = board <$> mapM (rowIter nC w xy) [0..nR-1]
+    --    where
+    --        rowIter :: Int -> Float -> (Float,Float) -> Int -> State StdGen Row
+    --        rowIter nC w (x,y) ri = state $ \g ->
+    --            let xy' = (x,y+w*rowDiffY nC ri)
+    --                (r, ([],g')) = runState (genSolvedRow ri nC w xy')
+    --                                        ([0..nC-1],g)
+    --            in  (r,g')
 
     newBoard :: Int -> Int -> Float -> (Float,Float) -> Board
     newBoard nR nC w (x,y) = Board $ map rowIter [1..nR]
@@ -60,10 +60,10 @@ module Game.Board
             rowIter ri = newRow ri nC w (x,y+w*rowDiffY nC ri)
 
 
-    rowDiffY :: Int -> Int -> Float
-    rowDiffY nC ri
-        | mod nC 2 == 0 = 1.1*(fromIntegral $ div ((ri-1)*nC) 2 :: Float)
-        | otherwise     = rowDiffY (nC+1) ri
+    --rowDiffY :: Int -> Int -> Float
+    --rowDiffY nC ri
+    --    | mod nC 2 == 0 = 1.1*(fromIntegral $ div ((ri-1)*nC) 2 :: Float)
+    --    | otherwise     = rowDiffY (nC+1) ri
         --where
         --    genSolvedRow' :: Int -> Int -> State StdGen Row
         --    genSolvedRow' nC i = state $ \g ->

@@ -28,14 +28,14 @@ module Interface
         (_progName, _args) <- getArgsAndInitialize
         --unless successfulInit exitFailure
 
-        --(w,h)          <- read <$> getVal "GRAPHICS" "screenres"
+        --(w,h)          <- read <$> getSetting "GRAPHICS" "screenres"
         w                  <- createWindow "Sherlock"
         --case mw of
         --    Nothing -> exitFailure
         --    --Nothing -> terminate >> exitFailure
         --    Just w  -> makeContextCurrent mw
 
-        [r,g,b]            <- map (/255) . read <$> getVal "bgrgb"
+        [r,g,b]            <- map (/255) . read <$> getSetting "bgrgb"
 
         --clearColor        $= Color4 1 1 1 1.0
         clearColor        $= Color4 r g b 1.0

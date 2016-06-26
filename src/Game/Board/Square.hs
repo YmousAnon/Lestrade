@@ -67,11 +67,11 @@ module Game.Board.Square
 
     unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
     unsolvedSquare vis r nC xy = do
-        tw  <- read <$> getVal "tileWidth" :: IO Coord
+        tw  <- read <$> getSetting "tileWidth"
         vs  <- mapM (uncurry (value r False) . \v ->
                (altPos nC (v-1) tw (w tw) xy,v)) vis
         bgt <- value r True (solPos nC tw (w tw) xy) 0
-        bgc <- map (/255) . read <$> getVal "tilergb"
+        bgc <- map (/255) . read <$> getSetting "tilergb"
 
         return Alternatives
             { vals   = vs
@@ -89,11 +89,11 @@ module Game.Board.Square
 
     solvedSquare :: Int -> Int -> Int -> Point -> IO Square
     solvedSquare vi r nC xy = do
-        h   <- read <$> getVal "tileWidth" :: IO Coord
+        h   <- read <$> getSetting "tileWidth" :: IO Coord
         --vs  <- mapM (uncurry (value r False) . \v ->
         --       (altPos nC (v-1) h (w h) xy,v)) vs
         v   <- value r True (solPos nC h (w h) xy) vi
-        bgc <- map (/255) . read <$> getVal "tilergb"
+        bgc <- map (/255) . read <$> getSetting "tilergb"
         return Solution
             { val   = v
             , cols  = nC
@@ -114,7 +114,7 @@ module Game.Board.Square
     --square :: [Int] -> Int -> Int -> Point -> IO Square
     --square vs r nC xy
     --    | length vs == 1 = do
-    --        h <- read <$> getVal "tileWidth"
+    --        h <- read <$> getSetting "tileWidth"
     --        Solution
     --            { val        = value h r True (solPos nC h w xy) (head vs)
     --            , cols       = nC
@@ -122,7 +122,7 @@ module Game.Board.Square
     --            , bgrgb      = bgc
     --            }
     --    | otherwise      = do
-    --        h   <- read <$> getVal "tileWidth" :: IO Coord
+    --        h   <- read <$> getSetting "tileWidth" :: IO Coord
     --        vs  <- mapM (uncurry (value h r False)
     --               . \v -> (altPos nC (v-1) h w xy,v)) vs
     --        bgt <- value (solPos nC h (w h) xy) r True 0
@@ -140,10 +140,10 @@ module Game.Board.Square
     --            | nC' `mod` 2 == 0 = (h'/2)*realToFrac (  div nC' 2)
     --            | otherwise        = w' (nC'+1) h'
     --          bgc = return [0,0,0]
-    --          --bgc = map (/255) . read <$> getVal "GRAPHICS" "tilergb"
+    --          --bgc = map (/255) . read <$> getSetting "GRAPHICS" "tilergb"
     --          --bgt = loadTextureFromFile
     --          --          =<< (\ts -> "res/tilesets/"++ts++"/bg.png")
-    --          --          <$> getVal "GRAPHICS" "tileset"
+    --          --          <$> getSetting "GRAPHICS" "tileset"
 
     solPos :: Int -> Coord -> Coord -> Point -> Point
     solPos nC tw w (x,y)
@@ -152,15 +152,19 @@ module Game.Board.Square
         | otherwise       = solPos (nC+1) tw w (x,y)
 
     altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
-    altPos nC v tw w (x,y) = (x + (div tw 4)*dx, y + (div tw 2)*(1 + dy))
+    altPos nC v tw w (x,y) = (x + (div tw 4)*dx, y + dy + dy')
         where
-            dx | mod nC 2 == 0 && v <  div nC 2 ||
+            dx | nC < 3                         = 1
+               | mod nC 2 == 0 && v <  div nC 2 ||
                  mod nC 2 == 1 && v <= div nC 2 = 2*v
                | mod nC 2 == 0                  = 2*(v-div nC 2)
                | otherwise                      = 2*(v-div nC 2)-1
             dy | mod nC 2 == 0 && v >= div nC 2 = 0
                |                  v >  div nC 2 = 0
-               | otherwise                      = 1
+               | otherwise                      = (div tw 2)
+            dy' :: Coord
+            dy' = (getX $ solPos nC tw w (x,y))-x
+            --dy'k
                -- | mod nC 2 == 0 && v <  div nC 2 ||
                --   mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
                -- | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )

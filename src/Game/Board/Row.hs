@@ -20,7 +20,10 @@ module Game.Board.Row
 
     import Game.Board.Square
 
+    import Interface.Coordinate
     import Interface.Render
+
+    import Settings
 
     data Row = Row
                 { squares :: [Square]
@@ -33,18 +36,31 @@ module Game.Board.Row
         --getTexture Row { squares = ss } = concatMapM getTexture ss
         render Row { squares = ss } = mapM_ render ss
 
-    newRow :: Int -> Int -> Float -> (Float,Float) -> Row
-    newRow r nC w (x,y) = Row $ map (square [1..nC] r nC w) xys
-        where
-            xys = map (\c -> (x+w*2.2*(fromIntegral c),y)) [1..nC]
+    newRow :: Int -> Int -> Point -> IO Row
+    newRow r nC (x,y) = do
+        tw <- read <$> getSetting "tileWidth"
+        bw <- read <$> getSetting "tileBorderWidth"
+        print bw
+
+        let xys = map (\c -> (x+bw+(bw+tw)*2*fromIntegral c,bw+y)) [0..nC-1]
+         in Row <$> mapM (unsolvedSquare [1..nC] r nC) xys
+
+            --xys = map (\c -> (x + tw*2.2*(fromIntegral c),y)) [1..nC]
     --newRow r nC w (x,y) = Row $ map (uncurry (square [0..nC-1] r)) [0..nC-1]
 
-    genSolvedRow :: Int -> Int -> Float -> (Float,Float) ->
-                    State ([Int],StdGen) Row
-    genSolvedRow r nC w (x,y) = fmap Row $ mapM (genSolvedSquare r nC w) xys
-        where
-            xys = map (\c -> (x+w*1.1*fromIntegral c,y)) [0..nC-1]
+    genSolvedRow :: Int -> Int -> Point -> IO (State ([Int], StdGen) (IO Row))
+    genSolvedRow r nC (x,y) = do
+        tw <- read <$> getSetting "tileWidth"
+        bw <- read <$> getSetting "tileBorderWidth"
 
+        let xys = (\c -> (x+bw+(bw+tw)*2*fromIntegral c,y)) <$> [0..nC-1]
+         in return $ fmap Row <$> sequence <$> mapM (genSolvedSquare r nC) xys
+
+    --genSolvedRow :: Int -> Int -> Point -> State ([Int],StdGen) (IO Row)
+    --genSolvedRow r nC (x,y) = fmap Row <$> sequence
+    --                                   <$> mapM (genSolvedSquare r nC) xys
+    --    where
+    --        xys = map (\c -> (x+bw+(bw+tw)*2*fromIntegral c,y)) [0..nC-1]
 
 
 

@@ -1,6 +1,6 @@
 module Settings
 (
-    getVal
+    getSetting,
 ) where
 
     import System.IO
@@ -12,10 +12,11 @@ module Settings
     --import Data.Either.Utils
 
 
-    getVal :: String -> IO String
-    --getVal :: Read a => String -> String -> IO a
-    getVal key = fromJust <$> (Data.Map.lookup key) <$> rc
-
+    getSetting :: String -> IO String
+    getSetting key = (Data.Map.lookup key) <$> rc >>= \mVal ->
+        case mVal of
+            Just val -> return val
+            Nothing  -> putStrLn error >> return ""
         where
             rc :: IO(Map String String)
             rc = fromList
@@ -27,6 +28,10 @@ module Settings
                 where
                     file :: FilePath
                     file = "sherlockrc.hs"
+
+            error :: String
+            error = "Fatal error, option "++key++" not specified in \
+                    \configuration file."
 
             toTouples :: String -> (String,String)
             toTouples s = (\[k,v] -> (k,v)) $ Prelude.map trim $ splitOn "=" s

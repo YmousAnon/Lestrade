@@ -3,6 +3,8 @@ module Interface.Coordinate
     Coord,
 
     Point,
+    getX,
+    getY,
     pointToGL,
 
     Area,
@@ -26,16 +28,22 @@ module Interface.Coordinate
 
     xCoordToGL :: Coord -> IO GLfloat
     xCoordToGL x = do
-        w <- fst <$> (read <$> getVal "screenres" :: IO Point)
+        w <- fst <$> (read <$> getSetting "screenres" :: IO Point)
         return $ (fromIntegral x/fromIntegral w)-1
 
     yCoordToGL :: Coord -> IO GLfloat
     yCoordToGL y = do
-        h <- snd <$> (read <$> getVal "screenres" :: IO Point)
+        h <- snd <$> (read <$> getSetting "screenres" :: IO Point)
         return $ (fromIntegral y/fromIntegral h)-1
 
 
     type Point = (Coord,Coord)
+
+    getX :: Point -> Coord
+    getX (x,y) = x
+
+    getY :: Point -> Coord
+    getY (x,y) = y
 
     pointToGL :: Point -> IO(GLfloat,GLfloat)
     pointToGL (x,y) = do
