@@ -63,6 +63,7 @@ module Game.Board.Square
             , bgtile = bgt
             , bgrgb  = rgb
             } = renderColour a rgb >> render bgt >> mapM_ render vs
+        getArea s = area s
 
 
     unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
@@ -162,7 +163,6 @@ module Game.Board.Square
             dy | mod nC 2 == 0 && v >= div nC 2 = 0
                |                  v >  div nC 2 = 0
                | otherwise                      = (div tw 2)
-            dy' :: Coord
             dy' = (getX $ solPos nC tw w (x,y))-x
             --dy'k
                -- | mod nC 2 == 0 && v <  div nC 2 ||

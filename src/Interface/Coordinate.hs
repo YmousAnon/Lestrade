@@ -3,18 +3,29 @@ module Interface.Coordinate
     Coord,
 
     Point,
+
     getX,
     getY,
+
     pointToGL,
 
-    Area,
+
+
+    Area (Area, Empty),
     newArea,
-    --getPos,
-    --getSize,
+
     getXRange,
     getYRange,
+
     xRangeToGL,
     yRangeToGL,
+
+    getXMin,
+    getXMax,
+    getYMin,
+    getYMax,
+
+    (\/)
 ) where
 
     import Graphics.UI.GLUT hiding (Point)
@@ -50,15 +61,10 @@ module Interface.Coordinate
         x' <- xCoordToGL x
         y' <- yCoordToGL y
 
-        --putStrLn ""
-        --putStrLn ("x: "++show x++" - "++show x')
-        --putStrLn ("y: "++show y++" - "++show y')
-        --putStrLn ""
-        --putStrLn ("x: "++show h)
         return (x',y')
 
 
-    data Area = Area
+    data Area = Empty | Area
         { xy :: Point
         , wh :: Point
         }
@@ -71,7 +77,6 @@ module Interface.Coordinate
 
     newArea :: Point -> Coord -> Coord -> Area
     newArea xy w h = Area { xy = xy, wh = (w,h) }
-
 
 
     getXRange :: Area -> Point
@@ -96,15 +101,27 @@ module Interface.Coordinate
         return (y0',y1')
 
 
-    --getPos :: Area -> Point
-    --getPos = xy
+    getXMin :: Area -> Coord
+    getXMin a = fst $ getXRange a
 
-    --getSize :: Area -> Point
-    --getSize = wh
+    getXMax :: Area -> Coord
+    getXMax a = snd $ getXRange a
 
-    --b = a >+< a
-    --    where
-    --        a = Coord {pixel = 12, pos = 1.0}
-    --(><) P
-    --class Coordinate a where
-    --    (>+<) :: a -> a -> a
+    getYMin :: Area -> Coord
+    getYMin a = fst $ getYRange a
+
+    getYMax :: Area -> Coord
+    getYMax a = snd $ getYRange a
+
+    (\/) :: Area -> Area -> Area
+    Empty \/ a     = a
+    a     \/ Empty = a
+    a     \/ a'    = Area
+        { xy = (x0   ,y0   )
+        , wh = (x1-x0,y1-y0)
+        }
+        where
+            x0 = min (getXMin a) (getXMin a')
+            x1 = max (getXMax a) (getXMax a')
+            y0 = min (getYMin a) (getYMin a')
+            y1 = max (getYMax a) (getYMax a')

@@ -33,23 +33,27 @@ module Game.Board.Row
         show Row { squares = ss } = show ss
 
     instance Renderable Row where
-        --getTexture Row { squares = ss } = concatMapM getTexture ss
-        render Row { squares = ss } = mapM_ render ss
+        render  = mapM_ render . squares
+        getArea = foldl (\/) Empty . map getArea . squares
+        --getArea r = foldl (\/) Empty $ map getArea $ squares r
 
     newRow :: Int -> Int -> Point -> IO Row
-    newRow r nC (x,y) = do
-        tw <- read <$> getSetting "tileWidth"
-        bw <- read <$> getSetting "tileBorderWidth"
-        print bw
+    newRow r nC (x,y) = fmap Row $ sequence $ squareIter nC $ return x
+        where
+            squareIter :: Int -> IO Coord -> [IO Square]
+            squareIter 0 _ = []
+            squareIter c x =
+                let s   = x  >>= \x'  ->
+                          bw >>= \bw' -> unsolvedSquare [1..nC] r nC (x'+bw',y)
+                    x'' = getXMax <$> getArea <$> s
+                 in s : squareIter (c-1) x''
 
-        let xys = map (\c -> (x+bw+(bw+tw)*2*fromIntegral c,bw+y)) [0..nC-1]
-         in Row <$> mapM (unsolvedSquare [1..nC] r nC) xys
+            bw :: IO Coord
+            bw = read <$> getSetting "tileBorderWidth"
 
-            --xys = map (\c -> (x + tw*2.2*(fromIntegral c),y)) [1..nC]
-    --newRow r nC w (x,y) = Row $ map (uncurry (square [0..nC-1] r)) [0..nC-1]
 
     genSolvedRow :: Int -> Int -> Point -> IO (State ([Int], StdGen) (IO Row))
-    genSolvedRow r nC (x,y) = do
+    genSolvedRow r nC (x,y) = do--TODO: Fix this to be more like newRow
         tw <- read <$> getSetting "tileWidth"
         bw <- read <$> getSetting "tileBorderWidth"
 

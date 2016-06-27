@@ -42,7 +42,8 @@ module Game.Board.Value
 
     instance Renderable Value where
         --getTexture v = (\v' -> [((x,x+w),(y,y+w),v')]) <$>  tex v
-        render v = tex v >>= renderTexture (area v)
+        render  v = tex v >>= renderTexture (area v)
+        getArea v = area v
         --render v = print (area v) >> tex v >>= renderTexture (area v)
         --draw v = tex v >>= drawTexture (y,y+w) (x,x+w)
         --draw v

@@ -8,6 +8,7 @@ module Game.Board
 
     import Control.Monad.Trans.State
 
+    import Interface.Coordinate
     import Interface.Render
 
     import Game.Board.Row
@@ -15,6 +16,8 @@ module Game.Board
     --import Game.Board.Value
 
     import Data.List
+
+    import Settings
 
     import System.Random
 
@@ -27,11 +30,15 @@ module Game.Board
         show Board { rows = rs } = concatMap (\r -> '\n':show r) rs
 
     instance Renderable Board where
-        render Board { rows = rs } = mapM_ render rs
-    board :: [Row] -> Board
-    board rs = Board
-        { rows = rs
-        }
+        render  = mapM_ render . rows
+        getArea = foldl (\/) Empty . map getArea . rows
+
+        --getArea b = foldl (\/) Empty $ map getArea $ squares r
+
+    --board :: [Row] -> Board
+    --board rs = Board
+    --    { rows = rs
+    --    }
     --data Row   = Row          [Piece]
     --    deriving Show
 
@@ -53,11 +60,19 @@ module Game.Board
     --                                        ([0..nC-1],g)
     --            in  (r,g')
 
-    newBoard :: Int -> Int -> Float -> (Float,Float) -> Board
-    newBoard nR nC w (x,y) = Board $ map rowIter [1..nR]
+    newBoard :: Int -> Int -> Point -> IO Board
+    newBoard nR nC (x,y) = fmap Board $ sequence $ rowIter nR $ return y
         where
-            rowIter :: Int -> Row
-            rowIter ri = newRow ri nC w (x,y+w*rowDiffY nC ri)
+            rowIter :: Int -> IO Coord -> [IO Row]
+            rowIter 0  _ = []
+            rowIter ri y =
+                let r   = y  >>= \y'  ->
+                          bw >>= \bw' -> newRow ri nC (x,y'+bw')
+                    y'' = getYMax <$> getArea <$> r
+                 in r : rowIter (ri-1) y''
+
+            bw :: IO Coord
+            bw = read <$> getSetting "rowBorderWidth"
 
 
     --rowDiffY :: Int -> Int -> Float

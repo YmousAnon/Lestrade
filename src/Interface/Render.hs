@@ -2,6 +2,7 @@ module Interface.Render
 (
     Renderable,
     render,
+    getArea,
 
     display,
 ) where
@@ -17,7 +18,8 @@ module Interface.Render
     --r = newRow 1 8 0.1 (-1,-1)
 
     class Renderable a where
-        render :: a -> IO()
+        render  :: a -> IO()
+        getArea :: a -> Area
 
 
     --sizeX = 1200
