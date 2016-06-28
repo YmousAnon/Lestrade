@@ -33,8 +33,8 @@ module Game.Board.Row
         show Row { squares = ss } = show ss
 
     instance Renderable Row where
-        render  = mapM_ render . squares
-        getArea = foldl (\/) Empty . map getArea . squares
+        render  window = mapM_ (render window) . squares
+        getArea        = foldl (\/) Empty . map getArea . squares
         --getArea r = foldl (\/) Empty $ map getArea $ squares r
 
     newRow :: Int -> Int -> Point -> IO Row
@@ -45,7 +45,7 @@ module Game.Board.Row
             squareIter c x =
                 let s   = x  >>= \x'  ->
                           bw >>= \bw' -> unsolvedSquare [1..nC] r nC (x'+bw',y)
-                    x'' = getXMax <$> getArea <$> s
+                    x'' = (getXMax . getArea) <$> s
                  in s : squareIter (c-1) x''
 
             bw :: IO Coord
@@ -58,7 +58,7 @@ module Game.Board.Row
         bw <- read <$> getSetting "tileBorderWidth"
 
         let xys = (\c -> (x+bw+(bw+tw)*2*fromIntegral c,y)) <$> [0..nC-1]
-         in return $ fmap Row <$> sequence <$> mapM (genSolvedSquare r nC) xys
+         in return $ (fmap Row . sequence <$> mapM (genSolvedSquare r nC) xys)
 
     --genSolvedRow :: Int -> Int -> Point -> State ([Int],StdGen) (IO Row)
     --genSolvedRow r nC (x,y) = fmap Row <$> sequence

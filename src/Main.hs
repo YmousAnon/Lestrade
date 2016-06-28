@@ -21,7 +21,8 @@ import Interface
 import Data.IORef
 
 import Interface.Coordinate
---import Game
+
+import Game
 import Game.Board
 import Game.Board.Row
 import Game.Board.Square
@@ -49,7 +50,7 @@ b = newBoard 3 8 (0,0)
 
 
 main :: IO()
-main = b >>= newIORef >>= guiInit >> mainLoop
+main = gameInit >>= guiInit >> mainLoop
 --main = return()--guiInit >>= loop 0
 --main = (newIORef =<< unsolvedSquare [0,1,2,3] 1 8 (200,100)) >>= guiInit >> mainLoop-- = loop 0
 --main = (newIORef =<< unsolvedSquare [0,1,2,3] 1 8 (200,100)) >>= guiInit >> mainLoop-- = loop 0

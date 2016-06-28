@@ -24,20 +24,24 @@ module Game
                 }
 
     instance Renderable Game where
-        render Game { board = b } = render b
+        render  window = render  window . board
+        getArea        = getArea . board
 
 
     gameInit :: IO (IORef Game)
     gameInit = do
-        g  <- mkStdGen <$> read <$> head <$> getArgs
+        g  <- (mkStdGen . read . head) <$> getArgs
 
-        nC <-              read <$> getVal "columns"
-        nR <-              read <$> getVal "rows"
+        nC <- read <$> getSetting "columns"
+        nR <- read <$> getSetting "rows"
 
-        let (s,g') = runState (solvedBoard nR nC) g
-            b      =           newBoard    nR nC
-         in Game
+        b  <- newBoard    nR nC (0,0)
+        let --(s,g') = runState (solvedBoard nR nC) g
+         in newIORef Game
                 { board    = b
-                , solution = s
-                , gen      = g'
+                , gen      = g
                 }
+                --{ board    = b
+                --, solution = s
+                --, gen      = g'
+                --}

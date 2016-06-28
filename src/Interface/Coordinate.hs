@@ -37,15 +37,11 @@ module Interface.Coordinate
     type Coord = Int
 
 
-    xCoordToGL :: Coord -> IO GLfloat
-    xCoordToGL x = do
-        w <- fst <$> (read <$> getSetting "screenres" :: IO Point)
-        return $ (fromIntegral x/fromIntegral w)-1
+    xCoordToGL :: Area -> Coord -> GLfloat
+    xCoordToGL window x = 2*(fromIntegral x/fromIntegral (getXMax window))-1
 
-    yCoordToGL :: Coord -> IO GLfloat
-    yCoordToGL y = do
-        h <- snd <$> (read <$> getSetting "screenres" :: IO Point)
-        return $ (fromIntegral y/fromIntegral h)-1
+    yCoordToGL :: Area -> Coord -> GLfloat
+    yCoordToGL window y = 2*(fromIntegral y/fromIntegral (getYMax window))-1
 
 
     type Point = (Coord,Coord)
@@ -56,12 +52,8 @@ module Interface.Coordinate
     getY :: Point -> Coord
     getY (x,y) = y
 
-    pointToGL :: Point -> IO(GLfloat,GLfloat)
-    pointToGL (x,y) = do
-        x' <- xCoordToGL x
-        y' <- yCoordToGL y
-
-        return (x',y')
+    pointToGL :: Area -> Point -> (GLfloat,GLfloat)
+    pointToGL window (x,y) = (xCoordToGL window x,yCoordToGL window y)
 
 
     data Area = Empty | Area
@@ -86,19 +78,11 @@ module Interface.Coordinate
     getYRange Area { xy = (x,y), wh = (w,h) } = (y,y+h)
 
 
-    xRangeToGL :: Point -> IO(GLfloat,GLfloat)
-    xRangeToGL (x0,x1) = do
-        x0' <- xCoordToGL x0
-        x1' <- xCoordToGL x1
+    xRangeToGL :: Area -> Point -> (GLfloat,GLfloat)
+    xRangeToGL window (x,x') = (xCoordToGL window x, xCoordToGL window x')
 
-        return (x0',x1')
-
-    yRangeToGL :: Point -> IO(GLfloat,GLfloat)
-    yRangeToGL (y0,y1) = do
-        y0' <- yCoordToGL y0
-        y1' <- yCoordToGL y1
-
-        return (y0',y1')
+    yRangeToGL :: Area -> Point -> (GLfloat,GLfloat)
+    yRangeToGL window (y,y') = (yCoordToGL window y, yCoordToGL window y')
 
 
     getXMin :: Area -> Coord

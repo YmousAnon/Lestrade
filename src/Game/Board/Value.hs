@@ -41,24 +41,13 @@ module Game.Board.Value
         v == v' = vali v == vali v'
 
     instance Renderable Value where
-        --getTexture v = (\v' -> [((x,x+w),(y,y+w),v')]) <$>  tex v
-        render  v = tex v >>= renderTexture (area v)
-        getArea v = area v
-        --render v = print (area v) >> tex v >>= renderTexture (area v)
-        --draw v = tex v >>= drawTexture (y,y+w) (x,x+w)
-        --draw v
-        --    | vi == 0   = return()
-        --    | otherwise = (((!! (r-1)) . (!! (vi-1))) <$> bms) >>= drawTexture (y,y+w) (x,x+w)
-        --draw v = putStrLn ("("++show vi++", "++show r++")")-- >>
-        --         >> (((!! vi) . (!! r)) <$> bms) >>= print
-        --draw v = putStrLn ("("++show vi++", "++show r++")")-- >>
-            --(((!! vi) . (!! r)) <$> bms) >>= drawTexture (y,y+w) (x,x+w)
-        --draw v = tex v >>= drawTexture (y,y+w) (x,x+w)
+        render  w v = tex v >>= renderTexture w (area v)
+        getArea     = area
 
 
     value :: Int -> Bool -> Point -> Int -> IO Value
     value r a pt v = do
-        area' <- area <$> read <$> getSetting "tileWidth"
+        area' <- area . read <$> getSetting "tileWidth"
 
         return Value
             { vali  = v
@@ -74,7 +63,7 @@ module Game.Board.Value
 
 
     getTexture :: Int -> Int -> IO TextureObject
-    getTexture r v    = loadTexture' =<< (\root' -> root'++end) <$> root
+    getTexture r v    = loadTexture' =<< (++end) <$> root
         where
             root = (++)"res/tilesets/" <$> getSetting "tileset"
             end  = case v of

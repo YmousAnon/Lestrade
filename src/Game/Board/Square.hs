@@ -10,25 +10,17 @@ module Game.Board.Square
 
 ) where
 
-    --import Control.Monad.Extra
     import Control.Monad.Trans.State
 
     import Data.List
 
-    import Settings
-
     import Game.Board.Value
-
-    --import Graphics.UI.GLFW
-    --import Graphics.UI.GLUT
-    --import Graphics.GLUtil
-    --import Graphics.Rendering.OpenGL
 
     import Interface.Coordinate
     import Interface.Render
     import Interface.Render.Primitive
 
-    --import Settings
+    import Settings
 
     import System.Random
 
@@ -51,61 +43,61 @@ module Game.Board.Square
         show Alternatives { vals = v } = show v
 
     instance Renderable Square where
-        render Solution
+        render window Solution
             { val    = v
             , area   = a
             , cols   = nC
             , bgrgb  = rgb
-            } = renderColour a rgb >> render v
-        render Alternatives
+            } = renderColour window a rgb
+             >> render window v
+        render window Alternatives
             { vals   = vs
             , area   = a
             , bgtile = bgt
             , bgrgb  = rgb
-            } = renderColour a rgb >> render bgt >> mapM_ render vs
-        getArea s = area s
+            } = renderColour window a rgb
+             >> render window bgt
+             >> mapM_ (render window) vs
+        getArea = area
 
 
     unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
     unsolvedSquare vis r nC xy = do
         tw  <- read <$> getSetting "tileWidth"
         vs  <- mapM (uncurry (value r False) . \v ->
-               (altPos nC (v-1) tw (w tw) xy,v)) vis
-        bgt <- value r True (solPos nC tw (w tw) xy) 0
+               (altPos nC (v-1) tw (sw tw) xy,v)) vis
+        bgt <- value r True (solPos nC tw (sw tw) xy) 0
         bgc <- map (/255) . read <$> getSetting "tilergb"
 
         return Alternatives
             { vals   = vs
             , cols   = nC
-            , area   = newArea xy (w tw) (w tw)
+            , area   = newArea xy (sw tw) (sw tw)
             , bgrgb  = bgc
             , bgtile = bgt
             }
-        where w = w' nC :: Coord -> Coord
-              --w = w' nC :: Coord -> Coord
-              w' :: Int -> Coord -> Coord
-              w' nC' h'
-                | nC' `mod` 2 == 0 = (div h' 2)*(  div nC' 2)
-                | otherwise        = w' (nC'+1) h'
+        where sw = getSquareWidth nC
 
     solvedSquare :: Int -> Int -> Int -> Point -> IO Square
     solvedSquare vi r nC xy = do
         h   <- read <$> getSetting "tileWidth" :: IO Coord
-        --vs  <- mapM (uncurry (value r False) . \v ->
-        --       (altPos nC (v-1) h (w h) xy,v)) vs
-        v   <- value r True (solPos nC h (w h) xy) vi
+        v   <- value r True (solPos nC h (sw h) xy) vi
         bgc <- map (/255) . read <$> getSetting "tilergb"
+
         return Solution
             { val   = v
             , cols  = nC
-            , area  = newArea xy (w h) (w h)
+            , area  = newArea xy (sw h) (sw h)
             , bgrgb = bgc
             }
-        where w = w' nC :: Coord -> Coord
-              w' :: Int -> Coord -> Coord
-              w' nC' h'
-                | nC' `mod` 2 == 0 = (div h' 2)*(  div nC' 2)
-                | otherwise        = w' (nC'+1) h'
+        where sw = getSquareWidth nC
+
+    getSquareWidth :: Int -> Coord -> Coord
+    getSquareWidth nC h
+      | nC `mod` 2 == 0 = div h 2 * div nC 2
+      | otherwise       = getSquareWidth (nC+1) h
+
+
 
     genSolvedSquare :: Int -> Int -> Point -> State ([Int],StdGen) (IO Square)
     genSolvedSquare r nC xy = state $ \(vs,g) ->
@@ -153,7 +145,7 @@ module Game.Board.Square
         | otherwise       = solPos (nC+1) tw w (x,y)
 
     altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
-    altPos nC v tw w (x,y) = (x + (div tw 4)*dx, y + dy + dy')
+    altPos nC v tw w (x,y) = (x + div tw 4 *dx, y + dy + dy')
         where
             dx | nC < 3                         = 1
                | mod nC 2 == 0 && v <  div nC 2 ||
@@ -162,24 +154,12 @@ module Game.Board.Square
                | otherwise                      = 2*(v-div nC 2)-1
             dy | mod nC 2 == 0 && v >= div nC 2 = 0
                |                  v >  div nC 2 = 0
-               | otherwise                      = (div tw 2)
-            dy' = (getX $ solPos nC tw w (x,y))-x
-            --dy'k
-               -- | mod nC 2 == 0 && v <  div nC 2 ||
-               --   mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
-               -- | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
-               -- | otherwise                      = fromIntegral (v-(1+div nC 2))
-    --    (x + (div h 2)*round dx, y + (div (w-h) 2)*round dy)
-    --    where
-    --        dx | mod nC 2 == 0 && v <  div nC 2 ||
-    --             mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
-    --           | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
-    --           | otherwise                      = fromIntegral (v-(1+div nC 2))
-    --                                              +0.5
-    --        dy | mod nC 2 == 0 && v >= div nC 2 = 0
-    --           |                  v >  div nC 2 = 0
-    --           | otherwise                      = 1
+               | otherwise                      = div tw 2
+            dy' = getX (solPos nC tw w (x,y))-x
 
+            --   |                  v >  div nC 2 = 0
+            --   | otherwise                      = (div tw 2)
+            --dy' = (getX $ solPos nC tw w (x,y))-x
 
 
 

@@ -30,8 +30,8 @@ module Game.Board
         show Board { rows = rs } = concatMap (\r -> '\n':show r) rs
 
     instance Renderable Board where
-        render  = mapM_ render . rows
-        getArea = foldl (\/) Empty . map getArea . rows
+        render  window = mapM_ (render window) . rows
+        getArea        = foldl (\/) Empty . map getArea . rows
 
         --getArea b = foldl (\/) Empty $ map getArea $ squares r
 
@@ -68,7 +68,7 @@ module Game.Board
             rowIter ri y =
                 let r   = y  >>= \y'  ->
                           bw >>= \bw' -> newRow ri nC (x,y'+bw')
-                    y'' = getYMax <$> getArea <$> r
+                    y'' = getYMax . getArea <$> r
                  in r : rowIter (ri-1) y''
 
             bw :: IO Coord

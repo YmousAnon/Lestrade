@@ -3,17 +3,16 @@ module Settings
     getSetting,
 ) where
 
-    import System.IO
-    import Data.List.Split
     import Data.Char
+    import Data.List.Split
     import Data.Map
     import Data.Maybe
-    --import Data.ConfigFile
-    --import Data.Either.Utils
+
+    import System.IO
 
 
     getSetting :: String -> IO String
-    getSetting key = (Data.Map.lookup key) <$> rc >>= \mVal ->
+    getSetting key = Data.Map.lookup key <$> rc >>= \mVal ->
         case mVal of
             Just val -> return val
             Nothing  -> putStrLn error >> return ""
@@ -43,7 +42,7 @@ module Settings
             removeComments (c:cs)       = c : removeComments cs
 
             toLines :: String -> String -> [String]
-            toLines s  (c:[])   = [s]
+            toLines s  [c]      = [s]
             toLines s  []       = [s]
             toLines "" (' ':cs) = toLines "" cs
             toLines s  (c:cs)
