@@ -3,16 +3,10 @@ module Game.Board.Row
     Row,
     newRow,
     genSolvedRow,
-
-    --colMap,
-
-    --getNewRow,
 ) where
 
     import Control.Monad
     import Control.Monad.Trans.State
-
-    --import Graphics.Rendering.OpenGL
 
     import Data.List
 
@@ -21,9 +15,11 @@ module Game.Board.Row
     import Game.Board.Square
 
     import Interface.Coordinate
+    import Interface.Input
     import Interface.Render
 
     import Settings
+
 
     data Row = Row
                 { squares :: [Square]
@@ -33,9 +29,20 @@ module Game.Board.Row
         show Row { squares = ss } = show ss
 
     instance Renderable Row where
-        render  window = mapM_ (render window) . squares
-        getArea        = foldl (\/) Empty . map getArea . squares
-        --getArea r = foldl (\/) Empty $ map getArea $ squares r
+        render  w = mapM_ (render w) . squares
+        getArea   = foldl (\/) Empty . map getArea . squares
+
+    instance Clickable Row where
+        lclick pt r = let ss = squares r
+                       in do ss' <- mapM (lclick pt) ss
+                             if ss == ss'
+                              then return $ Row   ss'
+                              else return $ Row $ map (removeVal
+                                                      (val $ head (ss'\\ss)))
+                                                      ss'
+
+        rclick pt r = do ss <- mapM (rclick pt) $ squares r
+                         return Row { squares = ss }
 
     newRow :: Int -> Int -> Point -> IO Row
     newRow r nC (x,y) = fmap Row $ sequence $ squareIter nC $ return x
@@ -52,51 +59,6 @@ module Game.Board.Row
             bw = read <$> getSetting "tileBorderWidth"
 
 
-    genSolvedRow :: Int -> Int -> Point -> IO (State ([Int], StdGen) (IO Row))
-    genSolvedRow r nC (x,y) = do--TODO: Fix this to be more like newRow
-        tw <- read <$> getSetting "tileWidth"
-        bw <- read <$> getSetting "tileBorderWidth"
-
-        let xys = (\c -> (x+bw+(bw+tw)*2*fromIntegral c,y)) <$> [0..nC-1]
-         in return $ (fmap Row . sequence <$> mapM (genSolvedSquare r nC) xys)
-
-    --genSolvedRow :: Int -> Int -> Point -> State ([Int],StdGen) (IO Row)
-    --genSolvedRow r nC (x,y) = fmap Row <$> sequence
-    --                                   <$> mapM (genSolvedSquare r nC) xys
-    --    where
-    --        xys = map (\c -> (x+bw+(bw+tw)*2*fromIntegral c,y)) [0..nC-1]
-
-
-
-
-    --colMap :: (Int -> Square -> Square) -> Row -> Row
-    --colMap f (Row ps) = Row $ map (\p -> f (col p) p) ps
-
-
-    --getNewRow :: Int -> Int -> Row
-    --getNewRow r nC = Row $ map (getNewSquare r nC) [0..nC-1]
-
-    --genSolvedRow :: Int -> Int -> State StdGen Row
-    --genSolvedRow r nC g =
-    --        let (vs,g') = scrambleCols [0..nC-1] g
-    --        in  (Row $ map (\(v,c) -> newSquare [v] r c) $ zip vs [0..nC], g')
-    --    where
-
-    --        scrambleCols :: [Int] -> StdGen -> ([Int], StdGen)
-    --        scrambleCols [] g = ([],g)
-    --        scrambleCols cs g = (cs!!i:cs', g')
-    --            where
-    --                (i  ,g' ) = randomR      (0,length cs-1)     g
-    --                (cs',g'') = scrambleCols (delete (cs!!i) cs) g'
-    --genSolvedRow :: Int -> Int -> StdGen -> (Row,StdGen)
-    --genSolvedRow r nC g =
-    --        let (vs,g') = scrambleCols [0..nC-1] g
-    --        in  (Row $ map (\(v,c) -> newSquare [v] r c) $ zip vs [0..nC], g')
-    --    where
-
-    --        scrambleCols :: [Int] -> StdGen -> ([Int], StdGen)
-    --        scrambleCols [] g = ([],g)
-    --        scrambleCols cs g = (cs!!i:cs', g')
-    --            where
-    --                (i  ,g' ) = randomR      (0,length cs-1)     g
-    --                (cs',g'') = scrambleCols (delete (cs!!i) cs) g'
+    genSolvedRow :: Int -> State ([Int], StdGen) (IO Row)
+    genSolvedRow nC = fmap Row . sequence
+                             <$> replicateM nC (genSolvedSquare nC)

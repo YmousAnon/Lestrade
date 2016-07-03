@@ -1,13 +1,13 @@
 module Game.Board.Square
 (
     Square,
+    val,
 
     unsolvedSquare,
     solvedSquare,
     genSolvedSquare,
 
     removeVal,
-
 ) where
 
     import Control.Monad.Trans.State
@@ -17,6 +17,7 @@ module Game.Board.Square
     import Game.Board.Value
 
     import Interface.Coordinate
+    import Interface.Input
     import Interface.Render
     import Interface.Render.Primitive
 
@@ -24,15 +25,18 @@ module Game.Board.Square
 
     import System.Random
 
+
     data Square = Solution
                 { val    :: Value
                 , cols   :: Int
+                , row    :: Int
                 , area   :: Area
                 , bgrgb  :: [Double]
                  }
                | Alternatives
                 { vals   :: [Value]
                 , cols   :: Int
+                , row    :: Int
                 , area   :: Area
                 , bgrgb  :: [Double]
                 , bgtile :: Value
@@ -42,23 +46,78 @@ module Game.Board.Square
         show Solution     { val  = v } = show v
         show Alternatives { vals = v } = show v
 
+    instance Eq Square where
+        Solution     { val  = v } == Solution     { val  = v' } = v == v'
+        Alternatives { vals = v } == Alternatives { vals = v' } = v == v'
+        Solution     { val  = v } == Alternatives { vals = v' } = False
+        Alternatives { vals = v } == Solution     { val  = v' } = False
+
     instance Renderable Square where
-        render window Solution
+        getArea = area
+        render w Solution
             { val    = v
             , area   = a
             , cols   = nC
             , bgrgb  = rgb
-            } = renderColour window a rgb
-             >> render window v
-        render window Alternatives
+            } = renderColour w a rgb
+             >> render w v
+
+        render w Alternatives
             { vals   = vs
             , area   = a
             , bgtile = bgt
             , bgrgb  = rgb
-            } = renderColour window a rgb
-             >> render window bgt
-             >> mapM_ (render window) vs
-        getArea = area
+            } = renderColour w a rgb
+             >> render w bgt
+             >> mapM_ (render w) vs
+
+    instance Clickable Square where
+        lclick pt Alternatives
+            { vals   = vs
+            , cols   = nC
+            , row    = r
+            , area   = a
+            , bgtile = bgt
+            , bgrgb  = rgb
+            } = let vs' = filter (pointInArea pt . getArea) vs
+                 in if null vs'
+            then return Alternatives
+            { vals   = vs
+            , cols   = nC
+            , row    = r
+            , area   = a
+            , bgtile = bgt
+            , bgrgb  = rgb
+            }
+            else solvedSquare (vali $ head vs') r nC (getAreaStart $ a)
+
+        lclick pt s = return s
+
+        rclick pt Alternatives
+            { vals   = vs
+            , cols   = nC
+            , row    = r
+            , area   = a
+            , bgtile = bgt
+            , bgrgb  = rgb
+            }
+            |  length (filter (pointInArea
+               pt . getArea) vs) == 0 &&
+               pointInArea pt a             = unsolvedSquare [1..nC] r nC $
+                                                             getAreaStart a
+            | otherwise                     = return Alternatives
+            { vals   = filter (not . pointInArea pt . getArea) vs
+            , cols   = nC
+            , row    = r
+            , area   = a
+            , bgtile = bgt
+            , bgrgb  = rgb
+            }
+
+        rclick pt s = if pointInArea pt (getArea $ val s)
+            then unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
+            else return s
+
 
 
     unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
@@ -72,6 +131,7 @@ module Game.Board.Square
         return Alternatives
             { vals   = vs
             , cols   = nC
+            , row    = r
             , area   = newArea xy (sw tw) (sw tw)
             , bgrgb  = bgc
             , bgtile = bgt
@@ -87,10 +147,21 @@ module Game.Board.Square
         return Solution
             { val   = v
             , cols  = nC
+            , row   = r
             , area  = newArea xy (sw h) (sw h)
             , bgrgb = bgc
             }
         where sw = getSquareWidth nC
+
+    genSolvedSquare :: Int -> State ([Int],StdGen) (IO Square)
+    genSolvedSquare nC = state $ \(vs,g) ->
+        let ig     = randomR (0, length vs-1) g
+            (v,g') = (vs !! fst ig, snd ig)
+            vs'    = if length vs > 1 then delete v vs else [1..nC]
+            s      = solvedSquare v 1 nC (0,0)
+        in  (s, (vs', g'))
+
+
 
     getSquareWidth :: Int -> Coord -> Coord
     getSquareWidth nC h
@@ -98,45 +169,6 @@ module Game.Board.Square
       | otherwise       = getSquareWidth (nC+1) h
 
 
-
-    genSolvedSquare :: Int -> Int -> Point -> State ([Int],StdGen) (IO Square)
-    genSolvedSquare r nC xy = state $ \(vs,g) ->
-        let ig     = randomR (0, length vs-1) g
-            (v,g') = (vs !! fst ig, snd ig)
-        in  (solvedSquare v r nC xy, (delete v vs, g'))
-    --square :: [Int] -> Int -> Int -> Point -> IO Square
-    --square vs r nC xy
-    --    | length vs == 1 = do
-    --        h <- read <$> getSetting "tileWidth"
-    --        Solution
-    --            { val        = value h r True (solPos nC h w xy) (head vs)
-    --            , cols       = nC
-    --            , area       = newArea xy (w h) (w h)
-    --            , bgrgb      = bgc
-    --            }
-    --    | otherwise      = do
-    --        h   <- read <$> getSetting "tileWidth" :: IO Coord
-    --        vs  <- mapM (uncurry (value h r False)
-    --               . \v -> (altPos nC (v-1) h w xy,v)) vs
-    --        bgt <- value (solPos nC h (w h) xy) r True 0
-
-    --        return Alternatives
-    --            { vals   = vs
-    --            , cols   = nC
-    --            , area   = newArea xy (w h) (w h)
-    --            , bgrgb  = bgc
-    --            , bgtile = bgt
-    --            }
-    --    where w = w' nC :: Coord -> Coord
-    --          w' :: Int -> Coord -> Coord
-    --          w' nC' h'
-    --            | nC' `mod` 2 == 0 = (h'/2)*realToFrac (  div nC' 2)
-    --            | otherwise        = w' (nC'+1) h'
-    --          bgc = return [0,0,0]
-    --          --bgc = map (/255) . read <$> getSetting "GRAPHICS" "tilergb"
-    --          --bgt = loadTextureFromFile
-    --          --          =<< (\ts -> "res/tilesets/"++ts++"/bg.png")
-    --          --          <$> getSetting "GRAPHICS" "tileset"
 
     solPos :: Int -> Coord -> Coord -> Point -> Point
     solPos nC tw w (x,y)
@@ -152,38 +184,27 @@ module Game.Board.Square
                  mod nC 2 == 1 && v <= div nC 2 = 2*v
                | mod nC 2 == 0                  = 2*(v-div nC 2)
                | otherwise                      = 2*(v-div nC 2)-1
-            dy | mod nC 2 == 0 && v >= div nC 2 = 0
-               |                  v >  div nC 2 = 0
-               | otherwise                      = div tw 2
+            dy | mod nC 2 == 0 && v >= div nC 2 = div tw 2
+               |                  v >  div nC 2 = div tw 2
+               | otherwise                      = 0
             dy' = getX (solPos nC tw w (x,y))-x
 
-            --   |                  v >  div nC 2 = 0
-            --   | otherwise                      = (div tw 2)
-            --dy' = (getX $ solPos nC tw w (x,y))-x
-
-
-
-    --altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
-    --altPos nC v h w (x,y) = --(x+(div h 2)*dx,(w-h)/2+y+(div h 2)*dy)
-    --    (x + (div h 2)*round dx, y + (div (w-h) 2)*round dy)
-    --    where
-    --        dx | mod nC 2 == 0 && v <  div nC 2 ||
-    --             mod nC 2 == 1 && v <= div nC 2 = fromIntegral v
-    --           | mod nC 2 == 0                  = fromIntegral (v-   div nC 2 )
-    --           | otherwise                      = fromIntegral (v-(1+div nC 2))
-    --                                              +0.5
-    --        dy | mod nC 2 == 0 && v >= div nC 2 = 0
-    --           |                  v >  div nC 2 = 0
-    --           | otherwise                      = 1
 
 
     removeVal :: Value -> Square -> Square
-    removeVal v p = Alternatives
-        { vals       = delete v $ vals p
-        , cols       = cols            p
-        , area       = area            p
-        , bgrgb      = bgrgb           p
-        , bgtile     = bgtile          p
-        }
-
-
+    removeVal v Alternatives
+            { vals       = vals
+            , cols       = cols
+            , row        = row
+            , area       = area
+            , bgrgb      = bgrgb
+            , bgtile     = bgtile
+            } = Alternatives
+            { vals       = delete v $ vals
+            , cols       = cols
+            , row        = row
+            , area       = area
+            , bgrgb      = bgrgb
+            , bgtile     = bgtile
+            }
+    removeVal v s = s

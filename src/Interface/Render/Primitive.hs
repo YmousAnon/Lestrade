@@ -23,10 +23,10 @@ module Interface.Render.Primitive
          in do textureBinding Texture2D $= Just tex
                renderPrimitive Quads $ do
                    col
-                   txc 1 1 >> ver x' y
-                   txc 1 0 >> ver x' y'
-                   txc 0 0 >> ver x  y'
-                   txc 0 1 >> ver x  y
+                   txc 1 1 >> ver x' y'
+                   txc 1 0 >> ver x' y
+                   txc 0 0 >> ver x  y
+                   txc 0 1 >> ver x  y'
         where col     = color    (Color3 1.0 1.0 1.0 :: Color3    GLfloat)
               ver x y = vertex   (Vertex2 x y        :: Vertex2   GLfloat)
               txc u v = texCoord (TexCoord2 u v      :: TexCoord2 GLfloat)
@@ -48,9 +48,9 @@ module Interface.Render.Primitive
 
          in renderPrimitive Quads $ do
                 col $ map unsafeCoerce rgb
-                ver x' y
                 ver x' y'
-                ver x  y'
+                ver x' y
                 ver x  y
+                ver x  y'
         where col [r,g,b] = color  (Color3 r g b :: Color3  GLfloat)
               ver x y     = vertex (Vertex2 x y  :: Vertex2 GLfloat)

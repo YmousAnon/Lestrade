@@ -5,9 +5,8 @@ module Game.Board.Value
 
     value,
 ) where
+
     import Graphics.UI.GLUT (TextureObject)
-    --import Graphics.GLUtil
-    --import Graphics.Rendering.OpenGL as GL (TextureObject)
 
     import Interface.Render
     import Interface.Render.Primitive
@@ -16,16 +15,6 @@ module Game.Board.Value
 
     import Settings
 
-    --bms = mapM (mapM loadBM) rcs
-    --bms = mapM (mapM loadBM) rcs
-    ----bms = (sequence . map) ((sequence . map) loadBM) rcs
-    --    where
-    --        root         = (++)"res/tilesets/" <$> getSetting "GRAPHICS" "tileset"
-    --        end r c      = "/row"++show r++"/col"++show c++".png"
-    --        loadBM (r,c) = root >>= \root' ->
-    --                       loadTextureFromFile (root'++end r c)
-    --        rcs          = [[(r,c) | r <- [1..8]]
-    --                               | c <- [1..8]]
 
     data Value = Value
                 { vali  :: Int

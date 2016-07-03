@@ -8,9 +8,10 @@ module Interface.Render
 ) where
 
     import Data.IORef
+    import Data.StateVar
 
-    import Graphics.UI.GLUT
     import Graphics.GLUtil
+    import Graphics.UI.GLUT
 
     import Interface.Coordinate
 
@@ -26,8 +27,8 @@ module Interface.Render
 
         game <- readIORef ioGame
 
-        render (getArea game) game
-
         windowSize $= Size (fromIntegral $ getXMax $ getArea game)
                            (fromIntegral $ getYMax $ getArea game)
+        render (getArea game) game
+
         flush

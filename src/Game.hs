@@ -9,6 +9,7 @@ module Game
 
     import Game.Board
 
+    import Interface.Input
     import Interface.Render
 
     import Settings
@@ -24,9 +25,31 @@ module Game
                 }
 
     instance Renderable Game where
-        render  window = render  window . board
-        getArea        = getArea . board
+        render w g = render w      $ board g
+        getArea  g = getArea       $ board g
 
+    instance Clickable Game where
+        lclick pt g = do b <- lclick pt $ board    g
+                         return Game
+                             { board    = b
+                             , solution = solution g
+                             , gen      = gen      g
+                             }
+        rclick pt g = do b <- rclick pt $ board    g
+                         return Game
+                             { board    = b
+                             , solution = solution g
+                             , gen      = gen      g
+                             }
+
+
+
+    updateBoard :: Game -> Board -> Game
+    updateBoard g b = Game
+        { board    = b
+        , solution = solution g
+        , gen      = gen      g
+        }
 
     gameInit :: IO (IORef Game)
     gameInit = do
@@ -36,12 +59,10 @@ module Game
         nR <- read <$> getSetting "rows"
 
         b  <- newBoard    nR nC (0,0)
-        let --(s,g') = runState (solvedBoard nR nC) g
-         in newIORef Game
-                { board    = b
-                , gen      = g
-                }
-                --{ board    = b
-                --, solution = s
-                --, gen      = g'
-                --}
+        let (s,(_,g')) = runState (genSolution nR nC) ([1..nC],g)
+         in do s' <- s
+               newIORef Game
+                   { board    = b
+                   , solution = s'
+                   , gen      = g
+                   }

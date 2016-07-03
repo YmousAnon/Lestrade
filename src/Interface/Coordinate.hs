@@ -2,20 +2,29 @@ module Interface.Coordinate
 (
     Coord,
 
+
+
     Point,
 
     getX,
     getY,
 
     pointToGL,
+    posToPt,
+    pointInArea,
 
 
 
     Area (Area, Empty),
     newArea,
 
+    getAreaStart,
+
     getXRange,
     getYRange,
+
+    getWidth,
+    getHeight,
 
     xRangeToGL,
     yRangeToGL,
@@ -34,14 +43,15 @@ module Interface.Coordinate
 
     import Unsafe.Coerce
 
+
     type Coord = Int
 
-
     xCoordToGL :: Area -> Coord -> GLfloat
-    xCoordToGL window x = 2*(fromIntegral x/fromIntegral (getXMax window))-1
+    xCoordToGL window x = -1+2*(fromIntegral x/fromIntegral (getXMax window))
 
     yCoordToGL :: Area -> Coord -> GLfloat
-    yCoordToGL window y = 2*(fromIntegral y/fromIntegral (getYMax window))-1
+    yCoordToGL window y =  1-2*(fromIntegral y/fromIntegral (getYMax window))
+
 
 
     type Point = (Coord,Coord)
@@ -55,6 +65,13 @@ module Interface.Coordinate
     pointToGL :: Area -> Point -> (GLfloat,GLfloat)
     pointToGL window (x,y) = (xCoordToGL window x,yCoordToGL window y)
 
+    posToPt :: Position -> Point
+    posToPt (Position x y) = (fromIntegral x,fromIntegral y)
+
+    pointInArea :: Point -> Area -> Bool
+    pointInArea (x,y) a = x > getXMin a && x < getXMax a
+                       && y > getYMin a && y < getYMax a
+
 
     data Area = Empty | Area
         { xy :: Point
@@ -65,17 +82,26 @@ module Interface.Coordinate
             where (x,y) = xy a
                   (w,h) = wh a
 
-
-
     newArea :: Point -> Coord -> Coord -> Area
     newArea xy w h = Area { xy = xy, wh = (w,h) }
 
 
+    getAreaStart :: Area -> Point
+    getAreaStart Area { xy = xy } = xy
+
+
     getXRange :: Area -> Point
-    getXRange Area { xy = (x,y), wh = (w,h) } = (x,x+w)
+    getXRange Area { xy = (x,_), wh = (w,_) } = (x,x+w)
 
     getYRange :: Area -> Point
-    getYRange Area { xy = (x,y), wh = (w,h) } = (y,y+h)
+    getYRange Area { xy = (_,y), wh = (_,h) } = (y,y+h)
+
+
+    getWidth :: Area -> Coord
+    getWidth Area { wh = (w,_) } = w
+
+    getHeight :: Area -> Coord
+    getHeight Area { wh = (_,h) } = h
 
 
     xRangeToGL :: Area -> Point -> (GLfloat,GLfloat)
