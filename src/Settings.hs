@@ -5,7 +5,7 @@ module Settings
 
     import Data.Char
     import Data.List.Split
-    import Data.Map
+    import Data.Map (fromList, Map, lookup)
     import Data.Maybe
 
     import System.IO
@@ -19,10 +19,10 @@ module Settings
         where
             rc :: IO(Map String String)
             rc = fromList
-             <$> Prelude.map toTouples
-             <$> Prelude.filter (\s -> length s > 0)
-             <$> Prelude.map removeComments
-             <$> toLines ""
+               . map toTouples
+               . filter (not . Prelude.null)
+               . map removeComments
+               . toLines ""
              <$> readFile file
                 where
                     file :: FilePath

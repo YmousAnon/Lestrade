@@ -89,7 +89,7 @@ module Game.Board.Square
             , bgtile = bgt
             , bgrgb  = rgb
             }
-            else solvedSquare (vali $ head vs') r nC (getAreaStart $ a)
+            else solvedSquare (vali $ head vs') r nC (getAreaStart a)
 
         lclick pt s = return s
 
@@ -101,8 +101,8 @@ module Game.Board.Square
             , bgtile = bgt
             , bgrgb  = rgb
             }
-            |  length (filter (pointInArea
-               pt . getArea) vs) == 0 &&
+            |  not (any (pointInArea
+               pt . getArea) vs) &&
                pointInArea pt a             = unsolvedSquare [1..nC] r nC $
                                                              getAreaStart a
             | otherwise                     = return Alternatives
@@ -200,7 +200,7 @@ module Game.Board.Square
             , bgrgb      = bgrgb
             , bgtile     = bgtile
             } = Alternatives
-            { vals       = delete v $ vals
+            { vals       = delete v vals
             , cols       = cols
             , row        = row
             , area       = area

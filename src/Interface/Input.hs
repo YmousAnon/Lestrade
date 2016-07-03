@@ -7,6 +7,8 @@ module Interface.Input
     click,
 ) where
 
+    import Control.Monad
+
     import Data.IORef
     import Data.Time
 
@@ -26,12 +28,11 @@ module Interface.Input
     click  ioGame _key _state _modifiers _position = do
         game <- readIORef ioGame
 
-        if _state == Up
-            then return()
-            else writeIORef ioGame =<<
+        unless (_state == Up)
+            (writeIORef ioGame =<<
                     (case _key of
                         MouseButton LeftButton  -> lclick (posToPt _position)
                         MouseButton RightButton -> rclick (posToPt _position)
-                        _                       -> return) game
+                        _                       -> return) game)
 
         display ioGame

@@ -32,7 +32,7 @@ module Interface
         texture Texture2D     $= Enabled
         shadeModel            $= Smooth
         displayCallback       $= display ioGame
-        keyboardMouseCallback $= (Just (click ioGame))
+        keyboardMouseCallback $= Just (click ioGame)
 
         pushWindow
 
