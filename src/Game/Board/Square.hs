@@ -8,6 +8,7 @@ module Game.Board.Square
     genSolvedSquare,
 
     removeVal,
+    transplantSolution,
 ) where
 
     import Control.Monad.Trans.State
@@ -32,6 +33,7 @@ module Game.Board.Square
                 , row    :: Int
                 , area   :: Area
                 , bgrgb  :: [Double]
+                , static :: Bool
                  }
                | Alternatives
                 { vals   :: [Value]
@@ -103,9 +105,9 @@ module Game.Board.Square
             }
             |  not (any (pointInArea
                pt . getArea) vs) &&
-               pointInArea pt a             = unsolvedSquare [1..nC] r nC $
-                                                             getAreaStart a
-            | otherwise                     = return Alternatives
+               pointInArea pt a      = unsolvedSquare [1..nC] r nC $
+                                                      getAreaStart a
+            | otherwise              = return Alternatives
             { vals   = filter (not . pointInArea pt . getArea) vs
             , cols   = nC
             , row    = r
@@ -115,6 +117,7 @@ module Game.Board.Square
             }
 
         rclick pt s = if pointInArea pt (getArea $ val s)
+                      && not (static s)
             then unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
             else return s
 
@@ -150,6 +153,7 @@ module Game.Board.Square
             , row   = r
             , area  = newArea xy (sw h) (sw h)
             , bgrgb = bgc
+            , static = False
             }
         where sw = getSquareWidth nC
 
@@ -193,18 +197,29 @@ module Game.Board.Square
 
     removeVal :: Value -> Square -> Square
     removeVal v Alternatives
-            { vals       = vals
-            , cols       = cols
-            , row        = row
-            , area       = area
-            , bgrgb      = bgrgb
-            , bgtile     = bgtile
+            { vals   = vals
+            , cols   = cols
+            , row    = row
+            , area   = area
+            , bgrgb  = bgrgb
+            , bgtile = bgtile
             } = Alternatives
-            { vals       = delete v vals
-            , cols       = cols
-            , row        = row
-            , area       = area
-            , bgrgb      = bgrgb
-            , bgtile     = bgtile
+            { vals   = delete v vals
+            , cols   = cols
+            , row    = row
+            , area   = area
+            , bgrgb  = bgrgb
+            , bgtile = bgtile
             }
     removeVal v s = s
+
+    transplantSolution :: Square -> Square -> Square
+    transplantSolution s s' = Solution
+                              { val    = transplantValue (getArea $ bgtile s)
+                                                         (val s')
+                              , cols   = cols  s
+                              , row    = row   s
+                              , area   = area  s
+                              , bgrgb  = bgrgb s
+                              , static = True
+                              }

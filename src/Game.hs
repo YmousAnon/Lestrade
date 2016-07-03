@@ -58,11 +58,15 @@ module Game
         nC <- read <$> getSetting "columns"
         nR <- read <$> getSetting "rows"
 
+
         b  <- newBoard    nR nC (0,0)
         let (s,(_,g')) = runState (genSolution nR nC) ([1..nC],g)
+
          in do s' <- s
+               print (getBoardSquare s' 0 4)
+               print s'
                newIORef Game
-                   { board    = b
+                   { board    = swapSquare b s' 3 4
                    , solution = s'
                    , gen      = g
                    }

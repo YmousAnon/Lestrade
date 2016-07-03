@@ -1,8 +1,12 @@
 module Game.Board.Row
 (
     Row,
+
     newRow,
     genSolvedRow,
+
+    getRowSquare,
+    setRowSquare,
 ) where
 
     import Control.Monad
@@ -21,12 +25,10 @@ module Game.Board.Row
     import Settings
 
 
-    data Row = Row
-                { squares :: [Square]
-                }
+    data Row = Row { squares :: [Square] }
 
     instance Show Row where
-        show Row { squares = ss } = show ss
+        show = show . squares
 
     instance Renderable Row where
         render  w = mapM_ (render w) . squares
@@ -43,6 +45,8 @@ module Game.Board.Row
 
         rclick pt r = do ss <- mapM (rclick pt) $ squares r
                          return Row { squares = ss }
+
+
 
     newRow :: Int -> Int -> Point -> IO Row
     newRow r nC (x,y) = fmap Row $ sequence $ squareIter nC $ return x
@@ -62,3 +66,18 @@ module Game.Board.Row
     genSolvedRow :: Int -> State ([Int], StdGen) (IO Row)
     genSolvedRow nC = fmap Row . sequence
                              <$> replicateM nC (genSolvedSquare nC)
+
+
+
+    getRowSquare :: Row -> Int -> Square
+    getRowSquare (Row (s:ss)) 0 = s
+    getRowSquare (Row (s:ss)) c = getRowSquare (Row (ss)) (c-1)
+
+    setRowSquare :: Row -> Int -> Square -> Row
+    setRowSquare (Row [])     c s' = Row []
+    setRowSquare (Row (s:ss)) c s' = Row $ s'' : squares (setRowSquare (Row ss)
+                                                                       (c-1)
+                                                                       s')
+        where s'' = if c == 0
+                        then transplantSolution s s'
+                        else removeVal (val s') s

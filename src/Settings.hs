@@ -49,4 +49,3 @@ module Settings
                 | c == '\n'           = s : toLines ""       cs
                 | c == '\n'           = s : toLines ""       cs
                 | otherwise           =     toLines (s++[c]) cs
-

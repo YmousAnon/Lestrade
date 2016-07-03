@@ -4,6 +4,8 @@ module Game.Board.Value
     vali,
 
     value,
+
+    transplantValue,
 ) where
 
     import Graphics.UI.GLUT (TextureObject)
@@ -45,8 +47,6 @@ module Game.Board.Value
             , area  = area'
             }
         where
-            --tex  =
-
             area tw = newArea pt (w tw) (w tw)
             w tw = if a then tw else div tw 2
 
@@ -58,3 +58,13 @@ module Game.Board.Value
             end  = case v of
                         0 -> "/bg.png"
                         _ -> "/row"++show r++"/col"++show v++".png"
+
+
+
+    transplantValue :: Area -> Value -> Value
+    transplantValue a v' = Value
+        { vali  = vali v'
+        , row   = row  v'
+        , tex   = tex  v'
+        , area  = a
+        }
