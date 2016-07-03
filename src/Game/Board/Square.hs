@@ -116,8 +116,7 @@ module Game.Board.Square
             , bgrgb  = rgb
             }
 
-        rclick pt s = if pointInArea pt (getArea $ val s)
-                      && not (static s)
+        rclick pt s = if pointInArea pt (getArea $ val s) && not (static s)
             then unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
             else return s
 
@@ -216,6 +215,8 @@ module Game.Board.Square
     transplantSolution :: Square -> Square -> Square
     transplantSolution s s' = Solution
                               { val    = transplantValue (getArea $ bgtile s)
+                                                         (vals s !!
+                                                            (vali (val s')-1))
                                                          (val s')
                               , cols   = cols  s
                               , row    = row   s

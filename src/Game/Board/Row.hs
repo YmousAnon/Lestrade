@@ -71,7 +71,7 @@ module Game.Board.Row
 
     getRowSquare :: Row -> Int -> Square
     getRowSquare (Row (s:ss)) 0 = s
-    getRowSquare (Row (s:ss)) c = getRowSquare (Row (ss)) (c-1)
+    getRowSquare (Row (s:ss)) c = getRowSquare (Row ss) (c-1)
 
     setRowSquare :: Row -> Int -> Square -> Row
     setRowSquare (Row [])     c s' = Row []

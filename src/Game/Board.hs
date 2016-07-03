@@ -5,9 +5,7 @@ module Game.Board
     newBoard,
     genSolution,
 
-    getBoardSquare,
-    setBoardSquare,
-    swapSquare,
+    initialSol,
 ) where
 
     import Control.Monad
@@ -39,8 +37,8 @@ module Game.Board
         getArea        = foldl (\/) Empty . map getArea . rows
 
     instance Clickable Board where
-        lclick pt b = mapM (lclick pt) (rows b) >>= return . Board
-        rclick pt b = mapM (rclick pt) (rows b) >>= return . Board
+        lclick pt b = fmap Board (mapM (lclick pt) (rows b))
+        rclick pt b = fmap Board (mapM (rclick pt) (rows b))
 
 
 
@@ -71,10 +69,22 @@ module Game.Board
 
     setBoardSquare :: Board -> Int -> Int -> Square -> Board
     setBoardSquare (Board (r':rs)) 0 c s = Board $
-        (setRowSquare r' c s) : rs
+        setRowSquare r' c s : rs
     setBoardSquare (Board (r':rs)) r c s = Board $
-        r'                    : rows (setBoardSquare (Board rs) (r-1) c s)
+        r'                  : rows (setBoardSquare (Board rs) (r-1) c s)
 
     swapSquare :: Board -> Board -> Int -> Int -> Board
     swapSquare bFrom bTo r c = setBoardSquare bFrom r c
                              $ getBoardSquare bTo   r c
+
+    initialSol :: Int -> Board -> Board -> State ([(Int,Int)], StdGen) Board
+    initialSol n b s = foldr (\i' b' -> uncurry (swapSquare b' s) i') b
+                   <$> replicateM n getPos
+        where
+            getPos :: State ([(Int,Int)], StdGen) (Int,Int)
+            getPos = do (is,g) <- get
+                        let (n,g') = randomR (0,length is-1) g
+                            i      = is !! n
+                            is'    = delete i is
+                        put (is',g')
+                        return i

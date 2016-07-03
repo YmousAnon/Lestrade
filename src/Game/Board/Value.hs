@@ -61,10 +61,10 @@ module Game.Board.Value
 
 
 
-    transplantValue :: Area -> Value -> Value
-    transplantValue a v' = Value
+    transplantValue :: Area -> Value -> Value -> Value
+    transplantValue a v v' = Value
         { vali  = vali v'
         , row   = row  v'
-        , tex   = tex  v'
+        , tex   = tex  v
         , area  = a
         }

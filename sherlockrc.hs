@@ -1,6 +1,7 @@
 --Game
 columns         = 8
 rows            = 4
+initialSolved   = 4
 
 --Graphics
 screenres       = (1024,768)
