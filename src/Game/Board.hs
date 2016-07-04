@@ -6,6 +6,7 @@ module Game.Board
     genSolution,
 
     initialSol,
+    initialSol',
 ) where
 
     import Control.Monad
@@ -77,14 +78,16 @@ module Game.Board
     swapSquare bFrom bTo r c = setBoardSquare bFrom r c
                              $ getBoardSquare bTo   r c
 
+    getPos :: State ([(Int,Int)], StdGen) (Int,Int)
+    getPos = do (is,g) <- get
+                let (n,g') = randomR (0,length is-1) g
+                    i      = is !! n
+                    is'    = delete i is
+                put (is',g')
+                return i
+
     initialSol :: Int -> Board -> Board -> State ([(Int,Int)], StdGen) Board
     initialSol n b s = foldr (\i' b' -> uncurry (swapSquare b' s) i') b
                    <$> replicateM n getPos
-        where
-            getPos :: State ([(Int,Int)], StdGen) (Int,Int)
-            getPos = do (is,g) <- get
-                        let (n,g') = randomR (0,length is-1) g
-                            i      = is !! n
-                            is'    = delete i is
-                        put (is',g')
-                        return i
+
+    initialSol' n = replicateM n getPos

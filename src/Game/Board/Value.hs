@@ -5,6 +5,7 @@ module Game.Board.Value
 
     value,
 
+    selectValue,
     transplantValue,
 ) where
 
@@ -36,6 +37,7 @@ module Game.Board.Value
         getArea     = area
 
 
+
     value :: Int -> Bool -> Point -> Int -> IO Value
     value r a pt v = do
         area' <- area . read <$> getSetting "tileWidth"
@@ -51,6 +53,7 @@ module Game.Board.Value
             w tw = if a then tw else div tw 2
 
 
+
     getTexture :: Int -> Int -> IO TextureObject
     getTexture r v    = loadTexture' =<< (++end) <$> root
         where
@@ -60,6 +63,12 @@ module Game.Board.Value
                         _ -> "/row"++show r++"/col"++show v++".png"
 
 
+
+
+    selectValue :: Value -> [Value] -> Value
+    selectValue v' (v:vs)
+        | v == v'   = v
+        | otherwise = selectValue v' vs
 
     transplantValue :: Area -> Value -> Value -> Value
     transplantValue a v v' = Value

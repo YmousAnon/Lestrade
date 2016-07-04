@@ -67,8 +67,12 @@ module Game
                                                             | r <- [0..nR-1]]
                                                             | c <- [0..nC-1]]
                                                             ,g')
+           print $ evalState (initialSol' is) (concat [[(r,c) | r <- [0..nR-1]]
+                                                              | c <- [0..nC-1]]
+                                                              ,g')
            print s'
            newIORef Game
+               --{ board    = b
                { board    = b'
                , solution = s'
                , gen      = g

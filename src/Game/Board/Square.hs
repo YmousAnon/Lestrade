@@ -194,6 +194,7 @@ module Game.Board.Square
 
 
 
+
     removeVal :: Value -> Square -> Square
     removeVal v Alternatives
             { vals   = vals
@@ -215,8 +216,8 @@ module Game.Board.Square
     transplantSolution :: Square -> Square -> Square
     transplantSolution s s' = Solution
                               { val    = transplantValue (getArea $ bgtile s)
-                                                         (vals s !!
-                                                            (vali (val s')-1))
+                                                         (selectValue (val  s')
+                                                                      (vals s))
                                                          (val s')
                               , cols   = cols  s
                               , row    = row   s
