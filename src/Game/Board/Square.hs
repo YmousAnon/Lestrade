@@ -19,10 +19,9 @@ module Game.Board.Square
 
     import Interface.Coordinate
     import Interface.Input
+    import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
-
-    import Settings
 
     import System.Random
 

@@ -40,7 +40,7 @@ module Interface.Coordinate
 
     import Graphics.UI.GLUT hiding (Point)
 
-    import Settings
+    import Interface.Input.Settings
 
     import Unsafe.Coerce
 

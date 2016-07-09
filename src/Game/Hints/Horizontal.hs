@@ -14,10 +14,10 @@ module Game.Hints.Horizontal
     import Game.Board.Value
 
     import Interface.Coordinate
+    import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
 
-    import Settings
 
     data HHint = HHint
                  { vals     :: [Value]

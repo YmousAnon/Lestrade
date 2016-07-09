@@ -1,4 +1,4 @@
-module Settings
+module Interface.Input.Settings
 (
     getSetting,
 ) where

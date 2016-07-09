@@ -12,9 +12,8 @@ module Game
     import Game.Hints.Horizontal
 
     import Interface.Input
+    import Interface.Input.Settings
     import Interface.Render
-
-    import Settings
 
     import System.Environment (getArgs)
     import System.Random
@@ -30,15 +29,12 @@ module Game
                 }
 
     instance Renderable Game where
-        --render w g = mapM_ (render w) $ (map ($ g) [board, vhb]
         render w g = render w (board g)
                   >> render w (vhb   g)
                   >> render w (hhb   g)
-        --getArea  g = mapM_ getArea  $ map ($ g) [board, vhb]
         getArea  g = getArea (board g)
                   \/ getArea (vhb   g)
                   \/ getArea (hhb   g)
-                   -- \/ getArea (newVHint [] (100,100))
 
     instance Clickable Game where
         lclick pt g = do b <- lclick pt $ board    g
@@ -59,17 +55,9 @@ module Game
                              }
 
 
-
-    --updateBoard :: Game -> Board -> Game
-    --updateBoard g b = Game
-    --    { board    = b
-    --    , solution = solution g
-    --    , gen      = gen      g
-    --    }
-
-    gameInit :: IO (IORef Game)
-    gameInit = do
-        g  <- (mkStdGen . read . head) <$> getArgs
+    gameInit :: Int -> IO (IORef Game)
+    gameInit seed = do
+        let g = mkStdGen seed
 
         nC <- read <$> getSetting "columns"
         nR <- read <$> getSetting "rows"
@@ -77,8 +65,6 @@ module Game
         is <- read <$> getSetting "initialSolved"
 
         b  <- newBoard nR nC (0,0)
-
-        --vH <- emptyHintPanel (0,getYMax $ getArea b)
 
         let (s, (_, g'))    = runState (genSolution nR nC) ([1..nC],g)
         do s' <- s

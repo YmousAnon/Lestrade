@@ -3,19 +3,13 @@ module Interface
     guiInit,
 ) where
 
-    import Control.Monad
-
     import Data.IORef
-    import Data.Maybe
 
     import Graphics.GLUtil
     import Graphics.UI.GLUT hiding (GLfloat)
 
-    import Settings
-
-    import System.Exit
-
     import Interface.Input
+    import Interface.Input.Settings
     import Interface.Render
 
 

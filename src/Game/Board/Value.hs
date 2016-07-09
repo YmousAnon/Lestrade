@@ -14,12 +14,11 @@ module Game.Board.Value
 
     import Graphics.UI.GLUT (TextureObject)
 
+    import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
 
     import Interface.Coordinate
-
-    import Settings
 
 
     data Value = Value

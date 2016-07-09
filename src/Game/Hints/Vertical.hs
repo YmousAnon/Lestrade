@@ -17,7 +17,7 @@ module Game.Hints.Vertical
     import Interface.Render
     import Interface.Render.Primitive
 
-    import Settings
+    import Interface.Input.Settings
 
     data VHint = VHint
                  { vals     :: [Value]

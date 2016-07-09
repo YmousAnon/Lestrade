@@ -20,9 +20,8 @@ module Game.Board.Row
 
     import Interface.Coordinate
     import Interface.Input
+    import Interface.Input.Settings
     import Interface.Render
-
-    import Settings
 
 
     data Row = Row { squares :: [Square] }

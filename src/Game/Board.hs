@@ -13,6 +13,7 @@ module Game.Board
 
     import Interface.Coordinate
     import Interface.Input
+    import Interface.Input.Settings
     import Interface.Render
 
     import Game.Board.Row
@@ -20,8 +21,6 @@ module Game.Board
     import Game.Board.Value
 
     import Data.List
-
-    import Settings
 
     import System.Random
 

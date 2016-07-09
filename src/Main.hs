@@ -3,7 +3,8 @@ import Game
 import Graphics.UI.GLUT
 
 import Interface
+import Interface.Input.Seed
 
 
 main :: IO()
-main = gameInit >>= guiInit >> mainLoop
+main = getSeed >>= gameInit >>= guiInit >> mainLoop
