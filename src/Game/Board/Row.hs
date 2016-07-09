@@ -54,13 +54,15 @@ module Game.Board.Row
             squareIter :: Int -> IO Coord -> [IO Square]
             squareIter 0 _ = []
             squareIter c x =
-                let s   = x  >>= \x'  ->
-                          bw >>= \bw' -> unsolvedSquare [1..nC] r nC (x'+bw',y)
-                    x'' = (getXMax . getArea) <$> s
+                let s   = do x'  <- x
+                             unsolvedSquare [1..nC] r nC (x',y)
+                    x'' = do bw' <- bw
+                             s'  <- s
+                             return $ getXMax (getArea s') + bw'
                  in s : squareIter (c-1) x''
 
             bw :: IO Coord
-            bw = read <$> getSetting "tileBorderWidth"
+            bw = read <$> getSetting "tileSpacing"
 
 
     genSolvedRow :: Int -> State ([Int], StdGen) (IO Row)

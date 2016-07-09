@@ -19,6 +19,7 @@ module Interface.Coordinate
     newArea,
 
     getAreaStart,
+    getAreaSize,
 
     getXRange,
     getYRange,
@@ -88,6 +89,9 @@ module Interface.Coordinate
 
     getAreaStart :: Area -> Point
     getAreaStart Area { xy = xy } = xy
+
+    getAreaSize :: Area -> Point
+    getAreaSize Area { wh = wh } = wh
 
 
     getXRange :: Area -> Point

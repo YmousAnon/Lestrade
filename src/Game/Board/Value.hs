@@ -7,6 +7,9 @@ module Game.Board.Value
 
     selectValue,
     transplantValue,
+
+    moveValueBy,
+    moveValueTo,
 ) where
 
     import Graphics.UI.GLUT (TextureObject)
@@ -76,4 +79,20 @@ module Game.Board.Value
         , row   = row  v'
         , tex   = tex  v
         , area  = a
+        }
+
+
+
+    moveValueBy ::  Value -> Point ->Value
+    moveValueBy v (dx,dy) = moveValueTo v xy'
+        where
+            xy' = (x+dx,y+dy)
+            (x,y) = getAreaStart $ area v
+
+    moveValueTo :: Value -> Point -> Value
+    moveValueTo v xy' = Value
+        { vali  = vali v
+        , row   = row  v
+        , tex   = tex  v
+        , area  = uncurry (newArea xy') $ getAreaSize $ area v
         }

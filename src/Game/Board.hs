@@ -6,7 +6,6 @@ module Game.Board
     genSolution,
 
     initialSol,
-    initialSol',
 ) where
 
     import Control.Monad
@@ -50,13 +49,14 @@ module Game.Board
             rowIter 0  _ = []
             rowIter ri y =
                 let r    = do y'  <- y
-                              bw' <- bw
-                              newRow ri nC (x,y'+bw')
-                    y''  = getYMax . getArea <$> r
+                              newRow ri nC (x,y')
+                    y''  = do bw' <- bw
+                              (+bw') . getYMax . getArea <$> r
                  in r : rowIter (ri-1) y''
 
+
             bw :: IO Coord
-            bw = read <$> getSetting "rowBorderWidth"
+            bw = read <$> getSetting "rowSpacing"
 
     genSolution :: Int -> Int -> State ([Int], StdGen) (IO Board)
     genSolution nR nC = fmap Board . sequence <$> replicateM nR
@@ -89,5 +89,3 @@ module Game.Board
     initialSol :: Int -> Board -> Board -> State ([(Int,Int)], StdGen) Board
     initialSol n b s = foldr (\i' b' -> uncurry (swapSquare b' s) i') b
                    <$> replicateM n getPos
-
-    initialSol' n = replicateM n getPos

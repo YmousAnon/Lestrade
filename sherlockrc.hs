@@ -1,17 +1,29 @@
 --Game
-columns         = 8
-rows            = 4
-initialSolved   = 4
+columns          = 8
+rows             = 4
+initialSolved    = 4
+
+
 
 --Graphics
-screenres       = (1024,768)
-tileset         = science
-tileWidth       = 64
-tileBorderWidth = 8
-rowBorderWidth  = 0
-separatorwidth  = 32
-bgrgb           = [377,255,220]
-tilergb         = [0,0,0]
+screenres        = (1024,768)
+tileset          = science
+
+----Boarders
+tileWidth        = 64
+tileSpacing      = 8
+hintBorderWidth  = 4
+hintSpacing      = 4
+rowSpacing       = 0
+separatorSpacing = 32
+
+----Colours
+bgrgb            = [255,200,150]
+tilergb          = [000,000,000]
+hintrgb          = [000,000,000]
+hintselectedrgb  = [255,000,000]
+
+
 
 --Misc
-keyPressWait    = 0.1
+keyPressWait     = 0.1
