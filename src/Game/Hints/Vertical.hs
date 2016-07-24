@@ -6,26 +6,41 @@ module Game.Hints.Vertical
 
     VHintBoard,
     newEmptyVHintBoard,
+    addVHint,
     fillVHintBoard,
+
+    genVHint,
 ) where
 
+    import Control.Monad
     import Control.Monad.Trans.State
 
+    import Data.List
+    import Game.Board
+    import Game.Board.Square
+    import Game.Board.Row
     import Game.Board.Value
 
     import Interface.Coordinate
+    import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
 
-    import Interface.Input.Settings
+    import System.Random
+
 
     data VHint = VHint
                  { vals     :: [Value]
+                 , len      :: Int
                  , area     :: Area
-                 , bgrgb    :: [Double]
+                 , bgrgb    :: [Float]
                  , selected :: Bool
                  , hidden   :: Bool
                  }
+
+    instance Show VHint where
+        --show VHint { vals = vs } = "Testastic"
+        show VHint { vals = vs } = concatMap (\v -> '\n':show v) vs++"\n"
 
     instance Renderable VHint where
         render w VHint
@@ -35,6 +50,19 @@ module Game.Hints.Vertical
             } = renderColour w a rgb
              >> mapM_ (render w) vs
         getArea = area
+
+    instance Movable VHint where
+        moveTo xy  vh = moveBy (xy>-<(getAreaStart $ area vh)) vh
+        moveBy dxy vh = VHint
+                        { vals     = map (moveBy dxy) $ vals vh
+                        , len      = len                     vh
+                        , area     = moveBy dxy       $ area vh
+                        , bgrgb    = bgrgb                   vh
+                        , selected = selected                vh
+                        , hidden   = hidden                  vh
+                        }
+
+
 
     newVHint :: [Value] -> Point -> IO VHint
     newVHint vs (x,y) = do
@@ -48,6 +76,7 @@ module Game.Hints.Vertical
             avs = newArea (x,y) (2*hbw+tw) (2*hbw+3*tw)
         return VHint
             { vals     = vs'
+            , len      = length vs
             , area     = avs
             , bgrgb    = bgc
             , selected = False
@@ -65,6 +94,46 @@ module Game.Hints.Vertical
                         | otherwise = moveValueTo (head vs) (x,y)
                     vs' | null vs   = []
                         | otherwise = tail vs
+
+    genVHint :: (Int,Int) -> Board -> State StdGen (IO VHint)
+    genVHint (ri,ci) s = do nR <- getVHintN
+
+                            rs <- let rs' = deleteI ri $ rows s
+                                   in shuffle rs' <$> order (length rs')
+                                   --in shuffle rs' <$> order (length rs'-1)
+                            let r  = rows s !! ri
+
+                                vs = map (\r' -> val $ getRowSquare r' ci) $
+                                         sort (r:take (nR-1) rs)
+                            --map (\r' -> getBoardSquare s r' c) (r:rs)
+                            --return (length rs)
+                            --return (take ri (rows s)++drop (ri+1) (rows s))
+
+
+
+                            --rs' = shuffle' rs (length rs)
+                            --rs = runState (randomR (0, length (rows s)))
+                            --rs = replicateM nR $ runState $
+                            --let i = 4
+                            --    j = 3
+                            --sort . take j . shuffle [0..i] <$>(order i)--newVHint vs (0,0)
+                            return $ newVHint vs (0,0)--shuffle rs <$> order i
+        where
+            getVHintN :: State StdGen (Int)
+            getVHintN = state $ randomR (2, 3)
+
+            order :: Int -> State StdGen [Int]
+            order 0 = return []
+            order n = do i  <- state $ randomR (0,n-1)
+                         is <- order (n-1)
+                         return (i:is)
+
+            shuffle :: [a] -> [Int] -> [a]
+            shuffle xs []     = []
+            shuffle xs (i:is) = xs !! i : shuffle (deleteI i xs) is
+
+            deleteI :: Int -> [a] -> [a]
+            deleteI i xs = take i xs++drop (i+1) xs
 
 
 
@@ -86,16 +155,22 @@ module Game.Hints.Vertical
                               , width = w
                               }
 
-    addVHint :: VHintBoard -> VHint -> VHintBoard
-    addVHint VHintBoard { hints = hs     , xy = xy, width = w } h =
-             VHintBoard { hints = hs++[h], xy = xy, width = w }
+    addVHint :: VHintBoard -> VHint -> IO VHintBoard
+    addVHint vhb h = do
+        pt <- nextPos vhb
+        return VHintBoard { hints = hs++[moveTo pt h], xy = xy', width = w }
+        --return VHintBoard { hints = hs++[moveTo pt h], xy = xy', width = w }
+        where
+            hs  = hints vhb
+            xy' = xy    vhb
+            w   = width vhb
 
     fillVHintBoard :: VHintBoard -> IO VHintBoard
     fillVHintBoard vhb  = do
         h <- nextPos vhb >>= newVHint []
 
         if getYMax (getArea h) <= getYMax (getArea vhb) || null (hints vhb)
-            then fillVHintBoard $ addVHint vhb h
+            then fillVHintBoard =<< addVHint vhb h
             else return vhb
 
     nextPos :: VHintBoard -> IO Point
@@ -110,3 +185,5 @@ module Game.Hints.Vertical
             xy'' hs' = if w < x' + getWidth (getArea h)
                            then (x ,hs' + getYMax (getArea h))
                            else (hs' + x',y')
+
+

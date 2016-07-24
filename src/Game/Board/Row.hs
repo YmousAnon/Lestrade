@@ -24,7 +24,16 @@ module Game.Board.Row
     import Interface.Render
 
 
-    data Row = Row { squares :: [Square] }
+    data Row = Row { rowNum  :: Int
+                   , squares :: [Square]
+                   }
+
+    instance Eq Row where
+        r == r' = rowNum r == rowNum r'
+
+    instance Ord Row where
+        r <= r' = rowNum r <= rowNum r'
+
 
     instance Show Row where
         show = show . squares
@@ -35,20 +44,24 @@ module Game.Board.Row
 
     instance Clickable Row where
         lclick pt r = let ss = squares r
+                          rN = rowNum  r
                        in do ss' <- mapM (lclick pt) ss
                              if ss == ss'
-                              then return $ Row   ss'
-                              else return $ Row $ map (removeVal
-                                                      (val $ head (ss'\\ss)))
-                                                      ss'
+                              then return $ row rN   ss'
+                              else return $ row rN $ map (removeVal
+                                                     (val $ head (ss'\\ss)))
+                                                     ss'
 
         rclick pt r = do ss <- mapM (rclick pt) $ squares r
-                         return Row { squares = ss }
+                         let rN = rowNum r
+                         return Row { rowNum = rN, squares = ss }
 
+    row :: Int -> [Square] -> Row
+    row r ss = Row{ rowNum = r, squares = ss }
 
 
     newRow :: Int -> Int -> Point -> IO Row
-    newRow r nC (x,y) = fmap Row $ sequence $ squareIter nC $ return x
+    newRow r nC (x,y) = fmap (row r) $ sequence $ squareIter nC $ return x
         where
             squareIter :: Int -> IO Coord -> [IO Square]
             squareIter 0 _ = []
@@ -63,22 +76,25 @@ module Game.Board.Row
             bw :: IO Coord
             bw = read <$> getSetting "tileSpacing"
 
-
-    genSolvedRow :: Int -> State ([Int], StdGen) (IO Row)
-    genSolvedRow nC = fmap Row . sequence
-                             <$> replicateM nC (genSolvedSquare nC)
+    genSolvedRow :: Int -> Int -> State ([Int], StdGen) (IO Row)
+    genSolvedRow nC r = fmap (row r) . sequence
+                                    <$> replicateM nC (genSolvedSquare nC)
 
 
 
     getRowSquare :: Row -> Int -> Square
-    getRowSquare (Row (s:ss)) 0 = s
-    getRowSquare (Row (s:ss)) c = getRowSquare (Row ss) (c-1)
+    getRowSquare r 0 = head $ squares r
+    getRowSquare r c = getRowSquare (row (rowNum r) (tail $ squares r)) (c-1)
+        where
+
 
     setRowSquare :: Row -> Int -> Square -> Row
-    setRowSquare (Row [])     c s' = Row []
-    setRowSquare (Row (s:ss)) c s' = Row $ s'' : squares (setRowSquare (Row ss)
-                                                                       (c-1)
-                                                                       s')
-        where s'' = if c == 0
-                        then transplantSolution s s'
-                        else removeVal (val s') s
+    setRowSquare r c s'
+        | squares r == [] = r
+        | otherwise       = row rN $ s'' : ss'
+        where s''    = if c == 0
+                           then transplantSolution s s'
+                           else removeVal (val s') s
+              (s:ss) = squares r
+              ss'    = squares $ setRowSquare (row rN ss) (c-1) s'
+              rN     = rowNum r

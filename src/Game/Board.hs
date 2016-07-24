@@ -1,6 +1,7 @@
 module Game.Board
 (
     Board,
+    rows,
 
     newBoard,
     genSolution,
@@ -58,8 +59,8 @@ module Game.Board
             bw = read <$> getSetting "rowSpacing"
 
     genSolution :: Int -> Int -> State ([Int], StdGen) (IO Board)
-    genSolution nR nC = fmap Board . sequence <$> replicateM nR
-                                                             (genSolvedRow nC)
+    genSolution nR nC = fmap Board . sequence <$> mapM (genSolvedRow nC)
+                                                       [1..nR]
 
 
 

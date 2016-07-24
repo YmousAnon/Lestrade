@@ -6,21 +6,19 @@ module Interface.Render.Primitive
     renderColour,
 ) where
 
-    import Graphics.UI.GLUT          as GLUT
+    import Graphics.UI.GLFW          as GLFW
     import Graphics.GLUtil           as GLU
-    import qualified Graphics.Rendering.OpenGL as GL
+    import Graphics.Rendering.OpenGL as GL
 
     import Interface.Coordinate
-
-    import Unsafe.Coerce
 
 
     renderTexture :: Area -> Area -> TextureObject -> IO()
     renderTexture window area tex =
-        let (x,x') = xRangeToGL window $ getXRange area
-            (y,y') = yRangeToGL window $ getYRange area
+        let (x,x',y,y') = getCorners window area
 
-         in do textureBinding Texture2D $= Just tex
+         in do activeTexture $= TextureUnit 0
+               textureBinding Texture2D $= Just tex
                renderPrimitive Quads $ do
                    col
                    txc 1 1 >> ver x' y'
@@ -37,20 +35,24 @@ module Interface.Render.Primitive
 
         textureFilter Texture2D $= ((Linear', Nothing), Linear')
 
-        return $ unsafeCoerce tex
+        return tex
 
 
 
-    renderColour :: Area -> Area -> [Double] -> IO()
+    renderColour :: Area -> Area -> [Float] -> IO()
     renderColour window area rgb =
-        let (x,x') = xRangeToGL window $ getXRange area
-            (y,y') = yRangeToGL window $ getYRange area
+        let (x,x',y,y') = getCorners window area
 
          in renderPrimitive Quads $ do
-                col $ map unsafeCoerce rgb
+                col rgb
                 ver x' y'
                 ver x' y
                 ver x  y
                 ver x  y'
         where col [r,g,b] = color  (Color3 r g b :: Color3  GLfloat)
               ver x y     = vertex (Vertex2 x y  :: Vertex2 GLfloat)
+
+    getCorners :: Area -> Area -> (GLfloat,GLfloat,GLfloat,GLfloat)
+    getCorners window area = let (x,x') = xRangeToGL window $ getXRange area
+                                 (y,y') = yRangeToGL window $ getYRange area
+                              in (x,x',y,y')

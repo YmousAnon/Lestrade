@@ -5,17 +5,25 @@ module Interface.Coordinate
 
 
     Point,
+    (>+<),
+    (>-<),
+    (>/<),
 
     getX,
     getY,
 
     pointToGL,
-    posToPt,
+    posToPoint,
     pointInArea,
 
 
 
+    Movable,
+    moveTo,
+    moveBy,
+
     Area (Area, Empty),
+    (\/),
     newArea,
 
     getAreaStart,
@@ -35,14 +43,15 @@ module Interface.Coordinate
     getYMin,
     getYMax,
 
-    (\/)
+    sizeToArea,
+
+    --getScaleFactor,
+    --scaleArea,
 ) where
 
-    import Graphics.UI.GLUT hiding (Point)
+    import Graphics.Rendering.OpenGL
 
     import Interface.Input.Settings
-
-    import Unsafe.Coerce
 
 
     type Coord = Int
@@ -57,6 +66,15 @@ module Interface.Coordinate
 
     type Point = (Coord,Coord)
 
+    (>+<) :: Point -> Point -> Point
+    (x,y) >+< (x',y') = (x+x',y+y')
+
+    (>-<) :: Point -> Point -> Point
+    (x,y) >-< (x',y') = (x-x',y-y')
+
+    (>/<) :: Point -> Point -> Point
+    (x,y) >/< (x',y') = (div x x',div y y')
+
     getX :: Point -> Coord
     getX (x,y) = x
 
@@ -66,22 +84,49 @@ module Interface.Coordinate
     pointToGL :: Area -> Point -> (GLfloat,GLfloat)
     pointToGL window (x,y) = (xCoordToGL window x,yCoordToGL window y)
 
-    posToPt :: Position -> Point
-    posToPt (Position x y) = (fromIntegral x,fromIntegral y)
+    posToPoint :: (Double,Double) -> Point
+    posToPoint (x,y) = (round x,round y)
 
     pointInArea :: Point -> Area -> Bool
     pointInArea (x,y) a = x > getXMin a && x < getXMax a
                        && y > getYMin a && y < getYMax a
 
 
+
+
+    class Movable a where
+        moveTo :: Point -> a -> a
+        moveBy :: Point -> a -> a
+
     data Area = Empty | Area
         { xy :: Point
         , wh :: Point
         }
+
     instance Show Area where
-        show a = show (x,y)++" - "++show (x+w,x+y)
+        show a = show (x,y)++" - "++show (x+w,y+h)
             where (x,y) = xy a
                   (w,h) = wh a
+
+    instance Movable Area where
+        moveTo xy' Area { xy = xy      , wh = wh } =
+                   Area { xy = xy'     , wh = wh }
+        moveBy dxy Area { xy = xy      , wh = wh } =
+                   Area { xy = xy>+<dxy, wh = wh }
+
+    (\/) :: Area -> Area -> Area
+    Empty \/ a     = a
+    a     \/ Empty = a
+    a     \/ a'    = Area
+        { xy = (x0   ,y0   )
+        , wh = (x1-x0,y1-y0)
+        }
+        where
+            x0 = min (getXMin a) (getXMin a')
+            x1 = max (getXMax a) (getXMax a')
+            y0 = min (getYMin a) (getYMin a')
+            y1 = max (getYMax a) (getYMax a')
+
 
     newArea :: Point -> Coord -> Coord -> Area
     newArea xy w h = Area { xy = xy, wh = (w,h) }
@@ -127,15 +172,8 @@ module Interface.Coordinate
     getYMax :: Area -> Coord
     getYMax a = snd $ getYRange a
 
-    (\/) :: Area -> Area -> Area
-    Empty \/ a     = a
-    a     \/ Empty = a
-    a     \/ a'    = Area
-        { xy = (x0   ,y0   )
-        , wh = (x1-x0,y1-y0)
-        }
-        where
-            x0 = min (getXMin a) (getXMin a')
-            x1 = max (getXMax a) (getXMax a')
-            y0 = min (getYMin a) (getYMin a')
-            y1 = max (getYMax a) (getYMax a')
+
+    sizeToArea :: Size -> Area
+    sizeToArea (Size x y) = newArea (0,0) (fromIntegral x) (fromIntegral y)
+
+

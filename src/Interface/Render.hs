@@ -7,11 +7,13 @@ module Interface.Render
     display,
 ) where
 
+    import Control.Monad
+
     import Data.IORef
-    import Data.StateVar
 
     import Graphics.GLUtil
-    import Graphics.UI.GLUT
+    import Graphics.Rendering.OpenGL
+    import Graphics.UI.GLFW
 
     import Interface.Coordinate
 
@@ -21,14 +23,14 @@ module Interface.Render
         getArea :: a -> Area
 
 
-    display :: Renderable a => IORef a -> DisplayCallback
-    display ioGame = do
-        clear [ColorBuffer, DepthBuffer]
-
-        game <- readIORef ioGame
-
-        windowSize $= Size (fromIntegral $ getXMax $ getArea game)
+    display :: Renderable a => Window -> IORef Bool -> a -> IO()
+    display w dirty game = readIORef dirty >>= \dirty' ->
+        when dirty' $ do
+           setWindowSize w (fromIntegral $ getXMax $ getArea game)
                            (fromIntegral $ getYMax $ getArea game)
-        render (getArea game) game
 
-        flush
+           clear [ColorBuffer, DepthBuffer]
+           render (getArea game) game
+           swapBuffers w
+
+           writeIORef dirty False

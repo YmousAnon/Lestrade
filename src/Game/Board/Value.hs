@@ -12,7 +12,7 @@ module Game.Board.Value
     moveValueTo,
 ) where
 
-    import Graphics.UI.GLUT (TextureObject)
+    import Graphics.Rendering.OpenGL as GL
 
     import Interface.Input.Settings
     import Interface.Render
@@ -22,11 +22,11 @@ module Game.Board.Value
 
 
     data Value = Value
-                { vali  :: Int
-                , row   :: Int
-                , tex   :: IO TextureObject
-                , area  :: Area
-                 }
+                { vali :: Int
+                , row  :: Int
+                , tex  :: IO TextureObject
+                , area :: Area
+                }
 
     instance Show Value where
         show Value { vali = v } = show v
@@ -37,6 +37,20 @@ module Game.Board.Value
     instance Renderable Value where
         render  w v = tex v >>= renderTexture w (area v)
         getArea     = area
+
+    instance Movable Value where
+        moveTo xy' v = Value
+                       { vali = vali              v
+                       , row  = row               v
+                       , tex  = tex               v
+                       , area = moveTo xy' $ area v
+                        }
+        moveBy xy' v = Value
+                       { vali = vali              v
+                       , row  = row               v
+                       , tex  = tex               v
+                       , area = moveBy xy' $ area v
+                        }
 
 
 

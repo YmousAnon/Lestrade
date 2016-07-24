@@ -23,5 +23,4 @@ module Interface.Input.Seed
     trim = let f = reverse . dropWhile isSpace in f . f
 
     onlyDigits :: String -> Bool
-    onlyDigits []     = True
-    onlyDigits (c:cs) = isDigit c && onlyDigits cs
+    onlyDigits (c:cs) = foldr ((&&) . isDigit) True cs

@@ -4,7 +4,8 @@ module Interface.Input
     lclick,
     rclick,
 
-    click,
+    Action (Action),
+    mouseKeysUp,
 ) where
 
     import Control.Monad
@@ -13,7 +14,7 @@ module Interface.Input
     import Data.Time
 
     import Graphics.GLUtil
-    import Graphics.UI.GLUT hiding (GLfloat)
+    import Graphics.UI.GLFW
 
     import Interface.Coordinate
     import Interface.Render
@@ -24,15 +25,47 @@ module Interface.Input
         rclick :: Point -> a -> IO a
 
 
-    click :: (Renderable a, Clickable a) => IORef a -> KeyboardMouseCallback
-    click  ioGame _key _state _modifiers _position = do
-        game <- readIORef ioGame
 
-        unless (_state == Up)
-            (writeIORef ioGame =<<
-                    (case _key of
-                        MouseButton LeftButton  -> lclick (posToPt _position)
-                        MouseButton RightButton -> rclick (posToPt _position)
-                        _                       -> return) game)
+    data Action a = Action (a,IORef Bool -> Window -> a -> IO (Action a))
 
-        display ioGame
+
+
+    mouseKeysUp :: Clickable a => IORef Bool -> Window -> a -> IO(Action a)
+    mouseKeysUp dirty w game = do
+        pollEvents
+
+        lButton <- lPress w
+        rButton <- rPress w
+
+        pt      <- posToPoint <$> getCursorPos w
+
+        let ioGame'    | lButton            = lclick pt game
+                       | rButton            = rclick pt game
+                       | otherwise          = return    game
+            nextAction | lButton || rButton = mouseKeyDown
+                       | otherwise          = mouseKeysUp
+            writeDirty | lButton || rButton = writeIORef dirty True
+                       | otherwise          = return()
+
+         in do writeDirty
+               game' <- ioGame'
+               return $ Action (game', nextAction)
+
+    mouseKeyDown :: Clickable a => IORef Bool -> Window -> a -> IO(Action a)
+    mouseKeyDown _ w game = do
+        pollEvents
+
+        lButton <- lPress w
+        rButton <- rPress w
+
+        let nextAction | lButton || rButton = mouseKeyDown
+                       | otherwise          = mouseKeysUp
+         in return $ Action (game, nextAction)
+
+
+
+    lPress :: Window -> IO Bool
+    lPress w = (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'1
+
+    rPress :: Window -> IO Bool
+    rPress w = (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'2

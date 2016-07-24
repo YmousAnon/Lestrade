@@ -22,7 +22,7 @@ module Game.Hints.Horizontal
     data HHint = HHint
                  { vals     :: [Value]
                  , area     :: Area
-                 , bgrgb    :: [Double]
+                 , bgrgb    :: [Float]
                  , selected :: Bool
                  , hidden   :: Bool
                  }
@@ -65,6 +65,8 @@ module Game.Hints.Horizontal
                         | otherwise = moveValueTo (head vs) (x,y)
                     vs' | null vs   = []
                         | otherwise = tail vs
+
+
 
 
 

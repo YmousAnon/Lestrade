@@ -31,7 +31,7 @@ module Game.Board.Square
                 , cols   :: Int
                 , row    :: Int
                 , area   :: Area
-                , bgrgb  :: [Double]
+                , bgrgb  :: [Float]
                 , static :: Bool
                  }
                | Alternatives
@@ -39,13 +39,15 @@ module Game.Board.Square
                 , cols   :: Int
                 , row    :: Int
                 , area   :: Area
-                , bgrgb  :: [Double]
+                , bgrgb  :: [Float]
                 , bgtile :: Value
                  }
 
     instance Show Square where
-        show Solution     { val  = v } = show v
-        show Alternatives { vals = v } = show v
+        show Solution     { val  = v, cols = c } =
+            show v++replicate (length (show [1..c])-length (show v)) ' '
+        show Alternatives { vals = v, cols = c } =
+            show v++replicate (length (show [1..c])-length (show v)) ' '
 
     instance Eq Square where
         Solution     { val  = v } == Solution     { val  = v' } = v == v'

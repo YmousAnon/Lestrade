@@ -1,5 +1,6 @@
 module Game
 (
+    Game,
     gameInit,
 ) where
 
@@ -8,6 +9,7 @@ module Game
     import Data.IORef
 
     import Game.Board
+    import Game.Hints
     import Game.Hints.Vertical
     import Game.Hints.Horizontal
 
@@ -37,7 +39,8 @@ module Game
                   \/ getArea (hhb   g)
 
     instance Clickable Game where
-        lclick pt g = do b <- lclick pt $ board    g
+        lclick pt g = do putStrLn ("L "++show pt)
+                         b <- lclick pt $ board    g
                          return Game
                              { board    = b
                              , solution = solution g
@@ -45,7 +48,8 @@ module Game
                              , vhb      = vhb      g
                              , hhb      = hhb      g
                              }
-        rclick pt g = do b <- rclick pt $ board    g
+        rclick pt g = do putStrLn ("R "++show pt)
+                         b <- rclick pt $ board    g
                          return Game
                              { board    = b
                              , solution = solution g
@@ -55,7 +59,8 @@ module Game
                              }
 
 
-    gameInit :: Int -> IO (IORef Game)
+
+    gameInit :: Int -> IO Game
     gameInit seed = do
         let g = mkStdGen seed
 
@@ -68,19 +73,56 @@ module Game
 
         let (s, (_, g'))    = runState (genSolution nR nC) ([1..nC],g)
         do s' <- s
-           print s'
-           let (b',(_,g'')) = runState (initialSol is b s') (concat [[(r,c)
-                                                            | r <- [0..nR-1]]
-                                                            | c <- [0..nC-1]]
-                                                            ,g')
+           let (b',(us,g'')) = runState (initialSol is b s') (concat [[(r,c)
+                                                             | r <- [0..nR-1]]
+                                                             | c <- [0..nC-1]]
+                                                             ,g')
            let y = getYMax $ getArea b'
                x = getXMax $ getArea b'
-           vhb <- fillVHintBoard $ newEmptyVHintBoard (0,y) (getXMax $ getArea b')
+           vhb <- fillVHintBoard =<< (addVHint (newEmptyVHintBoard (0,y) (getXMax $ getArea b')) =<< evalState (genHint s') (us,g''))
            hhb <- fillHHintBoard $ newEmptyHHintBoard (x,0) (getYMax $ getArea b')
-           newIORef Game
+           --print $ evalState (genHint s') (us,g'')
+           --print =<<
+           --print us
+           --print b'
+           --print b
+           --print s'
+           --print a
+           return Game
                { board    = b'
                , solution = s'
                , gen      = g
                , vhb      = vhb
                , hhb      = hhb
                }
+
+    --gameInit :: Int -> IO (IORef Game)
+    --gameInit seed = do
+    --    let g = mkStdGen seed
+
+    --    nC <- read <$> getSetting "columns"
+    --    nR <- read <$> getSetting "rows"
+
+    --    is <- read <$> getSetting "initialSolved"
+
+    --    b  <- newBoard nR nC (0,0)
+
+    --    let (s, (_, g'))    = runState (genSolution nR nC) ([1..nC],g)
+    --    do s' <- s
+    --       print s'
+    --       let (b',(_,g'')) = runState (initialSol is b s') (concat [[(r,c)
+    --                                                        | r <- [0..nR-1]]
+    --                                                        | c <- [0..nC-1]]
+    --                                                        ,g')
+    --       let y = getYMax $ getArea b'
+    --           x = getXMax $ getArea b'
+    --       vhb <- fillVHintBoard $ newEmptyVHintBoard (0,y) (getXMax $ getArea b')
+    --       hhb <- fillHHintBoard $ newEmptyHHintBoard (x,0) (getYMax $ getArea b')
+    --       --print a
+    --       newIORef Game
+    --           { board    = b'
+    --           , solution = s'
+    --           , gen      = g
+    --           , vhb      = vhb
+    --           , hhb      = hhb
+    --           }
