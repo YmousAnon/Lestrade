@@ -41,7 +41,6 @@ module Game.Board
         rclick pt b = fmap Board (mapM (rclick pt) (rows b))
 
 
-
     newBoard :: Int -> Int -> Point -> IO Board
     newBoard nR nC (x,y) = fmap Board $ sequence $ rowIter nR $ return y
         where

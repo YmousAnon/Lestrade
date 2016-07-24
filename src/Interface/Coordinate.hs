@@ -43,10 +43,7 @@ module Interface.Coordinate
     getYMin,
     getYMax,
 
-    sizeToArea,
-
-    --getScaleFactor,
-    --scaleArea,
+    inArea,
 ) where
 
     import Graphics.Rendering.OpenGL
@@ -173,7 +170,8 @@ module Interface.Coordinate
     getYMax a = snd $ getYRange a
 
 
-    sizeToArea :: Size -> Area
-    sizeToArea (Size x y) = newArea (0,0) (fromIntegral x) (fromIntegral y)
-
-
+    inArea :: Point -> Area -> Bool
+    inArea pt a = fst pt >= getXMin a
+               && fst pt <= getXMax a
+               && snd pt >= getYMin a
+               && snd pt <= getYMax a

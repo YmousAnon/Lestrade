@@ -22,6 +22,7 @@ module Game.Hints.Vertical
     import Game.Board.Value
 
     import Interface.Coordinate
+    import Interface.Input
     import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
@@ -61,6 +62,11 @@ module Game.Hints.Vertical
                         , selected = selected                vh
                         , hidden   = hidden                  vh
                         }
+
+    instance Clickable VHint where
+        lclick pt vh = return $ vh
+        rclick pt vh = return $ if inArea pt (area vh) then toggleHideVHint vh
+                                                       else vh
 
 
 
@@ -137,6 +143,36 @@ module Game.Hints.Vertical
 
 
 
+
+    toggleHideVHint :: VHint -> VHint
+    toggleHideVHint vh = if hidden vh then unHideVHint vh else hideVHint vh
+
+    hideVHint :: VHint -> VHint
+    hideVHint vh = let vsh = take (len vh) (vals vh)
+                       vst = drop (len vh) (vals vh)
+                    in VHint
+            { vals     = map (changeCol [0.25,0.25,0.25]) vsh++vst
+            , len      = len      vh
+            , area     = area     vh
+            , bgrgb    = bgrgb    vh
+            , selected = selected vh
+            , hidden   = True
+            }
+
+    unHideVHint :: VHint -> VHint
+    unHideVHint vh = let vsh = take (len vh) (vals vh)
+                         vst = drop (len vh) (vals vh)
+                      in VHint
+            { vals     = map (changeCol [1,1,1]) vsh++vst
+            , len      = len      vh
+            , area     = area     vh
+            , bgrgb    = bgrgb    vh
+            , selected = selected vh
+            , hidden   = False
+            }
+
+
+
     data VHintBoard = VHintBoard
                       { hints :: [VHint]
                       , xy    :: Point
@@ -147,6 +183,21 @@ module Game.Hints.Vertical
         render w    = mapM_ (render w) . hints
         getArea vhb = foldl (\/) (newArea (xy vhb) 0 0)
                     $ map getArea (hints vhb)
+
+    instance Clickable VHintBoard where
+        lclick pt vhb = do hs' <- mapM (lclick pt) (hints vhb)
+                           return VHintBoard
+                                  { hints = hs'
+                                  , xy    = xy    vhb
+                                  , width = width vhb
+                                  }
+        rclick pt vhb = do hs' <- mapM (rclick pt) (hints vhb)
+                           return VHintBoard
+                                  { hints = hs'
+                                  , xy    = xy    vhb
+                                  , width = width vhb
+                                  }
+
 
     newEmptyVHintBoard :: Point -> Coord -> VHintBoard
     newEmptyVHintBoard xy w = VHintBoard
@@ -185,5 +236,3 @@ module Game.Hints.Vertical
             xy'' hs' = if w < x' + getWidth (getArea h)
                            then (x ,hs' + getYMax (getArea h))
                            else (hs' + x',y')
-
-

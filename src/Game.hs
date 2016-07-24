@@ -40,21 +40,23 @@ module Game
 
     instance Clickable Game where
         lclick pt g = do putStrLn ("L "++show pt)
-                         b <- lclick pt $ board    g
+                         b'   <- lclick pt $ board    g
+                         vhb' <- lclick pt $ vhb      g
                          return Game
-                             { board    = b
+                             { board    = b'
                              , solution = solution g
                              , gen      = gen      g
-                             , vhb      = vhb      g
+                             , vhb      = vhb'
                              , hhb      = hhb      g
                              }
         rclick pt g = do putStrLn ("R "++show pt)
-                         b <- rclick pt $ board    g
+                         b'   <- rclick pt $ board    g
+                         vhb' <- rclick pt $ vhb      g
                          return Game
-                             { board    = b
+                             { board    = b'
                              , solution = solution g
                              , gen      = gen      g
-                             , vhb      = vhb      g
+                             , vhb      = vhb'
                              , hhb      = hhb      g
                              }
 

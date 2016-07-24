@@ -8,6 +8,8 @@ module Game.Board.Value
     selectValue,
     transplantValue,
 
+    changeCol,
+
     moveValueBy,
     moveValueTo,
 ) where
@@ -22,10 +24,11 @@ module Game.Board.Value
 
 
     data Value = Value
-                { vali :: Int
-                , row  :: Int
-                , tex  :: IO TextureObject
-                , area :: Area
+                { vali  :: Int
+                , row   :: Int
+                , tex   :: IO TextureObject
+                , area  :: Area
+                , fgrgb :: [Float]
                 }
 
     instance Show Value where
@@ -35,21 +38,23 @@ module Game.Board.Value
         v == v' = vali v == vali v'
 
     instance Renderable Value where
-        render  w v = tex v >>= renderTexture w (area v)
+        render  w v = tex v >>= renderTexture w (area v) (fgrgb v)
         getArea     = area
 
     instance Movable Value where
         moveTo xy' v = Value
-                       { vali = vali              v
-                       , row  = row               v
-                       , tex  = tex               v
-                       , area = moveTo xy' $ area v
+                       { vali  = vali              v
+                       , row   = row               v
+                       , tex   = tex               v
+                       , area  = moveTo xy' $ area v
+                       , fgrgb = fgrgb             v
                         }
         moveBy xy' v = Value
-                       { vali = vali              v
-                       , row  = row               v
-                       , tex  = tex               v
-                       , area = moveBy xy' $ area v
+                       { vali  = vali              v
+                       , row   = row               v
+                       , tex   = tex               v
+                       , area  = moveBy xy' $ area v
+                       , fgrgb = fgrgb             v
                         }
 
 
@@ -63,6 +68,7 @@ module Game.Board.Value
             , row   = r
             , tex   = getTexture r v
             , area  = area'
+            , fgrgb = [1,1,1]
             }
         where
             area tw = newArea pt (w tw) (w tw)
@@ -92,6 +98,18 @@ module Game.Board.Value
         , row   = row  v'
         , tex   = tex  v
         , area  = a
+        , fgrgb = [1,1,1]
+        }
+
+
+
+    changeCol :: [Float] -> Value -> Value
+    changeCol fgrgb' v = Value
+        { vali  = vali v
+        , row   = row  v
+        , tex   = tex  v
+        , area  = area v
+        , fgrgb = fgrgb'
         }
 
 
@@ -104,8 +122,9 @@ module Game.Board.Value
 
     moveValueTo :: Value -> Point -> Value
     moveValueTo v xy' = Value
-        { vali  = vali v
-        , row   = row  v
-        , tex   = tex  v
+        { vali  = vali                                       v
+        , row   = row                                        v
+        , tex   = tex                                        v
         , area  = uncurry (newArea xy') $ getAreaSize $ area v
+        , fgrgb = fgrgb                                      v
         }

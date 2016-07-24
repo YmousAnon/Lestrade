@@ -13,21 +13,21 @@ module Interface.Render.Primitive
     import Interface.Coordinate
 
 
-    renderTexture :: Area -> Area -> TextureObject -> IO()
-    renderTexture window area tex =
+    renderTexture :: Area -> Area -> [Float] -> TextureObject -> IO()
+    renderTexture window area rgb tex =
         let (x,x',y,y') = getCorners window area
 
          in do activeTexture $= TextureUnit 0
                textureBinding Texture2D $= Just tex
                renderPrimitive Quads $ do
-                   col
+                   col rgb
                    txc 1 1 >> ver x' y'
                    txc 1 0 >> ver x' y
                    txc 0 0 >> ver x  y
                    txc 0 1 >> ver x  y'
-        where col     = color    (Color3 1.0 1.0 1.0 :: Color3    GLfloat)
-              ver x y = vertex   (Vertex2 x y        :: Vertex2   GLfloat)
-              txc u v = texCoord (TexCoord2 u v      :: TexCoord2 GLfloat)
+        where col [r,g,b] = color    (Color3 r g b  :: Color3    GLfloat)
+              ver x y     = vertex   (Vertex2 x y   :: Vertex2   GLfloat)
+              txc u v     = texCoord (TexCoord2 u v :: TexCoord2 GLfloat)
 
     loadTexture' :: FilePath -> IO TextureObject
     loadTexture' f = do
