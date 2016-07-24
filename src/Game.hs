@@ -39,8 +39,7 @@ module Game
                   \/ getArea (hhb   g)
 
     instance Clickable Game where
-        lclick pt g = do putStrLn ("L "++show pt)
-                         b'   <- lclick pt $ board    g
+        lclick pt g = do b'   <- lclick pt $ board    g
                          vhb' <- lclick pt $ vhb      g
                          return Game
                              { board    = b'
@@ -49,8 +48,7 @@ module Game
                              , vhb      = vhb'
                              , hhb      = hhb      g
                              }
-        rclick pt g = do putStrLn ("R "++show pt)
-                         b'   <- rclick pt $ board    g
+        rclick pt g = do b'   <- rclick pt $ board    g
                          vhb' <- rclick pt $ vhb      g
                          return Game
                              { board    = b'

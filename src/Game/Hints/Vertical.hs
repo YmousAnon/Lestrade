@@ -64,9 +64,10 @@ module Game.Hints.Vertical
                         }
 
     instance Clickable VHint where
-        lclick pt vh = return $ vh
-        rclick pt vh = return $ if inArea pt (area vh) then toggleHideVHint vh
-                                                       else vh
+        lclick pt vh = if inArea pt (area vh) then toggleSelectVHint        vh
+                                              else return                   vh
+        rclick pt vh = if inArea pt (area vh) then return $ toggleHideVHint vh
+                                              else return                   vh
 
 
 
@@ -144,6 +145,34 @@ module Game.Hints.Vertical
 
 
 
+    toggleSelectVHint :: VHint -> IO VHint
+    toggleSelectVHint vh = if selected vh then unSelectVHint vh
+                                          else selectVHint   vh
+
+    selectVHint :: VHint -> IO VHint
+    selectVHint vh = do
+        bgrgb' <- map (/255) . read <$> getSetting "hintselectedrgb"
+        return VHint { vals     = vals     vh
+                     , len      = len      vh
+                     , area     = area     vh
+                     , bgrgb    = bgrgb'
+                     , selected = True
+                     , hidden   = hidden   vh
+                     }
+
+    unSelectVHint :: VHint -> IO VHint
+    unSelectVHint vh = do
+        bgrgb' <- map (/255) . read <$> getSetting "hintrgb"
+        return VHint { vals     = vals     vh
+                     , len      = len      vh
+                     , area     = area     vh
+                     , bgrgb    = bgrgb'
+                     , selected = False
+                     , hidden   = hidden   vh
+                     }
+
+
+
     toggleHideVHint :: VHint -> VHint
     toggleHideVHint vh = if hidden vh then unHideVHint vh else hideVHint vh
 
@@ -185,18 +214,23 @@ module Game.Hints.Vertical
                     $ map getArea (hints vhb)
 
     instance Clickable VHintBoard where
-        lclick pt vhb = do hs' <- mapM (lclick pt) (hints vhb)
-                           return VHintBoard
-                                  { hints = hs'
-                                  , xy    = xy    vhb
-                                  , width = width vhb
-                                  }
+        lclick pt vhb = do
+            vhs'  <- swapSelected =<< mapM (lclick pt) (hints vhb)
+            vhs'' <- if any (inArea pt . getArea) vhs'
+                         then return             vhs'
+                         else mapM unSelectVHint vhs'
+            return VHintBoard
+                   { hints = vhs''
+                   , xy    = xy    vhb
+                   , width = width vhb
+                   }
         rclick pt vhb = do hs' <- mapM (rclick pt) (hints vhb)
                            return VHintBoard
                                   { hints = hs'
                                   , xy    = xy    vhb
                                   , width = width vhb
                                   }
+
 
 
     newEmptyVHintBoard :: Point -> Coord -> VHintBoard
@@ -236,3 +270,19 @@ module Game.Hints.Vertical
             xy'' hs' = if w < x' + getWidth (getArea h)
                            then (x ,hs' + getYMax (getArea h))
                            else (hs' + x',y')
+
+
+
+
+    swapSelected :: [VHint] -> IO[VHint]
+    swapSelected vhs = let sel   = filter selected         vhs
+                           nosel = filter (not . selected) vhs
+                        in if length sel == 2
+                               then (++nosel) <$> swapTwo sel
+                               else return vhs
+
+    swapTwo :: [VHint] -> IO[VHint]
+    swapTwo [vh0,vh1] =
+        let vh0' = unSelectVHint $ moveTo (getAreaStart $ getArea vh1) vh0
+            vh1' = unSelectVHint $ moveTo (getAreaStart $ getArea vh0) vh1
+         in sequence [vh0',vh1']
