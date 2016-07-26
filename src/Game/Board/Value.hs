@@ -16,17 +16,19 @@ module Game.Board.Value
 
     import Graphics.Rendering.OpenGL as GL
 
+    import Interface.Coordinate
     import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
 
-    import Interface.Coordinate
+
+    import System.IO.Unsafe
 
 
     data Value = Value
                 { vali  :: Int
                 , row   :: Int
-                , tex   :: IO TextureObject
+                , tex   :: TextureObject
                 , area  :: Area
                 , fgrgb :: [Float]
                 }
@@ -38,7 +40,7 @@ module Game.Board.Value
         v == v' = vali v == vali v'
 
     instance Renderable Value where
-        render  w v = tex v >>= renderTexture w (area v) (fgrgb v)
+        render  w v = renderTexture w (area v) (fgrgb v) (tex v)
         getArea     = area
 
     instance Movable Value where
@@ -66,7 +68,7 @@ module Game.Board.Value
         return Value
             { vali  = v
             , row   = r
-            , tex   = getTexture r v
+            , tex   = unsafePerformIO $ getTexture r v
             , area  = area'
             , fgrgb = [1,1,1]
             }
