@@ -41,17 +41,18 @@ module Game.Board
         rclick pt b = fmap Board (mapM (rclick pt) (rows b))
 
 
+
     newBoard :: Int -> Int -> Point -> IO Board
-    newBoard nR nC (x,y) = fmap Board $ sequence $ rowIter nR $ return y
+    newBoard nR nC (x,y) = fmap Board $ sequence $ rowIter 1 $ return y
         where
             rowIter :: Int -> IO Coord -> [IO Row]
-            rowIter 0  _ = []
-            rowIter ri y =
-                let r    = do y'  <- y
-                              newRow ri nC (x,y')
-                    y''  = do bw' <- bw
-                              (+bw') . getYMax . getArea <$> r
-                 in r : rowIter (ri-1) y''
+            rowIter ri y
+                | ri == nR+1 = []
+                | otherwise  = let r    = do y'  <- y
+                                             newRow ri nC (x,y')
+                                   y''  = do bw' <- bw
+                                             (+bw') . getYMax . getArea <$> r
+                                in r : rowIter (ri+1) y''
 
 
             bw :: IO Coord

@@ -86,7 +86,6 @@ module Game.Board.Value
 
 
 
-
     selectValue :: Value -> [Value] -> Value
     selectValue v' (v:vs)
         | v == v'   = v

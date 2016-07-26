@@ -157,12 +157,12 @@ module Game.Board.Square
             }
         where sw = getSquareWidth nC
 
-    genSolvedSquare :: Int -> State ([Int],StdGen) (IO Square)
-    genSolvedSquare nC = state $ \(vs,g) ->
+    genSolvedSquare :: Int -> Int -> State ([Int],StdGen) (IO Square)
+    genSolvedSquare nC r = state $ \(vs,g) ->
         let ig     = randomR (0, length vs-1) g
             (v,g') = (vs !! fst ig, snd ig)
             vs'    = if length vs > 1 then delete v vs else [1..nC]
-            s      = solvedSquare v 1 nC (0,0)
+            s      = solvedSquare v r nC (0,0)
         in  (s, (vs', g'))
 
 

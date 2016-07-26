@@ -26,7 +26,7 @@ main = getSeed >>= gameInit >>= guiInit >>= uncurry (loop mouseKeysUp)
                 Screen -> IO()
         loop action game s = windowShouldClose (window s) >>= \close ->
             unless close $ do
-                getTime >>= print
+                --getTime >>= print
 
                 display (window s) (dirty s) game
 

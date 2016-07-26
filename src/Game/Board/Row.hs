@@ -34,7 +34,6 @@ module Game.Board.Row
     instance Ord Row where
         r <= r' = rowNum r <= rowNum r'
 
-
     instance Show Row where
         show = show . squares
 
@@ -60,6 +59,7 @@ module Game.Board.Row
     row r ss = Row{ rowNum = r, squares = ss }
 
 
+
     newRow :: Int -> Int -> Point -> IO Row
     newRow r nC (x,y) = fmap (row r) $ sequence $ squareIter nC $ return x
         where
@@ -78,7 +78,7 @@ module Game.Board.Row
 
     genSolvedRow :: Int -> Int -> State ([Int], StdGen) (IO Row)
     genSolvedRow nC r = fmap (row r) . sequence
-                                    <$> replicateM nC (genSolvedSquare nC)
+                                    <$> replicateM nC (genSolvedSquare nC r)
 
 
 
@@ -86,7 +86,6 @@ module Game.Board.Row
     getRowSquare r 0 = head $ squares r
     getRowSquare r c = getRowSquare (row (rowNum r) (tail $ squares r)) (c-1)
         where
-
 
     setRowSquare :: Row -> Int -> Square -> Row
     setRowSquare r c s'
