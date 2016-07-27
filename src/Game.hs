@@ -11,6 +11,8 @@ module Game
     import Game.Board
     import Game.HintBoard
     import Game.HintBoard.Hint
+    import Game.HintBoard.Vertical
+    import Game.HintBoard.Horizontal
     --import Game.Hints.Vertical
     --import Game.Hints.Horizontal
 
@@ -28,16 +30,16 @@ module Game
                 , solution :: Board
                 , gen      :: StdGen
                 , vhb      :: HintBoard
-                --, hhb      :: HHintBoard
+                , hhb      :: HintBoard
                 }
 
     instance Renderable Game where
         render w g = render w (board g)
                   >> render w (vhb   g)
-                  -- >> render w (hhb   g)
+                  >> render w (hhb   g)
         getArea  g = getArea (board g)
                   \/ getArea (vhb   g)
-                  -- \/ getArea (hhb   g)
+                  \/ getArea (hhb   g)
 
     instance Clickable Game where
         lclick pt g = do b'   <- lclick pt $ board    g
@@ -47,7 +49,7 @@ module Game
                              , solution = solution g
                              , gen      = gen      g
                              , vhb      = vhb'
-                             --, hhb      = hhb      g
+                             , hhb      = hhb      g
                              }
         rclick pt g = do b'   <- rclick pt $ board    g
                          vhb' <- rclick pt $ vhb      g
@@ -56,7 +58,7 @@ module Game
                              , solution = solution g
                              , gen      = gen      g
                              , vhb      = vhb'
-                             --, hhb      = hhb      g
+                             , hhb      = hhb      g
                              }
 
 
@@ -87,9 +89,16 @@ module Game
                (ioVHint2,g'''') = runState (genHint (0,0) s') g'''
            vhint1 <- ioVHint1
            vhint2 <- ioVHint2
-           let emptyBoard = newEmptyHintBoard (0,y) (getXMax $ getArea b') Vertical
-           vhb  <- fillHintBoard =<< addHint vhint2 =<< addHint vhint1 emptyBoard
+           let emptyHBoard = newEmptyHintBoard (0,y) (getXMax $ getArea b') Vertical
+           vhb  <- fillHintBoard =<< addHint vhint2 =<< addHint vhint1 emptyHBoard
            -- !==! --
+
+           --print (getYMax $ getArea b')
+           let emptyHBoard = newEmptyHintBoard (x,0) (getYMax $ getArea b') Horizontal
+           hhb <- fillHintBoard emptyHBoard
+
+           -- !==! --
+
 
 
            --(addHint (newEmptyHintBoard (0,y) (getXMax $ getArea b')))
@@ -114,7 +123,7 @@ module Game
                , solution = s'
                , gen      = g
                , vhb      = vhb
-               --, hhb      = hhb
+               , hhb      = hhb
                }
 
     --gameInit :: Int -> IO (IORef Game)

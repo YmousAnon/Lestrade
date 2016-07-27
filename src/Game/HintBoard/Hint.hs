@@ -1,7 +1,7 @@
 module Game.HintBoard.Hint
 (
-    HintType (Vertical,Horizontal),
-    Hint (Hint,vals,len,area,bgrgb,selected,hidden,htype),
+    Orientation (Vertical,Horizontal),
+    Hint (Hint,vals,len,area,bgrgb,selected,hidden,hOrient),
 
     toggleSelectHint,
     selectHint,
@@ -23,14 +23,15 @@ module Game.HintBoard.Hint
     import System.Random
 
 
-    data HintType = Vertical | Horizontal
+    data Orientation = Vertical | Horizontal
         deriving (Enum,Eq)
 
-    instance Random HintType where
+    instance Random Orientation where
         random g        = case randomR (0,1) g of
                               (r, g') -> (toEnum r, g')
         randomR (a,b) g = case randomR (fromEnum a, fromEnum b) g of
                               (r, g') -> (toEnum r, g')
+
 
 
     data Hint = Hint
@@ -40,7 +41,7 @@ module Game.HintBoard.Hint
                 , bgrgb    :: [Float]
                 , selected :: Bool
                 , hidden   :: Bool
-                , htype    :: HintType
+                , hOrient  :: Orientation
                 }
 
     instance Show Hint where
@@ -64,7 +65,7 @@ module Game.HintBoard.Hint
                        , bgrgb    = bgrgb                   h
                        , selected = selected                h
                        , hidden   = hidden                  h
-                       , htype    = htype                   h
+                       , hOrient  = hOrient                 h
                        }
 
     instance Clickable Hint where
@@ -119,25 +120,25 @@ module Game.HintBoard.Hint
     selectHint :: Hint -> IO Hint
     selectHint h = do
         bgrgb' <- map (/255) . read <$> getSetting "hintselectedrgb"
-        return Hint { vals     = vals   h
-                    , len      = len    h
-                    , area     = area   h
+        return Hint { vals     = vals    h
+                    , len      = len     h
+                    , area     = area    h
                     , bgrgb    = bgrgb'
                     , selected = True
-                    , hidden   = hidden h
-                    , htype    = htype  h
+                    , hidden   = hidden  h
+                    , hOrient  = hOrient h
                     }
 
     unSelectHint :: Hint -> IO Hint
     unSelectHint h = do
         bgrgb' <- map (/255) . read <$> getSetting "hintrgb"
-        return Hint { vals     = vals   h
-                    , len      = len    h
-                    , area     = area   h
+        return Hint { vals     = vals    h
+                    , len      = len     h
+                    , area     = area    h
                     , bgrgb    = bgrgb'
                     , selected = False
-                    , hidden   = hidden h
-                    , htype    = htype  h
+                    , hidden   = hidden  h
+                    , hOrient  = hOrient h
                     }
 
 
@@ -170,7 +171,7 @@ module Game.HintBoard.Hint
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = True
-            , htype    = htype    h
+            , hOrient  = hOrient  h
             }
 
     unHideHint :: Hint -> Hint
@@ -183,5 +184,5 @@ module Game.HintBoard.Hint
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = False
-            , htype    = htype    h
+            , hOrient  = hOrient  h
             }

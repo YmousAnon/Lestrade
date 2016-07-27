@@ -1,9 +1,5 @@
 module Interface
 (
-    Screen,
-    window,
-    dirty,
-
     guiInit,
 ) where
 
@@ -20,21 +16,13 @@ module Interface
     import Interface.Input
     import Interface.Input.Settings
     import Interface.Render
+    import Interface.Screen
 
     import System.Exit
 
     import Data.StateVar
 
 
-    data Screen = Screen
-                  { window :: Window
-                  , dirty  :: IORef Bool
-                  }
-
-
-
-    writeDirty :: IORef Bool -> WindowRefreshCallback
-    writeDirty dirty w = writeIORef dirty True
 
     guiInit :: (Clickable a,Renderable a) => a -> IO (a,Screen)
     guiInit game = do
@@ -50,7 +38,8 @@ module Interface
             Just w  -> makeContextCurrent mw
         let w = fromJust mw
 
-        dirty <- newIORef False
+        dirty   <- newIORef False
+        t       <- newIORef . fromJust =<< getTime
         [r,g,b] <- map (/255) . read <$> getSetting "bgrgb"
 
         clearColor                 $= Color4 r g b 1.0
@@ -62,4 +51,4 @@ module Interface
 
         setWindowRefreshCallback w $ Just (writeDirty dirty)
 
-        return (game,Screen w dirty)
+        return (game,Screen w dirty t)

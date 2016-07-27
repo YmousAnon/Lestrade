@@ -16,6 +16,7 @@ module Interface.Render
     import Graphics.UI.GLFW
 
     import Interface.Coordinate
+    import Interface.Screen
 
 
     class Renderable a where
@@ -23,14 +24,12 @@ module Interface.Render
         getArea :: a -> Area
 
 
-    display :: Renderable a => Window -> IORef Bool -> a -> IO()
-    display w dirty game = readIORef dirty >>= \dirty' ->
-        when dirty' $ do
-           setWindowSize w (fromIntegral $ getXMax $ getArea game)
-                           (fromIntegral $ getYMax $ getArea game)
+    display :: Renderable a => Screen -> a -> IO()
+    display s game = whenDirty s $ do
+           resizeScreen s (getArea game)
 
            clear [ColorBuffer, DepthBuffer]
            render (getArea game) game
-           swapBuffers w
+           swapBuffers' s
 
-           writeIORef dirty False
+           cleanScreen s

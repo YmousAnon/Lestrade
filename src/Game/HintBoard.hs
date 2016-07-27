@@ -1,11 +1,9 @@
---{-# LANGUAGE ViewPatterns #-}
 module Game.HintBoard
 (
     HintBoard,
     newEmptyHintBoard,
 
     fillHintBoard,
-
     addHint,
     genHint,
 ) where
@@ -16,6 +14,7 @@ module Game.HintBoard
     import Game.Board.Value
     import Game.HintBoard.Hint
     import Game.HintBoard.Vertical
+    import Game.HintBoard.Horizontal
 
     import Interface.Coordinate
     import Interface.Input
@@ -25,32 +24,11 @@ module Game.HintBoard
     import System.Random
 
 
---    genHint :: Board -> State ([(Int,Int)],StdGen) (IO VHint)
---    genHint s = do (rcs,g ) <- get
---                   let (rci,g' ) = randomR (0,length rcs-1) g
---                       (h  ,g'') = runState (genVHint (rcs !! rci) s) g'
---                   put (rcs,g'')
---                   return $ h
---
---        where
---            order :: Int -> State StdGen [Int]
---            order n = do i  <- state $ randomR (0,n-1)
---                         is <- order (n-1)
---                         return (i:is)
---
---
-
-
-
-
-
-
-
     data HintBoard = HintBoard
-                     { hints  :: [Hint]
-                     , xy     :: Point
-                     , width  :: Coord
-                     , hbtype :: HintType
+                     { hints       :: [Hint]
+                     , xy          :: Point
+                     , width       :: Coord
+                     , orientation :: Orientation
                      }
 
     instance Renderable HintBoard where
@@ -63,88 +41,82 @@ module Game.HintBoard
             hs'  <- swapSelectedHint =<< mapM (lclick pt) (hints hb)
             hs'' <- if any (inArea pt . getArea) hs'
                          then return             hs'
-                         else mapM unSelectHint hs'
+                         else mapM unSelectHint  hs'
             return HintBoard
-                   { hints  = hs''
-                   , xy     = xy     hb
-                   , width  = width  hb
-                   , hbtype = hbtype hb
+                   { hints       = hs''
+                   , xy          = xy     hb
+                   , width       = width  hb
+                   , orientation = orientation hb
                    }
-        rclick pt hb = do hs' <- mapM (rclick pt) (hints hb)
+        rclick pt hb = do hs'  <- mapM (rclick pt) (hints hb)
+                          hs'' <- mapM unSelectHint  hs'
                           return HintBoard
-                                 { hints  = hs'
-                                 , xy     = xy    hb
-                                 , width  = width hb
-                                 , hbtype = hbtype hb
+                                 { hints       = hs''
+                                 , xy          = xy    hb
+                                 , width       = width hb
+                                 , orientation = orientation hb
                                  }
 
-    newEmptyHintBoard :: Point -> Coord -> HintType -> HintBoard
-    newEmptyHintBoard xy w ht = HintBoard
-                                { hints  = []
-                                , xy     = xy
-                                , width  = w
-                                , hbtype = ht
-                                }
+    newEmptyHintBoard :: Point -> Coord -> Orientation -> HintBoard
+    newEmptyHintBoard xy w o = HintBoard
+                               { hints       = []
+                               , xy          = xy
+                               , width       = w
+                               , orientation = o
+                               }
 
 
 
     fillHintBoard :: HintBoard -> IO HintBoard
-    fillHintBoard hb  = nextPos hb >>= newHint (hbtype hb) [] >>= \h ->
+    fillHintBoard hb = nextHintPos hb >>= newHint (orientation hb) [] >>= \h ->
+        let vertical = orientation hb == Vertical
+            nulltest = null (hints hb)
+            htest    = getXMax (getArea h) == getXMax (getArea hb)
+            vtest    = getYMax (getArea h) == getYMax (getArea hb)
 
-        if getYMax (getArea h) <= getYMax (getArea hb) || null (hints hb)
-            then fillHintBoard =<< addHint h hb
-            else return hb
-
-
+         in if nulltest || (vtest) || ((not vertical) && htest)
+                then addHint h hb >>= fillHintBoard
+                else return hb
 
     addHint :: Hint -> HintBoard -> IO HintBoard
     addHint h hb = do
-        pt <- nextPos hb
+        pt <- nextHintPos hb
         return HintBoard
-               { hints  = hints  hb++[moveTo pt h]
-               , xy     = xy     hb
-               , width  = width  hb
-               , hbtype = hbtype hb
+               { hints       = hints  hb++[moveTo pt h]
+               , xy          = xy     hb
+               , width       = width  hb
+               , orientation = orientation hb
                }
 
-    newHint :: HintType -> [Value] -> Point -> IO Hint
-    newHint ht vs xy = case ht of
-                          Vertical -> newVHint ht vs xy
+    newHint :: Orientation -> [Value] -> Point -> IO Hint
+    newHint o vs xy = case o of
+                          Vertical   -> newVHint vs xy
+                          Horizontal -> newHHint vs xy
 
-    nextPos :: HintBoard -> IO Point
-    nextPos HintBoard { hints = [], xy = xy } = return xy
-    nextPos HintBoard
-        { hints  = hs
-        , xy     = xy'
-        , width  = w
-        , hbtype = ht
+    nextHintPos :: HintBoard -> IO Point
+    nextHintPos HintBoard { hints = [], xy = xy } = return xy
+    nextHintPos HintBoard
+        { hints       = hs
+        , xy          = xy'
+        , width       = w
+        , orientation = o
         }
-        | ht == Vertical = nextVHintPos (last hs) xy' w
-
---xy'' . read <$> getSetting "hintSpacing"
---where
---    (x',y')  = (getXMax $ getArea h,getYMin $ getArea h)
---    xy'' hs' = if w < x' + getWidth (getArea h)
---                   then (x ,hs' + getYMax (getArea h))
---                   else (hs' + x',y')
-
-
-
-
+        | o == Vertical   = nextVHintPos (last hs) xy' w
+        | o == Horizontal = nextHHintPos (last hs) xy' w
 
 
 
     genHint :: (Int,Int) -> Board -> State StdGen (IO Hint)
     genHint rci s = do
-        ht <- genHintType
+        o <- genOrientation
 
-        case ht of
-            Vertical   -> genVHint ht rci s
-            --Horizontal -> genHHint ht rci s
+        case o of
+            Vertical   -> genVHint rci s
+            Horizontal -> genHHint rci s
         where
-            genHintType :: State StdGen (HintType)
-            genHintType = return Vertical
-            --genHintType = state $ randomR (Vertical, Horizontal)
+            genOrientation :: State StdGen (Orientation)
+            genOrientation = return Vertical
+            --genOrientation = state $ randomR (Vertical, Horizontal)
 
     ----genHint (ri,ci) s = do nR <- getHintN
 

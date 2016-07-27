@@ -1,4 +1,3 @@
-import Control.Monad
 import Data.IORef
 
 import Game
@@ -9,6 +8,7 @@ import Interface
 import Interface.Input
 import Interface.Input.Seed
 import Interface.Render
+import Interface.Screen
 
 
 --import Data.StateVar
@@ -24,11 +24,9 @@ main = getSeed >>= gameInit >>= guiInit >>= uncurry (loop mouseKeysUp)
     where
         loop :: (IORef Bool -> Window -> Game -> IO (Action Game)) -> Game ->
                 Screen -> IO()
-        loop action game s = windowShouldClose (window s) >>= \close ->
-            unless close $ do
-                --getTime >>= print
+        loop action game s = unlessScreenShouldClose s $ fpsWait s $ do
 
-                display (window s) (dirty s) game
+                display s game
 
                 Action (game',action') <- action (dirty s) (window s) game
 
