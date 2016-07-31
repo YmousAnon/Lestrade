@@ -28,20 +28,14 @@ module Game.HintBoard.Vertical
         tw  <- read <$> getSetting "tileWidth"
         hbw <- read <$> getSetting "hintBorderWidth"
 
-        bgt <- value 0 True (x,y) 0
+        bgv <- value 0 True (x,y) 0
         bgc <- map (/255) . read <$> getSetting "tilergb"
 
-        let vs' = valList 3 (x+hbw,y+hbw) vs bgt
-            avs = newArea (x,y) (2*hbw+tw) (2*hbw+3*tw)
-        return Hint
-               { vals     = vs'
-               , area     = avs
-               , bgrgb    = bgc
-               , selected = False
-               , hidden   = False
-               , hOrient  = Vertical
-               , hType    = ht
-               }
+        let vs' = valList 3 (x+hbw,y+hbw) vs bgv
+            a   = newArea (x,y) (2*hbw+tw) (2*hbw+3*tw)
+            as  = map getArea vs'
+
+        newHint vs' a as Vertical ht
         where valList :: Int -> Point -> [Value] -> Value -> [Value]
               valList 0 _     _  _   = []
               valList i (x,y) vs bgv = v' : valList (i-1)
@@ -60,12 +54,12 @@ module Game.HintBoard.Vertical
         ri'  <- getRowI $ delete ri              [0..length (rows s)]
         ri'' <- getRowI $ delete ri' $ delete ri [0..length (rows s)]
 
-        let rs = sort [ri,ri',ri'']
+        let rs = [ri,ri',ri'']
 
         return $ ioHT >>= \ht ->
             case ht of
-                VTwo   -> genVTwoHint   rs ci s
-                VThree -> genVThreeHint rs ci s
+                VTwo   -> genVTwoHint   (sort rs)          ci s
+                VThree -> genVThreeHint (sort $ take 2 rs) ci s
         where
             getRowI :: [Int] -> State StdGen Int
             getRowI rs = (rs !!) <$> state (randomR (0,length rs-2))

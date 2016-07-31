@@ -28,20 +28,13 @@ module Game.HintBoard.Horizontal
         tw  <- read <$> getSetting "tileWidth"
         hbw <- read <$> getSetting "hintBorderWidth"
 
-        bgt <- value 0 True (x,y) 0
-        bgc <- map (/255) . read <$> getSetting "tilergb"
+        bgv <- value 0 True (x,y) 0
 
-        let vs' = valList 3 (x+hbw,y+hbw) vs bgt
-            avs = newArea (x,y) (2*hbw+3*tw) (2*hbw+tw)
-        return Hint
-               { vals     = vs'
-               , area     = avs
-               , bgrgb    = bgc
-               , selected = False
-               , hidden   = False
-               , hOrient  = Horizontal
-               , hType    = ht
-               }
+        let vs' = valList 3 (x+hbw,y+hbw) vs bgv
+            a   = newArea (x,y) (2*hbw+3*tw) (2*hbw+tw)
+            as  = map getArea vs'
+
+        newHint vs' a as Horizontal ht
         where valList :: Int -> Point -> [Value] -> Value -> [Value]
               valList 0 _     _  _   = []
               valList i (x,y) vs bgv = v' : valList (i-1)
@@ -57,11 +50,11 @@ module Game.HintBoard.Horizontal
     genHHint (ri,ci) s = do
         ioHT <- genHintType Horizontal
 
-        ri'   <- getRowI [ri]     (length (rows s))
-        ri''  <- getRowI [ri,ri'] (length (rows s))
+        ri'  <- getRowI
+        ri'' <- getRowI
 
-        ci'  <- getColI
-        ci'' <- getColI
+        ci'  <- getColI [ci]     (length $ squares $ head $ rows s)
+        ci'' <- getColI [ci,ci'] (length $ squares $ head $ rows s)
 
         let rci   = (ri  ,ci  )
             rci'  = (ri' ,ci' )
@@ -71,18 +64,19 @@ module Game.HintBoard.Horizontal
 
         return $ ioHT >>= \ht ->
             case ht of
-                HNeighbour -> genHNeighbourHint [rci',rci,rci']      s
+                --HNeighbour -> genHNeighbourHint [rci',rci,rci']      s
                 HSpear     -> genHSpearHint     [rci,rci',rci''] rev s
+                _     -> genHSpearHint     [rci,rci',rci''] rev s
         where
-            getRowI :: [Int] -> Int -> State StdGen Int
-            getRowI ris lrs
-                | maximum ris == lrs-1 = return (minimum ris-1)
-                | minimum ris == 0     = return (maximum ris+1)
-                | otherwise            = ([minimum ris-1,maximum ris+1] !!) <$>
-                                         state (randomR (0,1))
+            getRowI :: State StdGen Int
+            getRowI = state $ randomR (0,length (rows s)-1)
 
-            getColI :: State StdGen Int
-            getColI = state $ randomR (0,length (rows s)-1)
+            getColI :: [Int] -> Int -> State StdGen Int
+            getColI cis lcs
+                | maximum cis == lcs-1 = return (minimum cis-1)
+                | minimum cis == 0     = return (maximum cis+1)
+                | otherwise            = ([minimum cis-1,maximum cis+1] !!) <$>
+                                         state (randomR (0,1))
 
     genHNeighbourHint :: [(Int,Int)] -> Board -> IO Hint
     genHNeighbourHint rs s = newHHint HNeighbour (map (uncurry getV) rs) (0,0)
@@ -91,13 +85,14 @@ module Game.HintBoard.Horizontal
             getV ri ci = val $ getRowSquare (rows s !! ri) ci
 
     genHSpearHint :: [(Int,Int)] -> Bool -> Board -> IO Hint
-    genHSpearHint rcis rev s = newHHint HSpear (map (uncurry getV) rcis') (0,0)
+    genHSpearHint rcis rev s =  print rcis >> print rcis' >>
+        newHHint HSpear (map (uncurry getV) rcis') (0,0)
         where
             rcis' :: [(Int,Int)]
             rcis' = (if rev then reverse else id) $ sortBy fstGT rcis
 
-            fstGT :: (Int,a) -> (Int,a) -> Ordering
-            fstGT (r,_) (r',_) = if r < r' then GT else LT
+            fstGT :: (a,Int) -> (a,Int) -> Ordering
+            fstGT (_,c) (_,c') = compare c c'
 
             getV :: Int -> Int -> Value
             getV ri ci = val $ getRowSquare (rows s !! ri) ci

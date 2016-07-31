@@ -67,7 +67,8 @@ module Game.HintBoard
 
 
     fillHintBoard :: HintBoard -> IO HintBoard
-    fillHintBoard hb = nextHintPos hb >>= newHint (orientation hb) [] >>= \h ->
+    fillHintBoard hb = nextHintPos hb >>= getNewHint (orientation hb) [] >>=
+        \h ->
         let vertical = orientation hb == Vertical
             nulltest = null (hints hb)
             htest    = getXMax (getArea h) == getXMax (getArea hb)
@@ -87,10 +88,10 @@ module Game.HintBoard
                , orientation = orientation hb
                }
 
-    newHint :: Orientation -> [Value] -> Point -> IO Hint
-    newHint o vs xy = case o of
-                          Vertical   -> newVHint VHEmpty vs xy
-                          Horizontal -> newHHint VHEmpty vs xy
+    getNewHint :: Orientation -> [Value] -> Point -> IO Hint
+    getNewHint o vs xy = case o of
+                             Vertical   -> newVHint VHEmpty vs xy
+                             Horizontal -> newHHint VHEmpty vs xy
 
     nextHintPos :: HintBoard -> IO Point
     nextHintPos HintBoard { hints = [], xy = xy } = return xy

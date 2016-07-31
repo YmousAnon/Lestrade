@@ -42,12 +42,13 @@ module Interface
         t       <- newIORef . fromJust =<< getTime
         [r,g,b] <- map (/255) . read <$> getSetting "bgrgb"
 
+        blend                      $= Enabled
+        blendFunc                  $= (SrcAlpha, OneMinusSrcAlpha)
         clearColor                 $= Color4 r g b 1.0
         depthFunc                  $= Just Lequal
-        blendFunc                  $= (SrcAlpha, OneMinusSrcAlpha)
         normalize                  $= Enabled
-        texture Texture2D          $= Enabled
         shadeModel                 $= Smooth
+        texture Texture2D          $= Enabled
 
         setWindowRefreshCallback w $ Just (writeDirty dirty)
 

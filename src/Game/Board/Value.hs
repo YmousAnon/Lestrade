@@ -14,13 +14,12 @@ module Game.Board.Value
     moveValueTo,
 ) where
 
-    import Graphics.Rendering.OpenGL as GL
+    import Graphics.Rendering.OpenGL
 
     import Interface.Coordinate
     import Interface.Input.Settings
     import Interface.Render
     import Interface.Render.Primitive
-
 
     import System.IO.Unsafe
 
@@ -81,7 +80,7 @@ module Game.Board.Value
     getTexture :: Int -> Int -> IO TextureObject
     getTexture r v    = loadTexture' =<< (++end) <$> root
         where
-            root = (++)"res/tilesets/" <$> getSetting "tileset"
+            root = ("res/tilesets/"++) <$> getSetting "tileset"
             end  = case v of
                         0 -> "/bg.png"
                         _ -> "/row"++show r++"/col"++show v++".png"

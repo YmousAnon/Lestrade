@@ -2,10 +2,12 @@ module Game.HintBoard.Hint
 (
     Orientation (Vertical,Horizontal),
 
-    HintType (VHEmpty,HNeighbour,HSpear,VThree,VTwo),
+    HintType (VHEmpty,VThree,VTwo,HNeighbour,HSpear),
     genHintType,
 
-    Hint (Hint,vals,area,bgrgb,selected,hidden,hOrient,hType),
+    Hint,
+    --Hint (Hint,vals,area,bgrgb,selected,hidden,hOrient,hType),
+    newHint,
 
     toggleSelectHint,
     selectHint,
@@ -19,6 +21,7 @@ module Game.HintBoard.Hint
     import Control.Monad.Trans.State
 
     import Game.Board.Value
+    import Game.HintBoard.Decoration
 
     import Interface.Coordinate
     import Interface.Input
@@ -41,8 +44,8 @@ module Game.HintBoard.Hint
 
 
     data HintType = VHEmpty
-                  | HNeighbour | HSpear
                   | VThree | VTwo
+                  | HNeighbour | HSpear
 
     genHintType :: Orientation -> State StdGen (IO HintType)
     genHintType o = (if o == Vertical then genVHintType else genHHintType)
@@ -77,6 +80,7 @@ module Game.HintBoard.Hint
                 , hidden   :: Bool
                 , hOrient  :: Orientation
                 , hType    :: HintType
+                , decs     :: [Decoration]
                 }
 
     instance Show Hint where
@@ -87,8 +91,10 @@ module Game.HintBoard.Hint
             { vals  = vs
             , area  = a
             , bgrgb = rgb
+            , decs  = ds
             } = renderColour w a rgb
              >> mapM_ (render w) vs
+             >> mapM_ (render w) ds
         getArea = area
 
     instance Movable Hint where
@@ -101,6 +107,7 @@ module Game.HintBoard.Hint
                        , hidden   = hidden                  h
                        , hOrient  = hOrient                 h
                        , hType    = hType                   h
+                       , decs     = map (moveBy dxy) $ decs h
                        }
 
     instance Clickable Hint where
@@ -110,6 +117,32 @@ module Game.HintBoard.Hint
         rclick pt h = if inArea pt (area h)
                           then return $ toggleHideHint       h
                           else return                        h
+
+    newHint :: [Value] -> Area -> [Area] -> Orientation -> HintType -> IO Hint
+    newHint vs a as o ht = do
+        bgc   <- map (/255) . read <$> getSetting "tilergb"
+        decs' <- getDecorationList as ht
+
+        return Hint
+               { vals     = vs
+               , area     = a
+               , bgrgb    = bgc
+               , selected = False
+               , hidden   = False
+               , hOrient  = o
+               , hType    = ht
+               , decs     = decs'
+               }
+
+
+
+    getDecorationList :: [Area] -> HintType -> IO [Decoration]
+    getDecorationList _          VHEmpty     = return []
+    getDecorationList _          VThree      = return []
+    getDecorationList _          VTwo        = return []
+    getDecorationList _          HNeighbour  = return []
+    getDecorationList [a,a',a''] HSpear      = sequence
+        [newDecoration (a\/a'\/a'') Spear]
 
 
 
@@ -127,6 +160,7 @@ module Game.HintBoard.Hint
                     , hidden   = hidden  h
                     , hOrient  = hOrient h
                     , hType    = hType   h
+                    , decs     = decs    h
                     }
 
     unSelectHint :: Hint -> IO Hint
@@ -139,6 +173,7 @@ module Game.HintBoard.Hint
                     , hidden   = hidden  h
                     , hOrient  = hOrient h
                     , hType    = hType   h
+                    , decs     = decs    h
                     }
 
 
@@ -170,7 +205,8 @@ module Game.HintBoard.Hint
             , selected = selected h
             , hidden   = True
             , hOrient  = hOrient  h
-            , hType    = hType   h
+            , hType    = hType    h
+            , decs     = decs     h
             }
 
     unHideHint :: Hint -> Hint
@@ -182,7 +218,8 @@ module Game.HintBoard.Hint
             , selected = selected h
             , hidden   = False
             , hOrient  = hOrient  h
-            , hType    = hType   h
+            , hType    = hType    h
+            , decs     = decs     h
             }
 
     splitValList :: HintType -> [Value] -> ([Value],[Value])
