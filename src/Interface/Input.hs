@@ -33,12 +33,7 @@ module Interface.Input
 
     mouseKeysUp :: Clickable a => Screen -> a -> IO(Action a)
     mouseKeysUp screen game = do
-        pollEvents
-
-        lButton <- lPress $ window screen
-        rButton <- rPress $ window screen
-
-        pt      <- posToPoint <$> getCursorPos (window screen)
+        (lButton,rButton,pt) <- getInput $ window screen
 
         let ioGame'    | lButton            = lclick pt game
                        | rButton            = rclick pt game
@@ -54,19 +49,19 @@ module Interface.Input
 
     mouseKeyDown :: Clickable a => Screen -> a -> IO(Action a)
     mouseKeyDown screen game = do
-        pollEvents
-
-        lButton <- lPress $ window screen
-        rButton <- rPress $ window screen
+        (lButton,rButton,_) <- getInput $ window screen
 
         let nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
          in return $ Action (game, nextAction)
 
+    getInput :: Window -> IO (Bool,Bool,Point)
+    getInput w = do
+        pollEvents
 
+        l  <- (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'1
+        r  <- (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'2
 
-    lPress :: Window -> IO Bool
-    lPress w = (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'1
+        pt <- posToPoint <$> getCursorPos w
 
-    rPress :: Window -> IO Bool
-    rPress w = (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'2
+        return (l,r,pt)

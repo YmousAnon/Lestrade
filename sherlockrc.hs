@@ -1,8 +1,16 @@
 --Game
-columns          = 8
-rows             = 4
+columns          = 5
+rows             = 3
 initialSolved    = 4
 
+----Hint Weigth
+------Vertical
+wVThree          = 10
+wVTwo            = 10
+
+------Horizontal
+wHNeighbour      = 15
+wHSpear          = 5
 
 
 --Graphics
@@ -11,7 +19,7 @@ tileset          = science
 fps              = 60
 
 ----Boarders
-tileWidth        = 64
+tileWidth        = 48
 tileSpacing      = 8
 hintBorderWidth  = 4
 hintSpacing      = 4

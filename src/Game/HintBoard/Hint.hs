@@ -2,10 +2,10 @@ module Game.HintBoard.Hint
 (
     Orientation (Vertical,Horizontal),
 
-    HintType (HStandard,VThree,VTwo),
+    HintType (VHEmpty,HNeighbour,HSpear,VThree,VTwo),
     genHintType,
 
-    Hint (Hint,vals,len,area,bgrgb,selected,hidden,hOrient),
+    Hint (Hint,vals,area,bgrgb,selected,hidden,hOrient,hType),
 
     toggleSelectHint,
     selectHint,
@@ -40,8 +40,8 @@ module Game.HintBoard.Hint
 
 
 
-    data HintType = Empty
-                  | HStandard
+    data HintType = VHEmpty
+                  | HNeighbour | HSpear
                   | VThree | VTwo
 
     genHintType :: Orientation -> State StdGen (IO HintType)
@@ -50,33 +50,33 @@ module Game.HintBoard.Hint
         where
             genHHintType :: Int -> IO HintType
             genHHintType i = do
-                wHStandard <- read <$> getSetting "wHStandard"
+                wHNeighbour <- read <$> getSetting "wHNeighbour"
+                wHSpear     <- read <$> getSetting "wHSpear"
 
-                return $ (replicate wHStandard HStandard++
-                          []
-                         ) !! (mod i (wHStandard))
+                return $ (replicate wHNeighbour HNeighbour++
+                          replicate wHSpear     HSpear
+                         ) !! mod i (wHNeighbour+wHSpear)
 
             genVHintType :: Int -> IO HintType
             genVHintType i = do
-                wVThree <- read <$> getSetting "wVThree"
-                wVTwo   <- read <$> getSetting "wVTwo"
+                wVThree    <- read <$> getSetting "wVThree"
+                wVTwo      <- read <$> getSetting "wVTwo"
 
                 return $ (replicate wVThree VThree++
                           replicate wVTwo   VTwo
-                         ) !! (mod i (wVThree+wVTwo))
+                         ) !! mod i (wVThree+wVTwo)
 
 
 
 
     data Hint = Hint
                 { vals     :: [Value]
-                , len      :: Int
                 , area     :: Area
                 , bgrgb    :: [Float]
                 , selected :: Bool
                 , hidden   :: Bool
                 , hOrient  :: Orientation
-                --, hType    :: H
+                , hType    :: HintType
                 }
 
     instance Show Hint where
@@ -92,15 +92,15 @@ module Game.HintBoard.Hint
         getArea = area
 
     instance Movable Hint where
-        moveTo xy  h = moveBy (xy>-<(getAreaStart $ area h)) h
+        moveTo xy  h = moveBy (xy>-<getAreaStart (area h)) h
         moveBy dxy h = Hint
                        { vals     = map (moveBy dxy) $ vals h
-                       , len      = len                     h
                        , area     = moveBy dxy       $ area h
                        , bgrgb    = bgrgb                   h
                        , selected = selected                h
                        , hidden   = hidden                  h
                        , hOrient  = hOrient                 h
+                       , hType    = hType                   h
                        }
 
     instance Clickable Hint where
@@ -113,43 +113,6 @@ module Game.HintBoard.Hint
 
 
 
-    -- Only works for veritcal
-    --
-    --
-    --
-    -- = do
-        --tw  <- read <$> getSetting "tileWidth"
-        --hbw <- read <$> getSetting "hintBorderWidth"
-
-        --bgt <- value 0 True (x,y) 0
-        --bgc <- map (/255) . read <$> getSetting "tilergb"
-
-        --let vs' = valList 3 (x+hbw,y+hbw) vs bgt
-        --    avs = newArea (x,y) (2*hbw+tw) (2*hbw+3*tw)
-        --return Hint
-        --    { vals     = vs'
-        --    , len      = length vs
-        --    , area     = avs
-        --    , bgrgb    = bgc
-        --    , selected = False
-        --    , hidden   = False
-        --    , htype    = ht
-        --    }
-        --where
-        --    valList :: Int -> Point -> [Value] -> Value -> [Value]
-        --    valList 0 _     _  _   = []
-        --    valList i (x,y) vs bgv = v' : valList (i-1)
-        --                                          (x,getYMax $ getArea v')
-        --                                          vs'
-        --                                          bgv
-        --         where
-        --            v'  | null vs   = moveValueTo bgv       (x,y)
-        --                | otherwise = moveValueTo (head vs) (x,y)
-        --            vs' | null vs   = []
-        --                | otherwise = tail vs
-
-
-
     toggleSelectHint :: Hint -> IO Hint
     toggleSelectHint vh = if selected vh then unSelectHint vh
                                           else selectHint   vh
@@ -158,24 +121,24 @@ module Game.HintBoard.Hint
     selectHint h = do
         bgrgb' <- map (/255) . read <$> getSetting "hintselectedrgb"
         return Hint { vals     = vals    h
-                    , len      = len     h
                     , area     = area    h
                     , bgrgb    = bgrgb'
                     , selected = True
                     , hidden   = hidden  h
                     , hOrient  = hOrient h
+                    , hType    = hType   h
                     }
 
     unSelectHint :: Hint -> IO Hint
     unSelectHint h = do
         bgrgb' <- map (/255) . read <$> getSetting "hintrgb"
         return Hint { vals     = vals    h
-                    , len      = len     h
                     , area     = area    h
                     , bgrgb    = bgrgb'
                     , selected = False
                     , hidden   = hidden  h
                     , hOrient  = hOrient h
+                    , hType    = hType   h
                     }
 
 
@@ -199,27 +162,33 @@ module Game.HintBoard.Hint
     toggleHideHint h = if hidden h then unHideHint h else hideHint h
 
     hideHint :: Hint -> Hint
-    hideHint h = let vsh = take (len h) (vals h)
-                     vst = drop (len h) (vals h)
+    hideHint h = let (vsh,vst) = splitValList (hType h) (vals h)
                   in Hint
             { vals     = map (changeCol [0.25,0.25,0.25]) vsh++vst
-            , len      = len      h
             , area     = area     h
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = True
             , hOrient  = hOrient  h
+            , hType    = hType   h
             }
 
     unHideHint :: Hint -> Hint
-    unHideHint h = let vsh = take (len h) (vals h)
-                       vst = drop (len h) (vals h)
+    unHideHint h = let (vsh,vst) = splitValList (hType h) (vals h)
                     in Hint
             { vals     = map (changeCol [1,1,1]) vsh++vst
-            , len      = len      h
             , area     = area     h
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = False
             , hOrient  = hOrient  h
+            , hType    = hType   h
             }
+
+    splitValList :: HintType -> [Value] -> ([Value],[Value])
+    splitValList ht = splitAt (ind ht)
+        where
+            ind :: HintType -> Int
+            ind VHEmpty = 0
+            ind VTwo    = 2
+            ind _       = 3

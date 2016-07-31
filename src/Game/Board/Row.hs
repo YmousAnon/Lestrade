@@ -89,8 +89,8 @@ module Game.Board.Row
 
     setRowSquare :: Row -> Int -> Square -> Row
     setRowSquare r c s'
-        | squares r == [] = r
-        | otherwise       = row rN $ s'' : ss'
+        | null (squares r) = r
+        | otherwise        = row rN $ s'' : ss'
         where s''    = if c == 0
                            then transplantSolution s s'
                            else removeVal (val s') s

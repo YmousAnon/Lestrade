@@ -5,7 +5,6 @@ module Game.HintBoard
 
     fillHintBoard,
     addHint,
-    --genHint,
 ) where
 
     import Control.Monad.Trans.State
@@ -74,7 +73,7 @@ module Game.HintBoard
             htest    = getXMax (getArea h) == getXMax (getArea hb)
             vtest    = getYMax (getArea h) == getYMax (getArea hb)
 
-         in if nulltest || vtest || ((not vertical) && htest)
+         in if nulltest || vtest || (not vertical && htest)
                 then addHint h hb >>= fillHintBoard
                 else return hb
 
@@ -90,8 +89,8 @@ module Game.HintBoard
 
     newHint :: Orientation -> [Value] -> Point -> IO Hint
     newHint o vs xy = case o of
-                          Vertical   -> newVHint vs xy
-                          Horizontal -> newHHint vs xy
+                          Vertical   -> newVHint VHEmpty vs xy
+                          Horizontal -> newHHint VHEmpty vs xy
 
     nextHintPos :: HintBoard -> IO Point
     nextHintPos HintBoard { hints = [], xy = xy } = return xy

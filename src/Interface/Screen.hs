@@ -43,8 +43,8 @@ module Interface.Screen
 
     resizeScreen :: Screen -> Area -> IO()
     resizeScreen screen area =
-           setWindowSize (window screen) (fromIntegral $ getXMax $ area)
-                                         (fromIntegral $ getYMax $ area)
+           setWindowSize (window screen) (fromIntegral $ getXMax area)
+                                         (fromIntegral $ getYMax area)
 
     swapBuffers' :: Screen -> IO()
     swapBuffers' = swapBuffers . window

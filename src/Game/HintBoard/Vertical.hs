@@ -23,8 +23,8 @@ module Game.HintBoard.Vertical
     import System.Random
 
 
-    newVHint :: [Value] -> Point -> IO Hint
-    newVHint vs (x,y) = do
+    newVHint :: HintType -> [Value] -> Point -> IO Hint
+    newVHint ht vs (x,y) = do
         tw  <- read <$> getSetting "tileWidth"
         hbw <- read <$> getSetting "hintBorderWidth"
 
@@ -35,12 +35,12 @@ module Game.HintBoard.Vertical
             avs = newArea (x,y) (2*hbw+tw) (2*hbw+3*tw)
         return Hint
                { vals     = vs'
-               , len      = length vs
                , area     = avs
                , bgrgb    = bgc
                , selected = False
                , hidden   = False
                , hOrient  = Vertical
+               , hType    = ht
                }
         where valList :: Int -> Point -> [Value] -> Value -> [Value]
               valList 0 _     _  _   = []
@@ -63,21 +63,21 @@ module Game.HintBoard.Vertical
         let rs = sort [ri,ri',ri'']
 
         return $ ioHT >>= \ht ->
-                 case ht of
-                     VTwo   -> genVTwoHint   rs ci s
-                     VThree -> genVThreeHint rs ci s
+            case ht of
+                VTwo   -> genVTwoHint   rs ci s
+                VThree -> genVThreeHint rs ci s
         where
             getRowI :: [Int] -> State StdGen Int
-            getRowI rs = (rs !!) <$> (state $ randomR (0,length rs-2))
+            getRowI rs = (rs !!) <$> state (randomR (0,length rs-2))
 
     genVTwoHint :: [Int] -> Int -> Board -> IO Hint
-    genVTwoHint rs ci s = newVHint (map getV $ drop 1 rs) (0,0)
+    genVTwoHint rs ci s = newVHint VTwo (map getV $ drop 1 rs) (0,0)
         where
             getV :: Int -> Value
             getV ri = val $ getRowSquare (rows s !! ri) ci
 
     genVThreeHint :: [Int] -> Int -> Board -> IO Hint
-    genVThreeHint rs ci s = newVHint (map getV rs) (0,0)
+    genVThreeHint rs ci s = newVHint VThree (map getV rs) (0,0)
         where
             getV :: Int -> Value
             getV i = val $ getRowSquare (rows s !! i) ci
