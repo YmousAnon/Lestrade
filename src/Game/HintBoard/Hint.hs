@@ -1,6 +1,10 @@
 module Game.HintBoard.Hint
 (
     Orientation (Vertical,Horizontal),
+
+    HintType (HStandard,VThree,VTwo),
+    genHintType,
+
     Hint (Hint,vals,len,area,bgrgb,selected,hidden,hOrient),
 
     toggleSelectHint,
@@ -11,6 +15,8 @@ module Game.HintBoard.Hint
 
     toggleHideHint,
 ) where
+
+    import Control.Monad.Trans.State
 
     import Game.Board.Value
 
@@ -34,6 +40,34 @@ module Game.HintBoard.Hint
 
 
 
+    data HintType = Empty
+                  | HStandard
+                  | VThree | VTwo
+
+    genHintType :: Orientation -> State StdGen (IO HintType)
+    genHintType o = (if o == Vertical then genVHintType else genHHintType)
+                          <$> state random
+        where
+            genHHintType :: Int -> IO HintType
+            genHHintType i = do
+                wHStandard <- read <$> getSetting "wHStandard"
+
+                return $ (replicate wHStandard HStandard++
+                          []
+                         ) !! (mod i (wHStandard))
+
+            genVHintType :: Int -> IO HintType
+            genVHintType i = do
+                wVThree <- read <$> getSetting "wVThree"
+                wVTwo   <- read <$> getSetting "wVTwo"
+
+                return $ (replicate wVThree VThree++
+                          replicate wVTwo   VTwo
+                         ) !! (mod i (wVThree+wVTwo))
+
+
+
+
     data Hint = Hint
                 { vals     :: [Value]
                 , len      :: Int
@@ -42,6 +76,7 @@ module Game.HintBoard.Hint
                 , selected :: Bool
                 , hidden   :: Bool
                 , hOrient  :: Orientation
+                --, hType    :: H
                 }
 
     instance Show Hint where
@@ -69,10 +104,12 @@ module Game.HintBoard.Hint
                        }
 
     instance Clickable Hint where
-        lclick pt h = if inArea pt (area h) then toggleSelectHint        h
-                                            else return                  h
-        rclick pt h = if inArea pt (area h) then return $ toggleHideHint h
-                                            else return                  h
+        lclick pt h = if inArea pt (area h)
+                          then toggleSelectHint $ unHideHint h
+                          else return                        h
+        rclick pt h = if inArea pt (area h)
+                          then return $ toggleHideHint       h
+                          else return                        h
 
 
 

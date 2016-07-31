@@ -54,30 +54,33 @@ module Game.HintBoard.Vertical
                              | otherwise = tail vs
 
     genVHint :: (Int,Int) -> Board -> State StdGen (IO Hint)
-    genVHint (ri,ci) s = do nR <- getVHintN
-                            rs <- let rs' = deleteI ri $ rows s
-                                   in shuffle rs' <$> order (length rs')
-                            let r  = rows s !! ri
-                                vs = map (\r' -> val $ getRowSquare r' ci) $
-                                         sort (r:take (nR-1) rs)
+    genVHint (ri,ci) s = do
+        ioHT <- genHintType Vertical
 
-                            return $ newVHint vs (0,0)
+        ri'  <- getRowI $ delete ri              [0..length (rows s)]
+        ri'' <- getRowI $ delete ri' $ delete ri [0..length (rows s)]
+
+        let rs = sort [ri,ri',ri'']
+
+        return $ ioHT >>= \ht ->
+                 case ht of
+                     VTwo   -> genVTwoHint   rs ci s
+                     VThree -> genVThreeHint rs ci s
         where
-            getVHintN :: State StdGen (Int)
-            getVHintN = state $ randomR (2, 3)
+            getRowI :: [Int] -> State StdGen Int
+            getRowI rs = (rs !!) <$> (state $ randomR (0,length rs-2))
 
-            order :: Int -> State StdGen [Int]
-            order 0 = return []
-            order n = do i  <- state $ randomR (0,n-1)
-                         is <- order (n-1)
-                         return (i:is)
+    genVTwoHint :: [Int] -> Int -> Board -> IO Hint
+    genVTwoHint rs ci s = newVHint (map getV $ drop 1 rs) (0,0)
+        where
+            getV :: Int -> Value
+            getV ri = val $ getRowSquare (rows s !! ri) ci
 
-            shuffle :: [a] -> [Int] -> [a]
-            shuffle xs []     = []
-            shuffle xs (i:is) = xs !! i : shuffle (deleteI i xs) is
-
-            deleteI :: Int -> [a] -> [a]
-            deleteI i xs = take i xs++drop (i+1) xs
+    genVThreeHint :: [Int] -> Int -> Board -> IO Hint
+    genVThreeHint rs ci s = newVHint (map getV rs) (0,0)
+        where
+            getV :: Int -> Value
+            getV i = val $ getRowSquare (rows s !! i) ci
 
 
 

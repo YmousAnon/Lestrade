@@ -54,30 +54,27 @@ module Game.HintBoard.Horizontal
                              | otherwise = tail vs
 
     genHHint :: (Int,Int) -> Board -> State StdGen (IO Hint)
-    genHHint (ri,ci) s = do nR <- getHHintN
-                            rs <- let rs' = deleteI ri $ rows s
-                                   in shuffle rs' <$> order (length rs')
-                            let r  = rows s !! ri
-                                vs = map (\r' -> val $ getRowSquare r' ci) $
-                                         sort (r:take (nR-1) rs)
+    genHHint (ri,ci) s = do
+        ioHT <- genHintType Horizontal
 
-                            return $ newHHint vs (0,0)
+        let ri' = 2
+        ci'  <- getColI
+        ci'' <- getColI
+        let rci  = (ri ,ci )
+            rci' = (ri',ci')
+
+        return $ ioHT >>= \ht ->
+                 case ht of
+                     HStandard -> genStandardHHint [rci',rci,rci'] s
         where
-            getHHintN :: State StdGen (Int)
-            getHHintN = state $ randomR (2, 3)
+            getColI :: State StdGen Int
+            getColI = state $ randomR (0,length (rows s)-1)
 
-            order :: Int -> State StdGen [Int]
-            order 0 = return []
-            order n = do i  <- state $ randomR (0,n-1)
-                         is <- order (n-1)
-                         return (i:is)
-
-            shuffle :: [a] -> [Int] -> [a]
-            shuffle xs []     = []
-            shuffle xs (i:is) = xs !! i : shuffle (deleteI i xs) is
-
-            deleteI :: Int -> [a] -> [a]
-            deleteI i xs = take i xs++drop (i+1) xs
+    genStandardHHint :: [(Int,Int)] -> Board -> IO Hint
+    genStandardHHint rs s = newHHint (map (uncurry getV) rs) (0,0)
+        where
+            getV :: Int -> Int -> Value
+            getV ri ci = val $ getRowSquare (rows s !! ri) ci
 
 
 

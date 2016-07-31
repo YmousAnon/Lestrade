@@ -5,7 +5,7 @@ module Game.HintBoard
 
     fillHintBoard,
     addHint,
-    genHint,
+    --genHint,
 ) where
 
     import Control.Monad.Trans.State
@@ -18,7 +18,6 @@ module Game.HintBoard
 
     import Interface.Coordinate
     import Interface.Input
-    import Interface.Input.Settings
     import Interface.Render
 
     import System.Random
@@ -48,14 +47,15 @@ module Game.HintBoard
                    , width       = width  hb
                    , orientation = orientation hb
                    }
-        rclick pt hb = do hs'  <- mapM (rclick pt) (hints hb)
-                          hs'' <- mapM unSelectHint  hs'
-                          return HintBoard
-                                 { hints       = hs''
-                                 , xy          = xy    hb
-                                 , width       = width hb
-                                 , orientation = orientation hb
-                                 }
+        rclick pt hb = do
+            hs'  <- mapM (rclick pt) (hints hb)
+            hs'' <- mapM unSelectHint  hs'
+            return HintBoard
+                   { hints       = hs''
+                   , xy          = xy    hb
+                   , width       = width hb
+                   , orientation = orientation hb
+                   }
 
     newEmptyHintBoard :: Point -> Coord -> Orientation -> HintBoard
     newEmptyHintBoard xy w o = HintBoard
@@ -74,7 +74,7 @@ module Game.HintBoard
             htest    = getXMax (getArea h) == getXMax (getArea hb)
             vtest    = getYMax (getArea h) == getYMax (getArea hb)
 
-         in if nulltest || (vtest) || ((not vertical) && htest)
+         in if nulltest || vtest || ((not vertical) && htest)
                 then addHint h hb >>= fillHintBoard
                 else return hb
 
@@ -103,43 +103,3 @@ module Game.HintBoard
         }
         | o == Vertical   = nextVHintPos (last hs) xy' w
         | o == Horizontal = nextHHintPos (last hs) xy' w
-
-
-
-    genHint :: (Int,Int) -> Board -> State StdGen (IO Hint)
-    genHint rci s = do
-        o <- genOrientation
-
-        case o of
-            Vertical   -> genVHint rci s
-            Horizontal -> genHHint rci s
-        where
-            genOrientation :: State StdGen (Orientation)
-            genOrientation = return Vertical
-            --genOrientation = state $ randomR (Vertical, Horizontal)
-
-    ----genHint (ri,ci) s = do nR <- getHintN
-
-    ----                       rs <- let rs' = deleteI ri $ rows s
-    ----                              in shuffle rs' <$> order (length rs')
-    ----                       let r  = rows s !! ri
-
-    ----                           vs = map (\r' -> val $ getRowSquare r' ci) $
-    ----                                    sort (r:take (nR-1) rs)
-    ----                       return $ newHint vs (0,0)
-    ----    where
-    ----        getHintN :: State StdGen (Int)
-    ----        getHintN = state $ randomR (2, 3)
-
-    ----        order :: Int -> State StdGen [Int]
-    ----        order 0 = return []
-    ----        order n = do i  <- state $ randomR (0,n-1)
-    ----                     is <- order (n-1)
-    ----                     return (i:is)
-
-    ----        shuffle :: [a] -> [Int] -> [a]
-    ----        shuffle xs []     = []
-    ----        shuffle xs (i:is) = xs !! i : shuffle (deleteI i xs) is
-
-    ----        deleteI :: Int -> [a] -> [a]
-    ----        deleteI i xs = take i xs++drop (i+1) xs

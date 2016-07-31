@@ -5,7 +5,7 @@ module Interface.Screen
     dirty,
     time,
 
-    unlessScreenShouldClose,
+    unlessClose,
     resizeScreen,
     swapBuffers',
 
@@ -36,15 +36,15 @@ module Interface.Screen
 
 
 
-    unlessScreenShouldClose :: Screen -> IO() -> IO()
-    unlessScreenShouldClose s action = do
-        close <- windowShouldClose (window s)
+    unlessClose :: Screen -> IO() -> IO()
+    unlessClose screen action = do
+        close <- windowShouldClose (window screen)
         unless close action
 
     resizeScreen :: Screen -> Area -> IO()
-    resizeScreen s a =
-           setWindowSize (window s) (fromIntegral $ getXMax $ a)
-                                    (fromIntegral $ getYMax $ a)
+    resizeScreen screen area =
+           setWindowSize (window screen) (fromIntegral $ getXMax $ area)
+                                         (fromIntegral $ getYMax $ area)
 
     swapBuffers' :: Screen -> IO()
     swapBuffers' = swapBuffers . window
@@ -52,25 +52,25 @@ module Interface.Screen
 
 
     writeDirty :: IORef Bool -> WindowRefreshCallback
-    writeDirty dirty w = writeIORef dirty True
+    writeDirty dirty window = writeIORef dirty True
 
     cleanScreen :: Screen -> IO()
-    cleanScreen s = writeIORef (dirty s) False
+    cleanScreen screen = writeIORef (dirty screen) False
 
     whenDirty :: Screen -> IO() -> IO()
-    whenDirty s action = do dirty <- readIORef $ dirty s
+    whenDirty screen action = do dirty <- readIORef $ dirty screen
 
-                            when dirty action
+                                 when dirty action
 
 
 
     fpsWait :: Screen -> IO() -> IO()
-    fpsWait s action = do
-        t_last    <- readIORef $ time s
+    fpsWait screen action = do
+        t_last    <- readIORef $ time screen
         t_current <- fromJust <$> getTime
         fps       <- read <$> getSetting "fps"
 
         threadDelay $ round (1000000*(1/fps -( t_current - t_last)))
-        getTime >>= writeIORef (time s) . fromJust
+        getTime >>= writeIORef (time screen) . fromJust
 
         action

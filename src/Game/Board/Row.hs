@@ -1,6 +1,7 @@
 module Game.Board.Row
 (
     Row,
+    squares,
 
     newRow,
     genSolvedRow,
@@ -85,7 +86,6 @@ module Game.Board.Row
     getRowSquare :: Row -> Int -> Square
     getRowSquare r 0 = head $ squares r
     getRowSquare r c = getRowSquare (row (rowNum r) (tail $ squares r)) (c-1)
-        where
 
     setRowSquare :: Row -> Int -> Square -> Row
     setRowSquare r c s'

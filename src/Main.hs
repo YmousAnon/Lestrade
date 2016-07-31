@@ -11,23 +11,14 @@ import Interface.Render
 import Interface.Screen
 
 
---import Data.StateVar
---import Data.Maybe
---import Game.Board.Value
-
---v :: IO Value
---v = value 1 True (100,100) 1
-
-
 main :: IO()
 main = getSeed >>= gameInit >>= guiInit >>= uncurry (loop mouseKeysUp)
     where
-        loop :: (IORef Bool -> Window -> Game -> IO (Action Game)) -> Game ->
-                Screen -> IO()
-        loop action game s = unlessScreenShouldClose s $ fpsWait s $ do
+        loop :: (Screen -> Game -> IO (Action Game)) -> Game -> Screen -> IO()
+        loop action game screen = unlessClose screen $ fpsWait screen $ do
 
-                display s game
+            display screen game
 
-                Action (game',action') <- action (dirty s) (window s) game
+            Action (game',action') <- action screen game
 
-                loop action' game' s
+            loop action' game' screen

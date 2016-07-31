@@ -18,6 +18,7 @@ module Interface.Input
 
     import Interface.Coordinate
     import Interface.Render
+    import Interface.Screen
 
 
     class Clickable a where
@@ -26,37 +27,37 @@ module Interface.Input
 
 
 
-    data Action a = Action (a,IORef Bool -> Window -> a -> IO (Action a))
+    data Action a = Action (a,Screen -> a -> IO (Action a))
 
 
 
-    mouseKeysUp :: Clickable a => IORef Bool -> Window -> a -> IO(Action a)
-    mouseKeysUp dirty w game = do
+    mouseKeysUp :: Clickable a => Screen -> a -> IO(Action a)
+    mouseKeysUp screen game = do
         pollEvents
 
-        lButton <- lPress w
-        rButton <- rPress w
+        lButton <- lPress $ window screen
+        rButton <- rPress $ window screen
 
-        pt      <- posToPoint <$> getCursorPos w
+        pt      <- posToPoint <$> getCursorPos (window screen)
 
         let ioGame'    | lButton            = lclick pt game
                        | rButton            = rclick pt game
                        | otherwise          = return    game
             nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
-            writeDirty | lButton || rButton = writeIORef dirty True
+            writeDirty | lButton || rButton = writeIORef (dirty screen) True
                        | otherwise          = return()
 
          in do writeDirty
                game' <- ioGame'
                return $ Action (game', nextAction)
 
-    mouseKeyDown :: Clickable a => IORef Bool -> Window -> a -> IO(Action a)
-    mouseKeyDown _ w game = do
+    mouseKeyDown :: Clickable a => Screen -> a -> IO(Action a)
+    mouseKeyDown screen game = do
         pollEvents
 
-        lButton <- lPress w
-        rButton <- rPress w
+        lButton <- lPress $ window screen
+        rButton <- rPress $ window screen
 
         let nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
