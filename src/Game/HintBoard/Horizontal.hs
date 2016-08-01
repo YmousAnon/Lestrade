@@ -64,9 +64,8 @@ module Game.HintBoard.Horizontal
 
         return $ ioHT >>= \ht ->
             case ht of
-                --HNeighbour -> genHNeighbourHint [rci',rci,rci']      s
+                HNeighbour -> genHNeighbourHint [rci',rci,rci']      s
                 HSpear     -> genHSpearHint     [rci,rci',rci''] rev s
-                _     -> genHSpearHint     [rci,rci',rci''] rev s
         where
             getRowI :: State StdGen Int
             getRowI = state $ randomR (0,length (rows s)-1)

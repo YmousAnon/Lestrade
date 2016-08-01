@@ -58,14 +58,14 @@ module Game.HintBoard.Vertical
 
         return $ ioHT >>= \ht ->
             case ht of
-                VTwo   -> genVTwoHint   (sort rs)          ci s
-                VThree -> genVThreeHint (sort $ take 2 rs) ci s
+                VTwo   -> genVTwoHint   (sort $ take 2 rs) ci s
+                VThree -> genVThreeHint (sort rs)          ci s
         where
             getRowI :: [Int] -> State StdGen Int
             getRowI rs = (rs !!) <$> state (randomR (0,length rs-2))
 
     genVTwoHint :: [Int] -> Int -> Board -> IO Hint
-    genVTwoHint rs ci s = newVHint VTwo (map getV $ drop 1 rs) (0,0)
+    genVTwoHint rs ci s = newVHint VTwo (map getV rs) (0,0)
         where
             getV :: Int -> Value
             getV ri = val $ getRowSquare (rows s !! ri) ci

@@ -8,7 +8,7 @@ module Game.Board.Value
     selectValue,
     transplantValue,
 
-    changeCol,
+    changeValueColour,
 
     moveValueBy,
     moveValueTo,
@@ -75,8 +75,6 @@ module Game.Board.Value
             area tw = newArea pt (w tw) (w tw)
             w tw = if a then tw else div tw 2
 
-
-
     getTexture :: Int -> Int -> IO TextureObject
     getTexture r v    = loadTexture' =<< (++end) <$> root
         where
@@ -103,8 +101,8 @@ module Game.Board.Value
 
 
 
-    changeCol :: [Float] -> Value -> Value
-    changeCol fgrgb' v = Value
+    changeValueColour :: [Float] -> Value -> Value
+    changeValueColour fgrgb' v = Value
         { vali  = vali v
         , row   = row  v
         , tex   = tex  v

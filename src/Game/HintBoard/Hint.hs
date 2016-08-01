@@ -199,27 +199,27 @@ module Game.HintBoard.Hint
     hideHint :: Hint -> Hint
     hideHint h = let (vsh,vst) = splitValList (hType h) (vals h)
                   in Hint
-            { vals     = map (changeCol [0.25,0.25,0.25]) vsh++vst
+            { vals     = map (changeValueColour [0.25,0.25,0.25]) vsh++vst
             , area     = area     h
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = True
             , hOrient  = hOrient  h
             , hType    = hType    h
-            , decs     = decs     h
+            , decs     = map (changeDecorationColour [0.25,0.25,0.25]) (decs h)
             }
 
     unHideHint :: Hint -> Hint
     unHideHint h = let (vsh,vst) = splitValList (hType h) (vals h)
                     in Hint
-            { vals     = map (changeCol [1,1,1]) vsh++vst
+            { vals     = map (changeValueColour [1,1,1]) vsh++vst
             , area     = area     h
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = False
             , hOrient  = hOrient  h
             , hType    = hType    h
-            , decs     = decs     h
+            , decs     = map (changeDecorationColour [1,1,1]) (decs h)
             }
 
     splitValList :: HintType -> [Value] -> ([Value],[Value])

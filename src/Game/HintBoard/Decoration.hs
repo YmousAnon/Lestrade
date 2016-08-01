@@ -4,6 +4,8 @@ module Game.HintBoard.Decoration
 
     Decoration,
     newDecoration,
+
+    changeDecorationColour,
 ) where
 
     import Graphics.Rendering.OpenGL
@@ -44,15 +46,12 @@ module Game.HintBoard.Decoration
 
 
 
-
     newDecoration :: Area -> DecorationType -> IO Decoration
     newDecoration a dt = return Decoration
-                                { tex   = unsafePerformIO $ getTexture dt
-                                , area  = a
-                                , fgrgb = [1,1,1]
-                                }
-
-
+         { tex   = unsafePerformIO $ getTexture dt
+         , area  = a
+         , fgrgb = [1,1,1]
+         }
 
     getTexture :: DecorationType -> IO TextureObject
     getTexture dt = loadTexture' =<< (++end) <$> root
@@ -62,3 +61,12 @@ module Game.HintBoard.Decoration
 
             end = case dt of
                       Spear -> "spear.png"
+
+
+
+    changeDecorationColour :: [Float] -> Decoration -> Decoration
+    changeDecorationColour fgrgb' d = Decoration
+         { tex   = tex d
+         , area  = area d
+         , fgrgb = fgrgb'
+         }
