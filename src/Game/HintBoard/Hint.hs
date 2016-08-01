@@ -6,7 +6,6 @@ module Game.HintBoard.Hint
     genHintType,
 
     Hint,
-    --Hint (Hint,vals,area,bgrgb,selected,hidden,hOrient,hType),
     newHint,
 
     toggleSelectHint,

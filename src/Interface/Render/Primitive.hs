@@ -1,9 +1,9 @@
 module Interface.Render.Primitive
 (
-    renderTexture,
-    loadTexture',
-
     renderColour,
+    renderTexture,
+
+    loadTexture',
 ) where
 
     import Graphics.UI.GLFW          as GLFW
@@ -12,6 +12,23 @@ module Interface.Render.Primitive
 
     import Interface.Coordinate
 
+    import System.IO.Unsafe
+
+
+    renderColour :: Area -> Area -> [Float] -> IO()
+    renderColour window area rgb =
+        let (x,x',y,y') = getCorners window area
+
+         in do activeTexture $= TextureUnit 0
+               textureBinding Texture2D $= Just whiteSquare
+               renderPrimitive Quads $ do
+                col rgb
+                ver x' y'
+                ver x' y
+                ver x  y
+                ver x  y'
+        where col [r,g,b] = color  (Color3 r g b :: Color3  GLfloat)
+              ver x y     = vertex (Vertex2 x y  :: Vertex2 GLfloat)
 
     renderTexture :: Area -> Area -> [Float] -> TextureObject -> IO()
     renderTexture window area rgb tex =
@@ -28,6 +45,28 @@ module Interface.Render.Primitive
         where col [r,g,b] = color    (Color3 r g b  :: Color3    GLfloat)
               ver x y     = vertex   (Vertex2 x y   :: Vertex2   GLfloat)
               txc u v     = texCoord (TexCoord2 u v :: TexCoord2 GLfloat)
+    --renderColour :: Area -> Area -> [Float] -> IO()
+    --renderColour window area rgb =
+    --    let (x,x',y,y') = getCorners window area
+
+    --     in renderPrimitive Quads $ do
+    --            col rgb
+    --            ver x' y'
+    --            ver x' y
+    --            ver x  y
+    --            ver x  y'
+    --    where col [r,g,b] = color  (Color3 r g b :: Color3  GLfloat)
+    --          ver x y     = vertex (Vertex2 x y  :: Vertex2 GLfloat)
+
+
+
+    getCorners :: Area -> Area -> (GLfloat,GLfloat,GLfloat,GLfloat)
+    getCorners window area = let (x,x') = xRangeToGL window $ getXRange area
+                                 (y,y') = yRangeToGL window $ getYRange area
+                              in (x,x',y,y')
+
+    whiteSquare :: TextureObject
+    whiteSquare = unsafePerformIO $ loadTexture' "res/white.png"
 
     loadTexture' :: FilePath -> IO TextureObject
     loadTexture' f = do
@@ -38,21 +77,3 @@ module Interface.Render.Primitive
         return tex
 
 
-
-    renderColour :: Area -> Area -> [Float] -> IO()
-    renderColour window area rgb =
-        let (x,x',y,y') = getCorners window area
-
-         in renderPrimitive Quads $ do
-                col rgb
-                ver x' y'
-                ver x' y
-                ver x  y
-                ver x  y'
-        where col [r,g,b] = color  (Color3 r g b :: Color3  GLfloat)
-              ver x y     = vertex (Vertex2 x y  :: Vertex2 GLfloat)
-
-    getCorners :: Area -> Area -> (GLfloat,GLfloat,GLfloat,GLfloat)
-    getCorners window area = let (x,x') = xRangeToGL window $ getXRange area
-                                 (y,y') = yRangeToGL window $ getYRange area
-                              in (x,x',y,y')
