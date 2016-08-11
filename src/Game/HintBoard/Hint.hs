@@ -1,6 +1,7 @@
 module Game.HintBoard.Hint
 (
     Orientation (Vertical,Horizontal),
+    genHintOrientation,
 
     HintType (VHEmpty,VThree,VTwo,HNeighbour,HSpear,HInverseSpear),
     genHintType,
@@ -32,13 +33,20 @@ module Game.HintBoard.Hint
 
 
     data Orientation = Vertical | Horizontal
-        deriving (Enum,Eq)
+        deriving (Eq)
 
-    instance Random Orientation where
-        random g        = case randomR (0,1) g of
-                              (r, g') -> (toEnum r, g')
-        randomR (a,b) g = case randomR (fromEnum a, fromEnum b) g of
-                              (r, g') -> (toEnum r, g')
+    genHintOrientation :: State StdGen (IO Orientation)
+    genHintOrientation = getHintOrientation <$> state random
+        where
+            getHintOrientation :: Int -> IO Orientation
+            getHintOrientation i = do
+                wVertical   <- read <$> getSetting "wVertical"
+                wHorizontal <- read <$> getSetting "wHorizontal"
+
+                return $ (replicate wVertical   Vertical++
+                          replicate wHorizontal Horizontal
+                         ) !! mod i (wVertical+wHorizontal)
+
 
 
 
@@ -149,8 +157,7 @@ module Game.HintBoard.Hint
 
 
     toggleSelectHint :: Hint -> IO Hint
-    toggleSelectHint vh = if selected vh then unSelectHint vh
-                                          else selectHint   vh
+    toggleSelectHint vh = (if selected vh then unSelectHint else selectHint) vh
 
     selectHint :: Hint -> IO Hint
     selectHint h = do

@@ -57,6 +57,7 @@ module Game.HintBoard.Vertical
         let rs = [ri,ri',ri'']
 
         return $ ioHT >>= \ht ->
+            print (ri,ci) >>
             case ht of
                 VTwo   -> genVTwoHint   (sort $ take 2 rs) ci s
                 VThree -> genVThreeHint (sort rs)          ci s

@@ -5,7 +5,14 @@ module Game.HintBoard
 
     fillHintBoard,
     addHintList,
+
+    scrambleIndices,
+    genHintList,
 ) where
+
+    import Control.Monad.Trans.State
+
+    import Data.List
 
     import Game.Board
     import Game.Board.Value
@@ -76,9 +83,9 @@ module Game.HintBoard
                 then addHint h hb >>= fillHintBoard
                 else return hb
 
-    addHintList :: [Hint] -> HintBoard -> IO HintBoard
-    addHintList []     hb = return hb
-    addHintList (h:hs) hb = addIf hb >>= addHintList hs
+    addHintList :: HintBoard -> [Hint] -> IO HintBoard
+    addHintList hb []     = return hb
+    addHintList hb (h:hs) = addIf hb >>= (flip addHintList) hs
         where addIf = if hOrient h == hbOrient hb then addHint h else return
 
     addHint :: Hint -> HintBoard -> IO HintBoard
@@ -103,6 +110,29 @@ module Game.HintBoard
         , xy       = xy'
         , width    = w
         , hbOrient = o
-        }
-        | o == Vertical   = nextVHintPos (last hs) xy' w
-        | o == Horizontal = nextHHintPos (last hs) xy' w
+        } | o == Vertical   = nextVHintPos (last hs) xy' w
+          | o == Horizontal = nextHHintPos (last hs) xy' w
+
+
+
+
+
+    scrambleIndices :: Int -> [(Int,Int)] -> State StdGen [(Int,Int)]
+    scrambleIndices 0   ijs  = return []
+    scrambleIndices nHs ijs = (ijs!!) <$> state (randomR (0,length ijs-1)) >>=
+                              \ij -> (ij:) <$> scrambleIndices (nHs-1) ijs
+
+    genHintList :: Board -> [(Int,Int)] -> State StdGen (IO[Hint])
+    genHintList _ []       = return $ return []
+    genHintList s (ij:ijs) = do
+        h  <- genHint     s         ij
+        hs <- genHintList s ijs
+        return $ (:) <$> h <*> hs
+
+    genHint :: Board -> (Int,Int) -> State StdGen (IO Hint)
+    genHint s ij = do
+        o  <- genHintOrientation
+        vh <- genVHint ij s
+        hh <- genHHint ij s
+
+        return $ o >>= \o' -> if o' == Vertical then vh else hh

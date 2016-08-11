@@ -3,7 +3,6 @@ module Interface.Coordinate
     Coord,
 
 
-
     Point,
     (>+<),
     (>-<),
@@ -17,7 +16,6 @@ module Interface.Coordinate
     pointInArea,
 
 
-
     Movable,
     moveTo,
     moveBy,
@@ -28,6 +26,7 @@ module Interface.Coordinate
 
     getAreaStart,
     getAreaSize,
+    getAreaEnd,
 
     getXRange,
     getYRange,
@@ -134,6 +133,9 @@ module Interface.Coordinate
 
     getAreaSize :: Area -> Point
     getAreaSize Area { wh = wh } = wh
+
+    getAreaEnd :: Area -> Point
+    getAreaEnd Area { xy = xy, wh = wh } = xy>+<wh
 
 
     getXRange :: Area -> Point

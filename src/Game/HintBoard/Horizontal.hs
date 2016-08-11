@@ -62,6 +62,7 @@ module Game.HintBoard.Horizontal
         invSel <- state random
 
         return $ ioHT >>= \ht ->
+            print (ri,ci) >>
             case ht of
                 HNeighbour    -> genHNeighbourHint    rcis            s
                 HSpear        -> genHSpearHint        rcis rev        s

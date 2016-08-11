@@ -14,7 +14,7 @@ import Interface.Screen
 main :: IO()
 main = getSeed >>= gameInit >>= guiInit >>= uncurry (loop mouseKeysUp)
     where
-        loop :: (Screen -> Game -> IO (Action Game)) -> Game -> Screen -> IO()
+        loop :: (Screen -> Game -> IO(Action Game)) -> Game -> Screen -> IO()
         loop action game screen = unlessClose screen $ fpsWait screen $ do
 
             display screen game
