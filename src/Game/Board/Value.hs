@@ -36,7 +36,7 @@ module Game.Board.Value
         show Value { vali = v } = show v
 
     instance Eq Value where
-        v == v' = vali v == vali v'
+        v == v' = vali v == vali v' && row v == row v'
 
     instance Renderable Value where
         render  w v = renderTexture w (area v) (fgrgb v) (tex v)

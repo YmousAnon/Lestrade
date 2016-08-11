@@ -6,6 +6,7 @@ module Game
 
     import Control.Monad.Trans.State
 
+    import Data.List
     import Data.IORef
 
     import Game.Board
@@ -81,7 +82,7 @@ module Game
 
         b   <- newBoard nR nC (wBW,wBW)
 
-        let (s, (_, g'))    = runState (genSolution nR nC) ([1..nC],g)
+        let (s, (_, g')) = runState (genSolution nR nC) ([1..nC],g)
         s' <- s
         let (b',(_,g'')) = runState (initialSol iS b s') (concat [[(r,c)
                                                           | r <- [0..nR-1]]
@@ -108,16 +109,15 @@ module Game
                                  | r <- [0..nR-1]]
                                  | c <- [0..nC-1]])
                                  )) g'
-
-
+            hs' = sort . removeDuplicateHints <$> hs
 
 
         vhb' <- let xm    = (getXMax $ getArea b')
                     vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
-                  in hs >>= addHintList vhb'' >>= fillHintBoard
+                  in hs' >>= addHintList vhb'' >>= fillHintBoard
         hhb' <- let ym    = (getYMax $ getArea vhb')
                     hhb'' = newEmptyHintBoard (x+pD,wBW) ym Horizontal
-                  in hs >>= addHintList hhb'' >>= fillHintBoard
+                  in hs' >>= addHintList hhb'' >>= fillHintBoard
 
         --let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
         --hhint1 <- ioHHint1

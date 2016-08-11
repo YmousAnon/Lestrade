@@ -20,6 +20,8 @@ module Game.HintBoard.Hint
 
     import Control.Monad.Trans.State
 
+    import Data.Set (fromList)
+
     import Game.Board.Value
     import Game.HintBoard.Decoration
 
@@ -52,7 +54,9 @@ module Game.HintBoard.Hint
 
     data HintType = VHEmpty
                   | VThree | VTwo
-                  | HNeighbour | HSpear | HInverseSpear
+                  | HSpear | HInverseSpear | HNeighbour
+
+        deriving(Eq,Ord)
 
     genHintType :: Orientation -> State StdGen (IO HintType)
     genHintType o = (if o == Vertical then genVHintType else genHHintType)
@@ -90,6 +94,13 @@ module Game.HintBoard.Hint
                 , hType    :: HintType
                 , decs     :: [Decoration]
                 }
+
+    instance Eq Hint where
+        h == h' = foldl (\acc x -> acc && elem x (vals h')) True (vals h) &&
+                  hType h == hType h'
+
+    instance Ord Hint where
+        h `compare` h' = hType h `compare` hType h'
 
     instance Show Hint where
         show Hint { vals = vs } = concatMap (\v -> '\n':show v) vs++"\n"

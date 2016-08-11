@@ -4,7 +4,7 @@ rows              = 4
 initialSolved     = 4
 
 --Hints
-hintsPerSquare    = 1.0
+hintsPerSquare    = 0.75
 
 ----Hint Weigth
 wVertical         = 1

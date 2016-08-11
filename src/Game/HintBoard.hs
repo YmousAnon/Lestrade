@@ -8,6 +8,7 @@ module Game.HintBoard
 
     scrambleIndices,
     genHintList,
+    removeDuplicateHints,
 ) where
 
     import Control.Monad.Trans.State
@@ -136,3 +137,7 @@ module Game.HintBoard
         hh <- genHHint ij s
 
         return $ o >>= \o' -> if o' == Vertical then vh else hh
+
+    removeDuplicateHints :: [Hint] -> [Hint]
+    removeDuplicateHints []     = []
+    removeDuplicateHints (h:hs) = h : (removeDuplicateHints $ filter (/=h) hs)
