@@ -1,6 +1,6 @@
 --Game
 columns          = 8
-rows             = 4
+rows             = 5
 initialSolved    = 4
 
 ----Hint Weigth
@@ -15,7 +15,7 @@ wHSpear          = 5
 
 --Graphics
 screenres        = (1024,768)
-tileset          = science
+tileset          = default
 fps              = 60
 
 ----Boarders
