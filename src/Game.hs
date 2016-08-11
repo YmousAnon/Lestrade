@@ -29,15 +29,18 @@ module Game
                 , gen      :: StdGen
                 , vhb      :: HintBoard
                 , hhb      :: HintBoard
+                , area     :: Area
                 }
 
     instance Renderable Game where
         render w g = render w (board g)
                   >> render w (vhb   g)
                   >> render w (hhb   g)
-        getArea  g = getArea (board g)
-                  \/ getArea (vhb   g)
-                  \/ getArea (hhb   g)
+        getArea    = area
+        --(getArea (board g)
+        --           \/ getArea (vhb   g)
+        --           \/ getArea (hhb   g))
+        --           >+<
 
     instance Clickable Game where
         lclick pt g = do b'   <- lclick pt $ board g
@@ -49,6 +52,7 @@ module Game
                              , gen      = gen      g
                              , vhb      = vhb'
                              , hhb      = hhb'
+                             , area     = area     g
                              }
         rclick pt g = do b'   <- rclick pt $ board g
                          vhb' <- rclick pt $ vhb   g
@@ -59,6 +63,7 @@ module Game
                              , gen      = gen      g
                              , vhb      = vhb'
                              , hhb      = hhb'
+                             , area     = area     g
                              }
 
 
@@ -96,12 +101,12 @@ module Game
            hhint1 <- ioHHint1
 
            let emptyVBoard = newEmptyHintBoard (0,y) (getXMax $ getArea b') Vertical
-           vhb  <- fillHintBoard =<< addHintList [vhint1,vhint2] emptyVBoard --addHint vhint2 =<< addHint vhint1 emptyHBoard
+           vhb'  <- fillHintBoard =<< addHintList [vhint1,vhint2] emptyVBoard --addHint vhint2 =<< addHint vhint1 emptyHBoard
            -- !==! --
 
            --print (getYMax $ getArea b')
-           let emptyHBoard = newEmptyHintBoard (x,0) (getYMax $ getArea vhb) Horizontal
-           hhb <- fillHintBoard =<< addHintList [hhint1,vhint1,vhint2] emptyHBoard
+           let emptyHBoard = newEmptyHintBoard (x,0) (getYMax $ getArea vhb') Horizontal
+           hhb' <- fillHintBoard =<< addHintList [hhint1,vhint1,vhint2] emptyHBoard
 
            -- !==! --
 
@@ -124,10 +129,15 @@ module Game
            --print b
            print s'
            --print a
+           a <- uncurry (newArea (0,0)) . (\w -> getAreaSize (getArea b'
+                                                             \/ getArea vhb'
+                                                             \/ getArea hhb'
+                ) >+< (w,w)) . read <$> getSetting "windowBorderWidth"
            return Game
                { board    = b'
                , solution = s'
                , gen      = g
-               , vhb      = vhb
-               , hhb      = hhb
+               , vhb      = vhb'
+               , hhb      = hhb'
+               , area     = a
                }
