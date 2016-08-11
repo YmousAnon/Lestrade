@@ -56,16 +56,16 @@ module Game.HintBoard.Horizontal
         ci'  <- getColI [ci]     (length $ squares $ head $ rows s)
         ci'' <- getColI [ci,ci'] (length $ squares $ head $ rows s)
 
-        let rci   = (ri  ,ci  )
-            rci'  = (ri' ,ci' )
-            rci'' = (ri'',ci'')
+        let rcis  = [(ri,ci),(ri',ci'),(ri'',ci'')]
 
-        rev  <- state random
+        rev    <- state random
+        invSel <- state random
 
         return $ ioHT >>= \ht ->
             case ht of
-                HNeighbour -> genHNeighbourHint [rci',rci,rci']      s
-                HSpear     -> genHSpearHint     [rci,rci',rci''] rev s
+                HNeighbour    -> genHNeighbourHint    rcis            s
+                HSpear        -> genHSpearHint        rcis rev        s
+                HInverseSpear -> genHInverseSpearHint rcis rev invSel s
         where
             getRowI :: State StdGen Int
             getRowI = state $ randomR (0,length (rows s)-1)
@@ -78,24 +78,40 @@ module Game.HintBoard.Horizontal
                                          state (randomR (0,1))
 
     genHNeighbourHint :: [(Int,Int)] -> Board -> IO Hint
-    genHNeighbourHint rs s = newHHint HNeighbour (map (uncurry getV) rs) (0,0)
+    genHNeighbourHint rcis s =
+        newHHint HNeighbour (map (uncurry getV) rcis') (0,0)
         where
+            rcis' :: [(Int,Int)]
+            rcis' = let [rci,rci',_] = rcis in [rci,rci',rci]
+
             getV :: Int -> Int -> Value
             getV ri ci = val $ getRowSquare (rows s !! ri) ci
 
     genHSpearHint :: [(Int,Int)] -> Bool -> Board -> IO Hint
-    genHSpearHint rcis rev s =  print rcis >> print rcis' >>
-        newHHint HSpear (map (uncurry getV) rcis') (0,0)
+    genHSpearHint rcis rev s = newHHint HSpear (map (uncurry getV) rcis') (0,0)
         where
             rcis' :: [(Int,Int)]
             rcis' = (if rev then reverse else id) $ sortBy fstGT rcis
 
-            fstGT :: (a,Int) -> (a,Int) -> Ordering
-            fstGT (_,c) (_,c') = compare c c'
-
             getV :: Int -> Int -> Value
             getV ri ci = val $ getRowSquare (rows s !! ri) ci
 
+    genHInverseSpearHint :: [(Int,Int)] -> Bool -> Int -> Board -> IO Hint
+    genHInverseSpearHint rcis rev invSel s = do
+        nC <- read <$> getSetting "columns"
+        let rcis'   = (if rev then reverse else id) $ sortBy fstGT rcis
+            ci'     = delete (fst(rcis!!1)) [0..nC-1] !! mod invSel (nC-1)
+            rcis''  = [head rcis,(fst (rcis!!1),ci'),rcis!!2]
+        --print rcis
+        --print rcis''
+
+        newHHint HInverseSpear (map (uncurry getV) rcis'') (0,0)
+        where
+            getV :: Int -> Int -> Value
+            getV ri ci = val $ getRowSquare (rows s !! ri) ci
+
+    fstGT :: (a,Int) -> (a,Int) -> Ordering
+    fstGT (_,c) (_,c') = compare c c'
 
 
     nextHHintPos :: Hint -> Point -> Coord -> IO Point

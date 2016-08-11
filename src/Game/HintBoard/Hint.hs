@@ -2,10 +2,10 @@ module Game.HintBoard.Hint
 (
     Orientation (Vertical,Horizontal),
 
-    HintType (VHEmpty,VThree,VTwo,HNeighbour,HSpear),
+    HintType (VHEmpty,VThree,VTwo,HNeighbour,HSpear,HInverseSpear),
     genHintType,
 
-    Hint,
+    Hint(hOrient),
     newHint,
 
     toggleSelectHint,
@@ -44,7 +44,7 @@ module Game.HintBoard.Hint
 
     data HintType = VHEmpty
                   | VThree | VTwo
-                  | HNeighbour | HSpear
+                  | HNeighbour | HSpear | HInverseSpear
 
     genHintType :: Orientation -> State StdGen (IO HintType)
     genHintType o = (if o == Vertical then genVHintType else genHHintType)
@@ -52,12 +52,14 @@ module Game.HintBoard.Hint
         where
             genHHintType :: Int -> IO HintType
             genHHintType i = do
-                wHNeighbour <- read <$> getSetting "wHNeighbour"
-                wHSpear     <- read <$> getSetting "wHSpear"
+                wHNeighbour    <- read <$> getSetting "wHNeighbour"
+                wHSpear        <- read <$> getSetting "wHSpear"
+                wHInverseSpear <- read <$> getSetting "wHInverseSpear"
 
-                return $ (replicate wHNeighbour HNeighbour++
-                          replicate wHSpear     HSpear
-                         ) !! mod i (wHNeighbour+wHSpear)
+                return $ (replicate wHNeighbour    HNeighbour++
+                          replicate wHSpear        HSpear    ++
+                          replicate wHInverseSpear HInverseSpear
+                         ) !! mod i (wHNeighbour+wHSpear+wHInverseSpear)
 
             genVHintType :: Int -> IO HintType
             genVHintType i = do
@@ -67,7 +69,6 @@ module Game.HintBoard.Hint
                 return $ (replicate wVThree VThree++
                           replicate wVTwo   VTwo
                          ) !! mod i (wVThree+wVTwo)
-
 
 
 
@@ -136,12 +137,14 @@ module Game.HintBoard.Hint
 
 
     getDecorationList :: [Area] -> HintType -> IO [Decoration]
-    getDecorationList _          VHEmpty     = return []
-    getDecorationList _          VThree      = return []
-    getDecorationList _          VTwo        = return []
-    getDecorationList _          HNeighbour  = return []
-    getDecorationList [a,a',a''] HSpear      = sequence
+    getDecorationList _          VHEmpty       = return []
+    getDecorationList _          VThree        = return []
+    getDecorationList _          VTwo          = return []
+    getDecorationList _          HNeighbour    = return []
+    getDecorationList [a,a',a''] HSpear        = sequence
         [newDecoration (a\/a'\/a'') Spear]
+    getDecorationList [a,a',a''] HInverseSpear = sequence
+        [newDecoration a' Inversion,newDecoration (a\/a'\/a'') Spear]
 
 
 

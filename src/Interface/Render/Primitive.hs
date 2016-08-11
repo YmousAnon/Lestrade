@@ -75,5 +75,3 @@ module Interface.Render.Primitive
         textureFilter Texture2D $= ((Linear', Nothing), Linear')
 
         return tex
-
-

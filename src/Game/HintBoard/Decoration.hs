@@ -1,6 +1,6 @@
 module Game.HintBoard.Decoration
 (
-    DecorationType(Spear),
+    DecorationType(Spear,Inversion),
 
     Decoration,
     newDecoration,
@@ -18,7 +18,7 @@ module Game.HintBoard.Decoration
     import System.IO.Unsafe
 
 
-    data DecorationType = Spear
+    data DecorationType = Spear | Inversion
 
 
 
@@ -60,7 +60,8 @@ module Game.HintBoard.Decoration
                    <$> getSetting "tileset"
 
             end = case dt of
-                      Spear -> "spear.png"
+                      Spear     -> "spear.png"
+                      Inversion -> "inversion.png"
 
 
 

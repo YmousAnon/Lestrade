@@ -1,13 +1,11 @@
 module Game.HintBoard
 (
-    HintBoard,
+    HintBoard(hbOrient),
     newEmptyHintBoard,
 
     fillHintBoard,
-    addHint,
+    addHintList,
 ) where
-
-    import Control.Monad.Trans.State
 
     import Game.Board
     import Game.Board.Value
@@ -23,10 +21,10 @@ module Game.HintBoard
 
 
     data HintBoard = HintBoard
-                     { hints       :: [Hint]
-                     , xy          :: Point
-                     , width       :: Coord
-                     , orientation :: Orientation
+                     { hints    :: [Hint]
+                     , xy       :: Point
+                     , width    :: Coord
+                     , hbOrient :: Orientation
                      }
 
     instance Renderable HintBoard where
@@ -41,35 +39,35 @@ module Game.HintBoard
                          then return             hs'
                          else mapM unSelectHint  hs'
             return HintBoard
-                   { hints       = hs''
-                   , xy          = xy     hb
-                   , width       = width  hb
-                   , orientation = orientation hb
+                   { hints    = hs''
+                   , xy       = xy       hb
+                   , width    = width    hb
+                   , hbOrient = hbOrient hb
                    }
         rclick pt hb = do
             hs'  <- mapM (rclick pt) (hints hb)
             hs'' <- mapM unSelectHint  hs'
             return HintBoard
-                   { hints       = hs''
-                   , xy          = xy    hb
-                   , width       = width hb
-                   , orientation = orientation hb
+                   { hints    = hs''
+                   , xy       = xy    hb
+                   , width    = width hb
+                   , hbOrient = hbOrient hb
                    }
 
     newEmptyHintBoard :: Point -> Coord -> Orientation -> HintBoard
     newEmptyHintBoard xy w o = HintBoard
-                               { hints       = []
-                               , xy          = xy
-                               , width       = w
-                               , orientation = o
+                               { hints    = []
+                               , xy       = xy
+                               , width    = w
+                               , hbOrient = o
                                }
 
 
 
     fillHintBoard :: HintBoard -> IO HintBoard
-    fillHintBoard hb = nextHintPos hb >>= getNewHint (orientation hb) [] >>=
+    fillHintBoard hb = nextHintPos hb >>= newEmptyHint (hbOrient hb) [] >>=
         \h ->
-        let vertical = orientation hb == Vertical
+        let vertical = hbOrient hb == Vertical
             nulltest = null (hints hb)
             htest    = getXMax (getArea h) == getXMax (getArea hb)
             vtest    = getYMax (getArea h) == getYMax (getArea hb)
@@ -78,28 +76,33 @@ module Game.HintBoard
                 then addHint h hb >>= fillHintBoard
                 else return hb
 
+    addHintList :: [Hint] -> HintBoard -> IO HintBoard
+    addHintList []     hb = return hb
+    addHintList (h:hs) hb = addIf hb >>= addHintList hs
+        where addIf = if hOrient h == hbOrient hb then addHint h else return
+
     addHint :: Hint -> HintBoard -> IO HintBoard
     addHint h hb = do
         pt <- nextHintPos hb
         return HintBoard
-               { hints       = hints  hb++[moveTo pt h]
-               , xy          = xy     hb
-               , width       = width  hb
-               , orientation = orientation hb
+               { hints    = hints  hb++[moveTo pt h]
+               , xy       = xy     hb
+               , width    = width  hb
+               , hbOrient = hbOrient hb
                }
 
-    getNewHint :: Orientation -> [Value] -> Point -> IO Hint
-    getNewHint o vs xy = case o of
-                             Vertical   -> newVHint VHEmpty vs xy
-                             Horizontal -> newHHint VHEmpty vs xy
+    newEmptyHint :: Orientation -> [Value] -> Point -> IO Hint
+    newEmptyHint o vs xy = case o of
+                               Vertical   -> newVHint VHEmpty vs xy
+                               Horizontal -> newHHint VHEmpty vs xy
 
     nextHintPos :: HintBoard -> IO Point
     nextHintPos HintBoard { hints = [], xy = xy } = return xy
     nextHintPos HintBoard
-        { hints       = hs
-        , xy          = xy'
-        , width       = w
-        , orientation = o
+        { hints    = hs
+        , xy       = xy'
+        , width    = w
+        , hbOrient = o
         }
         | o == Vertical   = nextVHintPos (last hs) xy' w
         | o == Horizontal = nextHHintPos (last hs) xy' w

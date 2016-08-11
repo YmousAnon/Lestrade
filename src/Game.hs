@@ -67,12 +67,14 @@ module Game
     gameInit seed = do
         let g = mkStdGen seed
 
-        nC <- read <$> getSetting "columns"
-        nR <- read <$> getSetting "rows"
+        nC  <- read <$> getSetting "columns"
+        nR  <- read <$> getSetting "rows"
 
-        is <- read <$> getSetting "initialSolved"
+        is  <- read <$> getSetting "initialSolved"
 
-        b  <- newBoard nR nC (0,0)
+        wbw <- read <$> getSetting "windowBorderWidth"
+
+        b  <- newBoard nR nC (wbw,wbw)
 
         let (s, (_, g'))    = runState (genSolution nR nC) ([1..nC],g)
         do s' <- s
@@ -89,15 +91,17 @@ module Game
                (ioVHint2,g'''') = runState (genVHint (0,0) s') g'''
            vhint1 <- ioVHint1
            vhint2 <- ioVHint2
-           let emptyHBoard = newEmptyHintBoard (0,y) (getXMax $ getArea b') Vertical
-           vhb  <- fillHintBoard =<< addHint vhint2 =<< addHint vhint1 emptyHBoard
+
+           let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
+           hhint1 <- ioHHint1
+
+           let emptyVBoard = newEmptyHintBoard (0,y) (getXMax $ getArea b') Vertical
+           vhb  <- fillHintBoard =<< addHintList [vhint1,vhint2] emptyVBoard --addHint vhint2 =<< addHint vhint1 emptyHBoard
            -- !==! --
 
            --print (getYMax $ getArea b')
            let emptyHBoard = newEmptyHintBoard (x,0) (getYMax $ getArea vhb) Horizontal
-           let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
-           hhint1 <- ioHHint1
-           hhb <-  fillHintBoard =<< addHint hhint1 emptyHBoard
+           hhb <- fillHintBoard =<< addHintList [hhint1,vhint1,vhint2] emptyHBoard
 
            -- !==! --
 
