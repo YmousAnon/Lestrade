@@ -53,7 +53,7 @@ module Game.Board.Row
                                                      (val $ head (ss'\\ss)))
                                                      ss'
 
-        rclick pt r = do ss <- mapM (rclick pt) $ squares r
+        rclick pt r = do ss <- mapM (rclick pt)  $ squares r
                          let sols = map fromJust $ filter isJust
                                                  $ map getSolution ss
                              ss' = map (\v -> foldl (\s v' -> removeVal v' s) v

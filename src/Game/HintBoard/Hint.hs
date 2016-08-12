@@ -218,15 +218,16 @@ module Game.HintBoard.Hint
 
     hideHint :: Hint -> Hint
     hideHint h = let (vsh,vst) = splitValList (hType h) (vals h)
+                     shade     = map (0.15*) [1,1,1]
                   in Hint
-            { vals     = map (changeValueColour [0.25,0.25,0.25]) vsh++vst
+            { vals     = map (changeValueColour shade) vsh++vst
             , area     = area     h
             , bgrgb    = bgrgb    h
             , selected = selected h
             , hidden   = True
             , hOrient  = hOrient  h
             , hType    = hType    h
-            , decs     = map (changeDecorationColour [0.25,0.25,0.25]) (decs h)
+            , decs     = map (changeDecorationColour shade) (decs h)
             }
 
     unHideHint :: Hint -> Hint

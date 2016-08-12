@@ -171,7 +171,7 @@ module Game.Board.Square
 
     getSolution :: Square -> Maybe Value
     getSolution Solution{ val = v } = Just v
-    getSolution Alternatives{}      = Nothing
+    getSolution _                   = Nothing
 
 
 
