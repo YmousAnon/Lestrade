@@ -15,7 +15,7 @@ wVThree           = 1
 wVTwo             = 3
 
 ------Horizontal
-wHNeighbour       = 8
+wHNeighbour       = 12
 wHSpear           = 1
 wHInverseSpear    = 1
 
