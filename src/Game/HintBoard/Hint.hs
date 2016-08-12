@@ -96,8 +96,8 @@ module Game.HintBoard.Hint
                 }
 
     instance Eq Hint where
-        h == h' = foldl (\acc x -> acc && elem x (vals h')) True (vals h) &&
-                  hType h == hType h'
+        h == h' = let overlap = filter (\v -> elem v (vals h')) $ vals h
+                   in length overlap >= 2
 
     instance Ord Hint where
         h `compare` h' = hType h `compare` hType h'
