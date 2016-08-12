@@ -7,6 +7,8 @@ module Game.Board.Square
     solvedSquare,
     genSolvedSquare,
 
+    getSolution,
+
     removeVal,
     transplantSolution,
 ) where
@@ -167,6 +169,12 @@ module Game.Board.Square
 
 
 
+    getSolution :: Square -> Maybe Value
+    getSolution Solution{ val = v } = Just v
+    getSolution Alternatives{}      = Nothing
+
+
+
     getSquareWidth :: Int -> Coord -> Coord
     getSquareWidth nC h
       | nC `mod` 2 == 0 = div h 2 * div nC 2
@@ -192,7 +200,6 @@ module Game.Board.Square
                |                  v >  div nC 2 = div tw 2
                | otherwise                      = 0
             dy' = getX (solPos nC tw w (x,y))-x
-
 
 
 

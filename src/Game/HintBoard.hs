@@ -116,8 +116,6 @@ module Game.HintBoard
 
 
 
-
-
     scrambleIndices :: Int -> [(Int,Int)] -> State StdGen [(Int,Int)]
     scrambleIndices 0   ijs  = return []
     scrambleIndices nHs ijs = (ijs!!) <$> state (randomR (0,length ijs-1)) >>=

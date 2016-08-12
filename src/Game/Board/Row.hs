@@ -14,6 +14,7 @@ module Game.Board.Row
     import Control.Monad.Trans.State
 
     import Data.List
+    import Data.Maybe
 
     import System.Random
 
@@ -47,22 +48,22 @@ module Game.Board.Row
                           rN = rowNum  r
                        in do ss' <- mapM (lclick pt) ss
                              if ss == ss'
-                              then return $ row rN   ss'
-                              else return $ row rN $ map (removeVal
+                              then return $ Row rN   ss'
+                              else return $ Row rN $ map (removeVal
                                                      (val $ head (ss'\\ss)))
                                                      ss'
 
         rclick pt r = do ss <- mapM (rclick pt) $ squares r
-                         let rN = rowNum r
-                         return Row { rowNum = rN, squares = ss }
-
-    row :: Int -> [Square] -> Row
-    row r ss = Row{ rowNum = r, squares = ss }
+                         let sols = map fromJust $ filter isJust
+                                                 $ map getSolution ss
+                             ss' = map (\v -> foldl (\s v' -> removeVal v' s) v
+                                       sols) ss
+                         return Row { rowNum = rowNum r, squares = ss' }
 
 
 
     newRow :: Int -> Int -> Point -> IO Row
-    newRow r nC (x,y) = fmap (row r) $ sequence $ squareIter nC $ return x
+    newRow r nC (x,y) = fmap (Row r) $ sequence $ squareIter nC $ return x
         where
             squareIter :: Int -> IO Coord -> [IO Square]
             squareIter 0 _ = []
@@ -78,22 +79,22 @@ module Game.Board.Row
             bw = read <$> getSetting "tileSpacing"
 
     genSolvedRow :: Int -> Int -> State ([Int], StdGen) (IO Row)
-    genSolvedRow nC r = fmap (row r) . sequence
+    genSolvedRow nC r = fmap (Row r) . sequence
                                     <$> replicateM nC (genSolvedSquare nC r)
 
 
 
     getRowSquare :: Row -> Int -> Square
     getRowSquare r 0 = head $ squares r
-    getRowSquare r c = getRowSquare (row (rowNum r) (tail $ squares r)) (c-1)
+    getRowSquare r c = getRowSquare (Row (rowNum r) (tail $ squares r)) (c-1)
 
     setRowSquare :: Row -> Int -> Square -> Row
     setRowSquare r c s'
         | null (squares r) = r
-        | otherwise        = row rN $ s'' : ss'
+        | otherwise        = Row rN $ s'' : ss'
         where s''    = if c == 0
                            then transplantSolution s s'
                            else removeVal (val s') s
               (s:ss) = squares r
-              ss'    = squares $ setRowSquare (row rN ss) (c-1) s'
+              ss'    = squares $ setRowSquare (Row rN ss) (c-1) s'
               rN     = rowNum r

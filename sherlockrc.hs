@@ -4,20 +4,20 @@ rows              = 4
 initialSolved     = 4
 
 --Hints
-hintsPerSquare    = 0.75
+hintsPerSquare    = 1.0
 
 ----Hint Weigth
 wVertical         = 1
-wHorizontal       = 1
+wHorizontal       = 2
 
 ------Vertical
-wVThree           = 10
-wVTwo             = 10
+wVThree           = 1
+wVTwo             = 3
 
 ------Horizontal
-wHNeighbour       = 25
-wHSpear           = 5
-wHInverseSpear    = 5
+wHNeighbour       = 8
+wHSpear           = 1
+wHInverseSpear    = 1
 
 
 --Graphics
