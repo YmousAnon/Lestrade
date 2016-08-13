@@ -20,6 +20,7 @@ module Game.Board
     import Game.Board.Row
     import Game.Board.Square
     import Game.Board.Value
+    import Game.Victory
 
     import Data.List
 
@@ -40,6 +41,10 @@ module Game.Board
         lclick pt b = fmap Board (mapM (lclick pt) (rows b))
         rclick pt b = fmap Board (mapM (rclick pt) (rows b))
 
+    instance Solvable Board where
+        (Board []    )|-|(Board []      ) = Correct
+        (Board (r:rs))|-|(Board (r':rs')) = (r|-|r')-|-(Board rs|-|Board rs')
+
 
 
     newBoard :: Int -> Int -> Point -> IO Board
@@ -58,7 +63,7 @@ module Game.Board
             bw :: IO Coord
             bw = read <$> getSetting "rowSpacing"
 
-    genSolution :: Int -> Int -> State ([Int], StdGen) (IO Board)
+    genSolution :: Int -> Int -> State ([Int],StdGen) (IO Board)
     genSolution nR nC = fmap Board . sequence <$> mapM (genSolvedRow nC)
                                                        [1..nR]
 
@@ -78,7 +83,7 @@ module Game.Board
     swapSquare bFrom bTo r c = setBoardSquare bFrom r c
                              $ getBoardSquare bTo   r c
 
-    getPos :: State ([(Int,Int)], StdGen) (Int,Int)
+    getPos :: State ([(Int,Int)],StdGen) (Int,Int)
     getPos = do (is,g) <- get
                 let (n,g') = randomR (0,length is-1) g
                     i      = is !! n

@@ -14,6 +14,7 @@ module Game
     import Game.HintBoard.Hint
     import Game.HintBoard.Vertical
     import Game.HintBoard.Horizontal
+    import Game.Victory
 
     import Interface.Input
     import Interface.Input.Settings
@@ -37,15 +38,12 @@ module Game
                   >> render w (vhb   g)
                   >> render w (hhb   g)
         getArea    = area
-        --(getArea (board g)
-        --           \/ getArea (vhb   g)
-        --           \/ getArea (hhb   g))
-        --           >+<
 
     instance Clickable Game where
         lclick pt g = do b'   <- lclick pt $ board g
                          vhb' <- lclick pt $ vhb   g
                          hhb' <- lclick pt $ hhb   g
+                         print (b'|-|solution g)
                          return Game
                              { board    = b'
                              , solution = solution g
@@ -115,7 +113,7 @@ module Game
         vhb' <- let xm    = (getXMax $ getArea b')
                     vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
                   in hs' >>= addHintList vhb'' >>= fillHintBoard
-        hhb' <- let ym    = (getYMax $ getArea vhb')
+        hhb' <- let ym    = (getYMax $ getArea b')
                     hhb'' = newEmptyHintBoard (x+pD,wBW) ym Horizontal
                   in hs' >>= addHintList hhb'' >>= fillHintBoard
 
@@ -150,7 +148,7 @@ module Game
         print s'
         --print a
         let a = uncurry (newArea (0,0)) $ (wBW,wBW) >+<
-                (getAreaEnd (getArea b'\/getArea vhb'\/getArea hhb'))
+                getAreaEnd (getArea b'\/getArea vhb'\/getArea hhb')
         return Game
             { board    = b'
             , solution = s'

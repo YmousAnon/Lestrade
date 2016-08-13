@@ -86,7 +86,7 @@ module Game.HintBoard
 
     addHintList :: HintBoard -> [Hint] -> IO HintBoard
     addHintList hb []     = return hb
-    addHintList hb (h:hs) = addIf hb >>= (flip addHintList) hs
+    addHintList hb (h:hs) = addIf hb >>= flip addHintList hs
         where addIf = if hOrient h == hbOrient hb then addHint h else return
 
     addHint :: Hint -> HintBoard -> IO HintBoard
@@ -138,4 +138,4 @@ module Game.HintBoard
 
     removeDuplicateHints :: [Hint] -> [Hint]
     removeDuplicateHints []     = []
-    removeDuplicateHints (h:hs) = h : (removeDuplicateHints $ filter (/=h) hs)
+    removeDuplicateHints (h:hs) = h : removeDuplicateHints (filter (/=h) hs)

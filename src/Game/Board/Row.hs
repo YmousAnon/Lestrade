@@ -19,6 +19,7 @@ module Game.Board.Row
     import System.Random
 
     import Game.Board.Square
+    import Game.Victory
 
     import Interface.Coordinate
     import Interface.Input
@@ -56,10 +57,13 @@ module Game.Board.Row
         rclick pt r = do ss <- mapM (rclick pt)  $ squares r
                          let sols = map fromJust $ filter isJust
                                                  $ map getSolution ss
-                             ss' = map (\v -> foldl (\s v' -> removeVal v' s) v
+                             ss' = map (\v -> foldl (flip removeVal) v
                                        sols) ss
                          return Row { rowNum = rowNum r, squares = ss' }
 
+    instance Solvable Row where
+        (Row _ []    )|-|(Row _  []      ) = Correct
+        (Row r (s:ss))|-|(Row r' (s':ss')) = (s|-|s')-|-(Row r ss|-|Row r' ss')
 
 
     newRow :: Int -> Int -> Point -> IO Row
@@ -98,3 +102,10 @@ module Game.Board.Row
               (s:ss) = squares r
               ss'    = squares $ setRowSquare (Row rN ss) (c-1) s'
               rN     = rowNum r
+
+
+
+    --rowState :: Row -> Row -> SolutionState
+    --rowState (Row _ []    ) (Row _  []      ) = Correct
+    --rowState (Row r (s:ss)) (Row r' (s':ss')) =
+    --    squareState s s'-|-rowState (Row r ss) (Row r' ss')

@@ -18,6 +18,7 @@ module Game.Board.Square
     import Data.List
 
     import Game.Board.Value
+    import Game.Victory
 
     import Interface.Coordinate
     import Interface.Input
@@ -122,6 +123,12 @@ module Game.Board.Square
         rclick pt s = if pointInArea pt (getArea $ val s) && not (static s)
             then unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
             else return s
+
+    instance Solvable Square where
+        Alternatives{}     |-|_                     = UnSolved
+        _                  |-|Alternatives{}        = UnSolved
+        Solution{ val = v }|-|Solution{ val  = v' } | v == v'   = Correct
+                                                    | otherwise = Wrong
 
 
 
@@ -233,3 +240,8 @@ module Game.Board.Square
                               , bgrgb  = bgrgb s
                               , static = True
                               }
+
+
+
+    --squareState :: Square -> Square -> SolutionState
+    --squareState
