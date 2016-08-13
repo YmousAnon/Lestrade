@@ -4,6 +4,7 @@ module Game
     gameInit,
 ) where
 
+    import Control.Monad
     import Control.Monad.Trans.State
 
     import Data.List
@@ -14,7 +15,8 @@ module Game
     import Game.HintBoard.Hint
     import Game.HintBoard.Vertical
     import Game.HintBoard.Horizontal
-    import Game.Victory
+    import Game.SolutionState
+    import Game.SolutionState.Loss
 
     import Interface.Input
     import Interface.Input.Settings
@@ -25,42 +27,54 @@ module Game
 
     import Interface.Coordinate
 
+
     data Game = Game
                 { board    :: Board
                 , solution :: Board
                 , vhb      :: HintBoard
                 , hhb      :: HintBoard
                 , area     :: Area
+                , loss     :: Loss
                 }
 
     instance Renderable Game where
-        render w g = render w (board g)
-                  >> render w (vhb   g)
-                  >> render w (hhb   g)
+        render w g = render             w (board g)
+                  >> render             w (vhb   g)
+                  >> render             w (hhb   g)
+                  >> whenLoss g (render w (loss  g))
         getArea    = area
 
     instance Clickable Game where
-        lclick pt g = do b'   <- lclick pt $ board g
-                         vhb' <- lclick pt $ vhb   g
-                         hhb' <- lclick pt $ hhb   g
-                         print (b'|-|solution g)
+        lclick pt g = do let lClickUnSolved x = ifSolved g (lclick pt) x
+                         b'   <- lClickUnSolved (board g)
+                         vhb' <- lClickUnSolved (vhb   g)
+                         hhb' <- lClickUnSolved (hhb   g)
                          return Game
-                             { board    = b'
-                             , solution = solution g
-                             , vhb      = vhb'
-                             , hhb      = hhb'
-                             , area     = area     g
-                             }
-        rclick pt g = do b'   <- rclick pt $ board g
-                         vhb' <- rclick pt $ vhb   g
-                         hhb' <- rclick pt $ hhb   g
+                                { board    = b'
+                                , solution = solution g
+                                , vhb      = vhb'
+                                , hhb      = hhb'
+                                , area     = area     g
+                                , loss     = loss     g
+                                }
+        rclick pt g = do let rClickUnSolved x = ifSolved g (rclick pt) x
+                         b'   <- rClickUnSolved (board g)
+                         vhb' <- rClickUnSolved (vhb   g)
+                         hhb' <- rClickUnSolved (hhb   g)
                          return Game
-                             { board    = b'
-                             , solution = solution g
-                             , vhb      = vhb'
-                             , hhb      = hhb'
-                             , area     = area     g
-                             }
+                                { board    = b'
+                                , solution = solution g
+                                , vhb      = vhb'
+                                , hhb      = hhb'
+                                , area     = area     g
+                                , loss     = loss     g
+                                }
+
+    ifSolved :: Game -> (a -> IO a) -> a -> IO a
+    ifSolved g act = if (board g|-|solution g)==UnSolved then act else return
+
+    whenLoss :: Game -> IO() -> IO()
+    whenLoss g act = when ((board g|-|solution g)==Wrong) act
 
 
 
@@ -155,4 +169,5 @@ module Game
             , vhb      = vhb'
             , hhb      = hhb'
             , area     = a
+            , loss     = newLoss a
             }
