@@ -66,7 +66,7 @@ module Interface.Render.Primitive
                               in (x,x',y,y')
 
     whiteSquare :: TextureObject
-    whiteSquare = unsafePerformIO $ loadTexture' "res/white.png"
+    whiteSquare = unsafePerformIO $ loadTexture' "res/images/white.png"
 
     loadTexture' :: FilePath -> IO TextureObject
     loadTexture' f = do
