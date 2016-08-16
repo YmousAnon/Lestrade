@@ -1,6 +1,6 @@
 --Game
 columns          = 8
-rows             = 6
+rows             = 7
 initialSolved    = 4
 
 ----Hint Weigth
