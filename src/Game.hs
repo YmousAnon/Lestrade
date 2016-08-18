@@ -2,6 +2,7 @@ module Game
 (
     Game,
     gameInit,
+    gameTimeStep,
 ) where
 
     import Control.Monad
@@ -17,10 +18,12 @@ module Game
     import Game.HintBoard.Horizontal
     import Game.SolutionState
     import Game.SolutionState.Loss
+    import Game.SolutionState.Victory
 
     import Interface.Input
     import Interface.Input.Settings
     import Interface.Render
+    import Interface.Screen
 
     import System.Environment (getArgs)
     import System.Random
@@ -35,17 +38,19 @@ module Game
                 , hhb      :: HintBoard
                 , area     :: Area
                 , loss     :: Loss
+                , victory  :: Victory
                 }
 
     instance Renderable Game where
-        render w g = render             w (board g)
-                  >> render             w (vhb   g)
-                  >> render             w (hhb   g)
-                  >> whenLoss g (render w (loss  g))
+        render w g = render                w (board   g)
+                  >> render                w (vhb     g)
+                  >> render                w (hhb     g)
+                  >> whenLoss    g (render w (loss    g))
+                  >> whenVictory g (render w (victory g))
         getArea    = area
 
     instance Clickable Game where
-        lclick pt g = do let lClickUnSolved x = ifSolved g (lclick pt) x
+        lclick pt g = do let lClickUnSolved x = ifUnSolved g (lclick pt) x
                          b'   <- lClickUnSolved (board g)
                          vhb' <- lClickUnSolved (vhb   g)
                          hhb' <- lClickUnSolved (hhb   g)
@@ -56,8 +61,9 @@ module Game
                                 , hhb      = hhb'
                                 , area     = area     g
                                 , loss     = loss     g
+                                , victory  = victory  g
                                 }
-        rclick pt g = do let rClickUnSolved x = ifSolved g (rclick pt) x
+        rclick pt g = do let rClickUnSolved x = ifUnSolved g (rclick pt) x
                          b'   <- rClickUnSolved (board g)
                          vhb' <- rClickUnSolved (vhb   g)
                          hhb' <- rClickUnSolved (hhb   g)
@@ -68,13 +74,20 @@ module Game
                                 , hhb      = hhb'
                                 , area     = area     g
                                 , loss     = loss     g
+                                , victory  = victory  g
                                 }
 
     ifSolved :: Game -> (a -> IO a) -> a -> IO a
-    ifSolved g act = if (board g|-|solution g)==UnSolved then act else return
+    ifSolved g act = if (board g|-|solution g)==Correct then act else return
+
+    ifUnSolved :: Game -> (a -> IO a) -> a -> IO a
+    ifUnSolved g act = if (board g|-|solution g)==UnSolved then act else return
 
     whenLoss :: Game -> IO() -> IO()
     whenLoss g act = when ((board g|-|solution g)==Wrong) act
+
+    whenVictory :: Game -> IO() -> IO()
+    whenVictory g act = when ((board g|-|solution g)==Correct) act
 
 
 
@@ -126,10 +139,10 @@ module Game
 
         vhb' <- let xm    = (getXMax $ getArea b')
                     vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
-                  in hs' >>= addHintList vhb'' >>= fillHintBoard
+                 in hs' >>= addHintList vhb'' >>= fillHintBoard
         hhb' <- let ym    = (getYMax $ getArea b')
                     hhb'' = newEmptyHintBoard (x+pD,wBW) ym Horizontal
-                  in hs' >>= addHintList hhb'' >>= fillHintBoard
+                 in hs' >>= addHintList hhb'' >>= fillHintBoard
 
         --let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
         --hhint1 <- ioHHint1
@@ -163,6 +176,8 @@ module Game
         --print a
         let a = uncurry (newArea (0,0)) $ (wBW,wBW) >+<
                 getAreaEnd (getArea b'\/getArea vhb'\/getArea hhb')
+        v <-  newVictory s' a g'''
+        --v <- updateVictory =<< updateVictory =<< newVictory s' a g'''
         return Game
             { board    = b'
             , solution = s'
@@ -170,4 +185,18 @@ module Game
             , hhb      = hhb'
             , area     = a
             , loss     = newLoss a
+            , victory  = v
             }
+
+    gameTimeStep :: Screen -> Game -> IO Game
+    gameTimeStep s g = do victory' <- ifSolved g updateVictory $ victory g
+                          dirtyScreen s
+                          return Game
+                                 { board    = board    g
+                                 , solution = solution g
+                                 , vhb      = vhb      g
+                                 , hhb      = hhb      g
+                                 , area     = area     g
+                                 , loss     = loss     g
+                                 , victory  = victory'
+                                 }

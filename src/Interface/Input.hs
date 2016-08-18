@@ -40,7 +40,7 @@ module Interface.Input
                        | otherwise          = return    game
             nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
-            writeDirty | lButton || rButton = writeIORef (dirty screen) True
+            writeDirty | lButton || rButton = dirtyScreen screen
                        | otherwise          = return()
 
          in do writeDirty

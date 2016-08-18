@@ -6,6 +6,7 @@ module Interface.Coordinate
     Point,
     (>+<),
     (>-<),
+    (>*<),
     (>/<),
 
     getX,
@@ -68,6 +69,9 @@ module Interface.Coordinate
     (>-<) :: Point -> Point -> Point
     (x,y) >-< (x',y') = (x-x',y-y')
 
+    (>*<) :: Point -> Point -> Point
+    (x,y) >*< (x',y') = (x*x',y*y')
+
     (>/<) :: Point -> Point -> Point
     (x,y) >/< (x',y') = (div x x',div y y')
 
@@ -124,8 +128,10 @@ module Interface.Coordinate
             y1 = max (getYMax a) (getYMax a')
 
 
+
     newArea :: Point -> Coord -> Coord -> Area
     newArea xy w h = Area { xy = xy, wh = (w,h) }
+
 
 
     getAreaStart :: Area -> Point
@@ -138,11 +144,13 @@ module Interface.Coordinate
     getAreaEnd Area { xy = xy, wh = wh } = xy>+<wh
 
 
+
     getXRange :: Area -> Point
     getXRange Area { xy = (x,_), wh = (w,_) } = (x,x+w)
 
     getYRange :: Area -> Point
     getYRange Area { xy = (_,y), wh = (_,h) } = (y,y+h)
+
 
 
     getWidth :: Area -> Coord
@@ -152,11 +160,13 @@ module Interface.Coordinate
     getHeight Area { wh = (_,h) } = h
 
 
+
     xRangeToGL :: Area -> Point -> (GLfloat,GLfloat)
     xRangeToGL window (x,x') = (xCoordToGL window x, xCoordToGL window x')
 
     yRangeToGL :: Area -> Point -> (GLfloat,GLfloat)
     yRangeToGL window (y,y') = (yCoordToGL window y, yCoordToGL window y')
+
 
 
     getXMin :: Area -> Coord
@@ -170,6 +180,7 @@ module Interface.Coordinate
 
     getYMax :: Area -> Coord
     getYMax a = snd $ getYRange a
+
 
 
     inArea :: Point -> Area -> Bool

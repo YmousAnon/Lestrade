@@ -9,8 +9,9 @@ module Interface.Screen
     resizeScreen,
     swapBuffers',
 
-    writeDirty,
     cleanScreen,
+    dirtyScreen,
+    writeDirty,
     whenDirty,
 
     fpsWait,
@@ -51,11 +52,14 @@ module Interface.Screen
 
 
 
-    writeDirty :: IORef Bool -> WindowRefreshCallback
-    writeDirty dirty window = writeIORef dirty True
-
     cleanScreen :: Screen -> IO()
     cleanScreen screen = writeIORef (dirty screen) False
+
+    dirtyScreen :: Screen -> IO()
+    dirtyScreen screen = writeIORef (dirty screen) True
+
+    writeDirty :: IORef Bool -> WindowRefreshCallback
+    writeDirty dirty window = writeIORef dirty True
 
     whenDirty :: Screen -> IO() -> IO()
     whenDirty screen action = do dirty <- readIORef $ dirty screen

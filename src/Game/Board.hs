@@ -6,6 +6,7 @@ module Game.Board
     newBoard,
     genSolution,
 
+    getBoardSquare,
     initialSol,
 ) where
 
@@ -20,7 +21,7 @@ module Game.Board
     import Game.Board.Row
     import Game.Board.Square
     import Game.Board.Value
-    import Game.Victory
+    import Game.SolutionState
 
     import Data.List
 

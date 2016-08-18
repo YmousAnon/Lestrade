@@ -45,18 +45,6 @@ module Interface.Render.Primitive
         where col [r,g,b] = color    (Color3 r g b  :: Color3    GLfloat)
               ver x y     = vertex   (Vertex2 x y   :: Vertex2   GLfloat)
               txc u v     = texCoord (TexCoord2 u v :: TexCoord2 GLfloat)
-    --renderColour :: Area -> Area -> [Float] -> IO()
-    --renderColour window area rgb =
-    --    let (x,x',y,y') = getCorners window area
-
-    --     in renderPrimitive Quads $ do
-    --            col rgb
-    --            ver x' y'
-    --            ver x' y
-    --            ver x  y
-    --            ver x  y'
-    --    where col [r,g,b] = color  (Color3 r g b :: Color3  GLfloat)
-    --          ver x y     = vertex (Vertex2 x y  :: Vertex2 GLfloat)
 
 
 

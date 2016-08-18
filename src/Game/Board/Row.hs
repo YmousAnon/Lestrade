@@ -19,7 +19,7 @@ module Game.Board.Row
     import System.Random
 
     import Game.Board.Square
-    import Game.Victory
+    import Game.SolutionState
 
     import Interface.Coordinate
     import Interface.Input

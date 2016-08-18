@@ -21,4 +21,6 @@ main = getSeed >>= gameInit >>= guiInit >>= uncurry (loop mouseKeysUp)
 
             Action (game',action') <- action screen game
 
-            loop action' game' screen
+            game'' <- gameTimeStep screen game'
+
+            loop action' game'' screen

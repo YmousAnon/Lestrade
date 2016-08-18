@@ -18,7 +18,7 @@ module Game.Board.Square
     import Data.List
 
     import Game.Board.Value
-    import Game.Victory
+    import Game.SolutionState
 
     import Interface.Coordinate
     import Interface.Input
