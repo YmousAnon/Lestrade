@@ -1,7 +1,7 @@
 --Board
 columns           = 8
-rows              = 3
-initialSolved     = 20--4
+rows              = 8
+initialSolved     = 63
 
 --Hints
 hintsPerSquare    = 1.0
@@ -20,8 +20,8 @@ wHSpear           = 1
 wHInverseSpear    = 1
 
 
---Graphics
-tileset           = science
+--Appearance
+tileset           = default
 fps               = 60
 
 ----Sizes
@@ -39,3 +39,7 @@ bgrgb             = [255,100,100]
 tilergb           = [000,000,000]
 hintrgb           = [000,000,000]
 hintselectedrgb   = [255,000,000]
+
+----Celebrations
+celebrationLength = 30
+

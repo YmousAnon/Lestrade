@@ -26,8 +26,8 @@ module Game.SolutionState.Victory
                    }
 
     instance Renderable Victory where
-        render w v = renderTexture w (area v) [1,1,1] (tex v) >>
-                     render w (celebration v)
+        render w v = render w (celebration v) >>
+                     renderTexture w (area v) [1,1,1] (tex v)
         getArea    = area
 
 
