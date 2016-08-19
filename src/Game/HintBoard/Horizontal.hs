@@ -101,10 +101,8 @@ module Game.HintBoard.Horizontal
     genHInverseSpearHint rcis rev invSel s = do
         nC <- read <$> getSetting "columns"
         let rcis'   = (if rev then reverse else id) $ sortBy fstGT rcis
-            ci'     = delete (fst(rcis!!1)) [0..nC-1] !! mod invSel (nC-1)
-            rcis''  = [head rcis,(fst (rcis!!1),ci'),rcis!!2]
-        --print rcis
-        --print rcis''
+            ci'     = delete (snd(rcis'!!1)) [0..nC-1] !! mod invSel (nC-1)
+            rcis''  = [head rcis',(fst (rcis'!!1),ci'),rcis'!!2]
 
         newHHint HInverseSpear (map (uncurry getV) rcis'') (0,0)
         where
@@ -113,6 +111,7 @@ module Game.HintBoard.Horizontal
 
     fstGT :: (a,Int) -> (a,Int) -> Ordering
     fstGT (_,c) (_,c') = compare c c'
+
 
 
     nextHHintPos :: Hint -> Point -> Coord -> IO Point
