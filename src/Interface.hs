@@ -31,7 +31,7 @@ module Interface
 
         mw <- createWindow (fromIntegral $ getXMax $ getArea game)
                            (fromIntegral $ getYMax $ getArea game)
-                           "Sherlock" Nothing Nothing
+                           "Lestrade" Nothing Nothing
 
         case mw of
             Nothing -> terminate >> exitFailure

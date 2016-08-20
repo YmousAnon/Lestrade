@@ -6,12 +6,12 @@ SRCDIR=src
 BUILDDIR=localbuild
 HIDIR=$(BUILDDIR)/hi
 ODIR=$(BUILDDIR)/o
-EXECUTABLE=sherlock
+EXECUTABLE=lestrade
 
 WINBUILDDIR=localbuild/win
 WINHIDIR=$(WINBUILDDIR)/hi
 WINODIR=$(WINBUILDDIR)/o
-WINEXECUTABLE=sherlock.exe
+WINEXECUTABLE=lestrade.exe
 
 MAIN=Main
 # }}}
