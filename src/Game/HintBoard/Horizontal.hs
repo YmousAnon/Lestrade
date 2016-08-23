@@ -46,7 +46,7 @@ module Game.HintBoard.Horizontal
                          vs' | null vs   = []
                              | otherwise = tail vs
 
-    genHHint :: Board -> (Int,Int) -> State StdGen (IO Hint)
+    genHHint :: Board -> (Int,Int) -> State StdGen (IO (Hint,[(Int,Int)]))
     genHHint s (ri,ci) = do
         ioHT <- genHintType Horizontal
 
@@ -64,9 +64,12 @@ module Game.HintBoard.Horizontal
         return $ ioHT >>= \ht ->
             print (ri,ci) >>
             case ht of
-                HNeighbour    -> genHNeighbourHint    rcis            s
-                HSpear        -> genHSpearHint        rcis rev        s
-                HInverseSpear -> genHInverseSpearHint rcis rev invSel s
+                HNeighbour    -> do h <- genHNeighbourHint    rcis            s
+                                    return (h,rcis)
+                HSpear        -> do h <- genHSpearHint        rcis rev        s
+                                    return (h,rcis)
+                HInverseSpear -> do h <- genHInverseSpearHint rcis rev invSel s
+                                    return (h,rcis)
         where
             getRowI :: State StdGen Int
             getRowI = state $ randomR (0,length (rows s)-1)

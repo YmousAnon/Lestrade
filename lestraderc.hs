@@ -1,7 +1,7 @@
 --Board
 columns           = 8
 rows              = 8
-initialSolved     = 63
+initialSolved     = 8
 
 --Hints
 hintsPerSquare    = 1.0
@@ -39,7 +39,3 @@ bgrgb             = [050,000,025]
 tilergb           = [000,000,000]
 hintrgb           = [000,000,000]
 hintselectedrgb   = [255,000,000]
-
-----Celebrations
-celebrationLength = 30
-

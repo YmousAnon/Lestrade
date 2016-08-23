@@ -8,7 +8,8 @@ module Game.HintBoard
 
     scrambleIndices,
     genHintList,
-    removeDuplicateHints,
+    removeDuplicates,
+    removeContained,
 ) where
 
     import Control.Monad.Trans.State
@@ -121,14 +122,18 @@ module Game.HintBoard
     scrambleIndices nHs ijs = (ijs!!) <$> state (randomR (0,length ijs-1)) >>=
                               \ij -> (ij:) <$> scrambleIndices (nHs-1) ijs
 
-    genHintList :: Board -> [(Int,Int)] -> State StdGen (IO[Hint])
-    genHintList _ []       = return $ return []
+    genHintList :: Board -> [(Int,Int)] -> State StdGen
+                                                 (IO ([Hint],[(Int,Int)]))
+    genHintList _ []       = return $ return ([],[])
     genHintList s (ij:ijs) = do
-        h  <- genHint     s ij
-        hs <- genHintList s ijs
-        return $ (:) <$> h <*> hs
+        h  <- genHint     s ij  :: State StdGen (IO ( Hint ,[(Int,Int)]))
+        hs <- genHintList s ijs :: State StdGen (IO ([Hint],[(Int,Int)]))
+        return $ appendTouple <$> h <*> hs
+        where
+            appendTouple :: (a,[b]) -> ([a],[b]) -> ([a],[b])
+            appendTouple (x,ys) (xs,ys') = (x:xs,ys++ys')
 
-    genHint :: Board -> (Int,Int) -> State StdGen (IO Hint)
+    genHint :: Board -> (Int,Int) -> State StdGen (IO (Hint,[(Int,Int)]))
     genHint s ij = do
         o  <- genHintOrientation
         vh <- genVHint s ij
@@ -136,6 +141,11 @@ module Game.HintBoard
 
         return $ o >>= \o' -> if o' == Vertical then vh else hh
 
-    removeDuplicateHints :: [Hint] -> [Hint]
-    removeDuplicateHints []     = []
-    removeDuplicateHints (h:hs) = h : removeDuplicateHints (filter (/=h) hs)
+    removeDuplicates :: Eq a => [a] -> [a]
+    removeDuplicates []     = []
+    removeDuplicates (x:xs) = x : removeDuplicates (filter (/=x) xs)
+
+    removeContained :: Eq a => [a] -> [a] -> [a]
+    removeContained xs ys = foldl (flip delete) ys xs
+
+

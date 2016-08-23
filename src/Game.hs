@@ -85,10 +85,10 @@ module Game
                                                             else return
 
     whenLoss :: Game -> IO() -> IO()
-    whenLoss g act = when ((board g|-|solution g)==Wrong) act
+    whenLoss g = when ((board g|-|solution g)==Wrong)
 
     whenVictory :: Game -> IO() -> IO()
-    whenVictory g act = when ((board g|-|solution g)==Correct) act
+    whenVictory g = when ((board g|-|solution g)==Correct)
 
 
 
@@ -104,7 +104,7 @@ module Game
         iS  <- read <$> getSetting "initialSolved"
 
         wBW <- read <$> getSetting "windowBorderWidth"
-        pD  <- read <$> getSetting "paneDistance"
+        pD  <- read <$> getSetting "paneDistance" :: IO Int
 
         b   <- newBoard nR nC (wBW,wBW)
 
@@ -129,21 +129,32 @@ module Game
         --let (b',g'') = genHintList s 10 <$> runState scrambleIndices
         --let (hs,g'') = runState (genHintList s 10 <$> scrambleIndices
         --let (hs,g'') = runState (genHintList s' 10 =<< (scrambleIndices
-        let nHints = round (hPS*fromIntegral (nC*nR))
-            (hs,g''') = runState (genHintList s' =<< (scrambleIndices nHints
-                                 (concat [[(r,c)
-                                 | r <- [0..nR-1]]
-                                 | c <- [0..nC-1]])
-                                 )) g'
-            hs' = sort . removeDuplicateHints <$> hs
+        let is  = concat [[(r,c) | r <- [0..nR-1]] | c <- [0..nC-1]]
+            nHints = round (hPS*fromIntegral (nC*nR))
+            (his ,g''') = runState (genHintList s' =<< scrambleIndices nHints
+                                    is) g''
+
+        is' <- flip removeContained is . removeDuplicates . snd <$> his
+        --print ""
+        --print . snd =<< his
+        --print ""
+        --print is'
+        --print ""
+        let (his',g'''') = runState (genHintList s' is') g'
+            --hs = sort . removeDuplicates . concat <$> (fst <$> his)
+            --                                      <*> (fst <$> his)
+            hs = sort . removeDuplicates <$> ((++) <$> (fst <$> his)
+                                                   <*> (fst <$> his))
+            --hs = sort . removeDuplicates . (++) <$> (fst <$> his)
+            --                                    <*> (fst <$> his)
 
 
         hhb' <- let ym    = (getYMax $ getArea b')
                     hhb'' = newEmptyHintBoard (x+pD,wBW) ym Horizontal
-                 in hs' >>= addHintList hhb'' >>= fillHintBoard
+                 in hs  >>= addHintList hhb'' >>= fillHintBoard
         vhb' <- let xm    = (getXMax $ getArea hhb')
                     vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
-                 in hs' >>= addHintList vhb'' >>= fillHintBoard
+                 in hs  >>= addHintList vhb'' >>= fillHintBoard
 
         --let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
         --hhint1 <- ioHHint1
@@ -177,7 +188,7 @@ module Game
         --print a
         let a = uncurry (newArea (0,0)) $ (wBW,wBW) >+<
                 getAreaEnd (getArea b'\/getArea vhb'\/getArea hhb')
-        v <-  newVictory s' a g'''
+        v <-  newVictory s' a g''''
         --v <- updateVictory =<< updateVictory =<< newVictory s' a g'''
         return Game
             { board    = b'

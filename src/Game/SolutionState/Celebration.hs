@@ -25,10 +25,7 @@ module Game.SolutionState.Celebration
 
 
     data Celebration = Grid
-                       { initTime :: Double
-                       , fps      :: Double
-                       , initated :: Bool
-                       , gen      :: StdGen
+                       {  gen      :: StdGen
                        , tiles    :: [[Either Point Value]]
                        , gridNC   :: Int
                        , gridNR   :: Int
@@ -38,8 +35,8 @@ module Game.SolutionState.Celebration
                        }
 
     instance Eq Celebration where
-        (Grid _ _ _ _ _ _ _ _ _ _) == (Grid  _ _ _ _ _ _ _ _ _ _) = True
-        _                          == _                           = False
+        Grid{} == Grid{} = True
+        _      == _      = False
 
     instance Renderable Celebration where
         render w Grid { tiles = ts } = mapM_ (render w) $ rights $ concat ts
@@ -52,9 +49,7 @@ module Game.SolutionState.Celebration
 
         tW  <- read <$> getSetting "tileWidth"
 
-        fps <- read <$> getSetting "fps"
-
-        return $ newGrid fps s nR nC a tW g
+        return $ newGrid s nR nC a tW g
 
     updateCelebration :: Celebration -> IO Celebration
     updateCelebration c
@@ -67,21 +62,18 @@ module Game.SolutionState.Celebration
 
 
 
-    newGrid :: Double -> Board -> Int -> Int -> Area -> Coord -> StdGen ->
+    newGrid :: Board -> Int -> Int -> Area -> Coord -> StdGen ->
                Celebration
-    newGrid fps s nR nC a tW g = let ts = tilesOuter (0,0)
-                                  in Grid
-                                     { initTime = 0
-                                     , fps      = fps
-                                     , initated = False
-                                     , gen      = g
-                                     , tiles    = ts
-                                     , gridNC   = length (head ts)
-                                     , gridNR   = length ts
-                                     , board    = s
-                                     , boardNC  = nC
-                                     , boardNR  = nR
-                                     }
+    newGrid s nR nC a tW g = let ts = tilesOuter (0,0)
+                              in Grid
+                                 {  gen      = g
+                                 , tiles    = ts
+                                 , gridNC   = length (head ts)
+                                 , gridNR   = length ts
+                                 , board    = s
+                                 , boardNC  = nC
+                                 , boardNR  = nR
+                                 }
         where
             tilesOuter :: Point -> [[Either Point Value]]
             tilesOuter (x,y)
@@ -94,20 +86,15 @@ module Game.SolutionState.Celebration
                 | otherwise     = Left (x,y)       : tilesInner (x+tW,y)
 
     updateGrid :: Celebration -> IO Celebration
-    updateGrid c = do cL <- read     <$> getSetting "celebrationLength"
-                      print =<< getTime
-                      t  <- return 12--fromJust <$> getTime
-                      let t0  = if initTime c == 0 then initTime c else t
-                      return Grid
-                             { initTime = t0
-                             , gen      = g'
-                             , tiles    = if (t-t0) < cL then ts' else ts
-                             , gridNC   = gNC
-                             , gridNR   = gNR
-                             , board    = s
-                             , boardNC  = bNC
-                             , boardNR  = bNR
-                             }
+    updateGrid c = return Grid
+                          { gen      = g'
+                          , tiles    = ts'
+                          , gridNC   = gNC
+                          , gridNR   = gNR
+                          , board    = s
+                          , boardNC  = bNC
+                          , boardNR  = bNR
+                          }
         where
             ts  = tiles   c
             bNC = boardNC c
