@@ -26,7 +26,7 @@ module Interface.Input.Settings
              <$> readFile file
                 where
                     file :: FilePath
-                    file = "sherlockrc.hs"
+                    file = "lestraderc.hs"
 
             error :: String
             error = "Fatal error, option "++key++" not specified in \
