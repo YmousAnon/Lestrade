@@ -124,15 +124,15 @@ module Game.HintBoard
     genHintList :: Board -> [(Int,Int)] -> State StdGen (IO[Hint])
     genHintList _ []       = return $ return []
     genHintList s (ij:ijs) = do
-        h  <- genHint     s         ij
+        h  <- genHint     s ij
         hs <- genHintList s ijs
         return $ (:) <$> h <*> hs
 
     genHint :: Board -> (Int,Int) -> State StdGen (IO Hint)
     genHint s ij = do
         o  <- genHintOrientation
-        vh <- genVHint ij s
-        hh <- genHHint ij s
+        vh <- genVHint s ij
+        hh <- genHHint s ij
 
         return $ o >>= \o' -> if o' == Vertical then vh else hh
 

@@ -46,8 +46,8 @@ module Game.HintBoard.Horizontal
                          vs' | null vs   = []
                              | otherwise = tail vs
 
-    genHHint :: (Int,Int) -> Board -> State StdGen (IO Hint)
-    genHHint (ri,ci) s = do
+    genHHint :: Board -> (Int,Int) -> State StdGen (IO Hint)
+    genHHint s (ri,ci) = do
         ioHT <- genHintType Horizontal
 
         ri'  <- getRowI

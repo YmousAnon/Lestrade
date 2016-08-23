@@ -50,10 +50,10 @@ module Game
         getArea    = area
 
     instance Clickable Game where
-        lclick pt g = do let lClickUnSolved x = ifUnSolved g (lclick pt) x
-                         b'   <- lClickUnSolved (board g)
-                         vhb' <- lClickUnSolved (vhb   g)
-                         hhb' <- lClickUnSolved (hhb   g)
+        lclick pt g = do let lClickNotCorrect x = ifNotCorrect g (lclick pt) x
+                         b'   <- lClickNotCorrect (board g)
+                         vhb' <- lClickNotCorrect (vhb   g)
+                         hhb' <- lClickNotCorrect (hhb   g)
                          return Game
                                 { board    = b'
                                 , solution = solution g
@@ -63,10 +63,10 @@ module Game
                                 , loss     = loss     g
                                 , victory  = victory  g
                                 }
-        rclick pt g = do let rClickUnSolved x = ifUnSolved g (rclick pt) x
-                         b'   <- rClickUnSolved (board g)
-                         vhb' <- rClickUnSolved (vhb   g)
-                         hhb' <- rClickUnSolved (hhb   g)
+        rclick pt g = do let rClickNotCorrect x = ifNotCorrect g (rclick pt) x
+                         b'   <- rClickNotCorrect (board g)
+                         vhb' <- rClickNotCorrect (vhb   g)
+                         hhb' <- rClickNotCorrect (hhb   g)
                          return Game
                                 { board    = b'
                                 , solution = solution g
@@ -80,8 +80,9 @@ module Game
     ifSolved :: Game -> (a -> IO a) -> a -> IO a
     ifSolved g act = if (board g|-|solution g)==Correct then act else return
 
-    ifUnSolved :: Game -> (a -> IO a) -> a -> IO a
-    ifUnSolved g act = if (board g|-|solution g)==UnSolved then act else return
+    ifNotCorrect :: Game -> (a -> IO a) -> a -> IO a
+    ifNotCorrect g act = if (board g|-|solution g)/=Correct then act
+                                                            else return
 
     whenLoss :: Game -> IO() -> IO()
     whenLoss g act = when ((board g|-|solution g)==Wrong) act

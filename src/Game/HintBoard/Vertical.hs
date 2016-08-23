@@ -47,8 +47,8 @@ module Game.HintBoard.Vertical
                          vs' | null vs   = []
                              | otherwise = tail vs
 
-    genVHint :: (Int,Int) -> Board -> State StdGen (IO Hint)
-    genVHint (ri,ci) s = do
+    genVHint ::Board -> (Int,Int) ->  State StdGen (IO Hint)
+    genVHint s (ri,ci) = do
         ioHT <- genHintType Vertical
 
         ri'  <- getRowI $ delete ri              [0..length (rows s)]
