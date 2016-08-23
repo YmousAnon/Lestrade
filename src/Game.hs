@@ -138,12 +138,12 @@ module Game
             hs' = sort . removeDuplicateHints <$> hs
 
 
-        vhb' <- let xm    = (getXMax $ getArea b')
-                    vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
-                 in hs' >>= addHintList vhb'' >>= fillHintBoard
         hhb' <- let ym    = (getYMax $ getArea b')
                     hhb'' = newEmptyHintBoard (x+pD,wBW) ym Horizontal
                  in hs' >>= addHintList hhb'' >>= fillHintBoard
+        vhb' <- let xm    = (getXMax $ getArea hhb')
+                    vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
+                 in hs' >>= addHintList vhb'' >>= fillHintBoard
 
         --let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
         --hhint1 <- ioHHint1

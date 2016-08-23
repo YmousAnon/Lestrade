@@ -8,7 +8,7 @@ hintsPerSquare    = 1.0
 
 ----Hint Weigth
 wVertical         = 1
-wHorizontal       = 2
+wHorizontal       = 1
 
 ------Vertical
 wVThree           = 1
@@ -25,7 +25,7 @@ tileset           = default
 fps               = 60
 
 ----Sizes
-windowBorderWidth = 4
+windowBorderWidth = 8
 paneDistance      = 16
 tileWidth         = 48
 tileSpacing       = 8
@@ -35,7 +35,7 @@ rowSpacing        = 0
 separatorSpacing  = 32
 
 ----Colours
-bgrgb             = [255,100,100]
+bgrgb             = [050,000,025]
 tilergb           = [000,000,000]
 hintrgb           = [000,000,000]
 hintselectedrgb   = [255,000,000]
