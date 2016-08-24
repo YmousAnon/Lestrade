@@ -62,14 +62,13 @@ module Game.HintBoard.Horizontal
         invSel <- state random
 
         return $ ioHT >>= \ht ->
-            print (ri,ci) >>
             case ht of
                 HNeighbour    -> do h <- genHNeighbourHint    rcis            s
                                     return (h,rcis)
                 HSpear        -> do h <- genHSpearHint        rcis rev        s
                                     return (h,rcis)
                 HInverseSpear -> do h <- genHInverseSpearHint rcis rev invSel s
-                                    return (h,rcis)
+                                    return (h,[head rcis,last rcis])
         where
             getRowI :: State StdGen Int
             getRowI = state $ randomR (0,length (rows s)-1)

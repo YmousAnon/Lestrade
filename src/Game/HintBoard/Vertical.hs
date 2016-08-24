@@ -57,12 +57,11 @@ module Game.HintBoard.Vertical
         let rs = [ri,ri',ri'']
 
         return $ ioHT >>= \ht ->
-            print (ri,ci) >>
             case ht of
                 VTwo   -> do h <- genVTwoHint   (sort $ take 2 rs) ci s
-                             return (h,map ((,)ci) $ take 2 rs)
+                             return (h,map (flip(,)ci) $ take 2 rs)
                 VThree -> do h <- genVThreeHint (sort rs)          ci s
-                             return (h,map ((,)ci)          rs)
+                             return (h,map (flip(,)ci)          rs)
 
         where
             getRowI :: [Int] -> State StdGen Int

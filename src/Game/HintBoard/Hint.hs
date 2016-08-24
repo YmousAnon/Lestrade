@@ -96,12 +96,16 @@ module Game.HintBoard.Hint
                 }
 
     instance Eq Hint where
-        h == h' = let vs  = rmDups $ vals h
-                      vs' = rmDups $ vals h'
-                      overlap = filter (`elem` vs') vs
+        h == h' = let vs  = rmDups $ vals' h
+                      vs' = rmDups $ vals' h'
+                      overlap = filter (`elem` vs) vs'
                    in length overlap >= 2
-            where rmDups = foldl (\acc x -> if x `elem` acc then acc
-                                                            else acc++[x]) []
+            where
+                rmDups  = foldl (\acc x -> if x `elem` acc then acc
+                                                           else acc++[x]) []
+                vals' x = if hType x == HInverseSpear
+                              then [head(vals x),last(vals x)]
+                              else vals x
 
     instance Ord Hint where
         h `compare` h' = hType h `compare` hType h'

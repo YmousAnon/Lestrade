@@ -126,8 +126,8 @@ module Game.HintBoard
                                                  (IO ([Hint],[(Int,Int)]))
     genHintList _ []       = return $ return ([],[])
     genHintList s (ij:ijs) = do
-        h  <- genHint     s ij  :: State StdGen (IO ( Hint ,[(Int,Int)]))
-        hs <- genHintList s ijs :: State StdGen (IO ([Hint],[(Int,Int)]))
+        h  <- genHint     s ij
+        hs <- genHintList s ijs
         return $ appendTouple <$> h <*> hs
         where
             appendTouple :: (a,[b]) -> ([a],[b]) -> ([a],[b])

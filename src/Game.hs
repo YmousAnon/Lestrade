@@ -94,6 +94,7 @@ module Game
 
     gameInit :: Int -> IO Game
     gameInit seed = do
+        print ("seed: "++show seed)
         let g = mkStdGen seed
 
         nC  <- read <$> getSetting "columns"
@@ -134,19 +135,17 @@ module Game
             (his ,g''') = runState (genHintList s' =<< scrambleIndices nHints
                                     is) g''
 
-        is' <- flip removeContained is . removeDuplicates . snd <$> his
-        --print ""
-        --print . snd =<< his
-        --print ""
-        --print is'
-        --print ""
+        is' <- flip removeContained is . snd <$> his
         let (his',g'''') = runState (genHintList s' is') g'
             --hs = sort . removeDuplicates . concat <$> (fst <$> his)
             --                                      <*> (fst <$> his)
-            hs = sort . removeDuplicates <$> ((++) <$> (fst <$> his)
-                                                   <*> (fst <$> his))
+            --hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
+            --hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
+            --                                       <*> (fst <$> his'))
+            --hs = fst <$> his
             --hs = sort . removeDuplicates . (++) <$> (fst <$> his)
-            --                                    <*> (fst <$> his)
+            hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
+                                                   <*> (fst <$> his'))
 
 
         hhb' <- let ym    = (getYMax $ getArea b')
