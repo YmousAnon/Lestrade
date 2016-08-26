@@ -11,9 +11,9 @@ module Game.SolutionState.Victory
 
     import Graphics.Rendering.OpenGL
 
-    import Interface.Coordinate
-    import Interface.Render
-    import Interface.Render.Primitive
+    import UI.Coordinate
+    import UI.Render
+    import UI.Render.Primitive
 
     import System.IO.Unsafe
     import System.Random
@@ -55,7 +55,6 @@ module Game.SolutionState.Victory
 
     updateVictory :: Victory -> IO Victory
     updateVictory v = do c' <- updateCelebration $ celebration v
-                         print 12
                          return Victory
                                 { tex         = tex            v
                                 , area        = area           v

@@ -20,15 +20,14 @@ module Game
     import Game.SolutionState.Loss
     import Game.SolutionState.Victory
 
-    import Interface.Input
-    import Interface.Input.Settings
-    import Interface.Render
-    import Interface.Screen
+    import UI
+    import UI.Coordinate
+    import UI.Input
+    import UI.Input.Settings
+    import UI.Render
 
     import System.Environment (getArgs)
     import System.Random
-
-    import Interface.Coordinate
 
 
     data Game = Game
@@ -109,7 +108,7 @@ module Game
 
         b   <- newBoard nR nC (wBW,wBW)
 
-        let (s, (_, g')) = runState (genSolution nR nC) ([1..nC],g)
+        let (s ,(_,g' )) = runState (genSolution nR nC) ([1..nC],g)
         s' <- s
         let (b',(_,g'')) = runState (initialSol iS b s') (concat [[(r,c)
                                                           | r <- [0..nR-1]]
@@ -199,9 +198,9 @@ module Game
             , victory  = v
             }
 
-    gameTimeStep :: Screen -> Game -> IO Game
+    gameTimeStep :: UI -> Game -> IO Game
     gameTimeStep s g = do victory' <- ifSolved g updateVictory $ victory g
-                          dirtyScreen s
+                          dirtyWindow s
                           return Game
                                  { board    = board    g
                                  , solution = solution g

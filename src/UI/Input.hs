@@ -1,4 +1,4 @@
-module Interface.Input
+module UI.Input
 (
     Clickable,
     lclick,
@@ -16,9 +16,9 @@ module Interface.Input
     import Graphics.GLUtil
     import Graphics.UI.GLFW
 
-    import Interface.Coordinate
-    import Interface.Render
-    import Interface.Screen
+    import UI
+    import UI.Coordinate
+    import UI.Render
 
 
     class Clickable a where
@@ -27,29 +27,29 @@ module Interface.Input
 
 
 
-    data Action a = Action (a,Screen -> a -> IO (Action a))
+    data Action a = Action (a,UI -> a -> IO (Action a))
 
 
 
-    mouseKeysUp :: Clickable a => Screen -> a -> IO(Action a)
-    mouseKeysUp screen game = do
-        (lButton,rButton,pt) <- getInput $ window screen
+    mouseKeysUp :: Clickable a => UI -> a -> IO(Action a)
+    mouseKeysUp ui game = do
+        (lButton,rButton,pt) <- getInput $ window ui
 
         let ioGame'    | lButton            = lclick pt game
                        | rButton            = rclick pt game
                        | otherwise          = return    game
             nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
-            writeDirty | lButton || rButton = dirtyScreen screen
+            writeDirty | lButton || rButton = dirtyWindow ui
                        | otherwise          = return()
 
          in do writeDirty
                game' <- ioGame'
                return $ Action (game', nextAction)
 
-    mouseKeyDown :: Clickable a => Screen -> a -> IO(Action a)
-    mouseKeyDown screen game = do
-        (lButton,rButton,_) <- getInput $ window screen
+    mouseKeyDown :: Clickable a => UI -> a -> IO(Action a)
+    mouseKeyDown ui game = do
+        (lButton,rButton,_) <- getInput $ window ui
 
         let nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp

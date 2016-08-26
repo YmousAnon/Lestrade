@@ -10,10 +10,10 @@ module Game.HintBoard.Decoration
 
     import Graphics.Rendering.OpenGL
 
-    import Interface.Coordinate
-    import Interface.Input.Settings
-    import Interface.Render
-    import Interface.Render.Primitive
+    import UI.Coordinate
+    import UI.Input.Settings
+    import UI.Render
+    import UI.Render.Primitive
 
     import System.IO.Unsafe
 

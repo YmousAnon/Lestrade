@@ -1,4 +1,4 @@
-module Interface.Input.Seed
+module UI.Input.Seed
 (
     getSeed,
 ) where

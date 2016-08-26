@@ -16,9 +16,9 @@ module Game.HintBoard.Vertical
     import Game.Board.Value
     import Game.HintBoard.Hint
 
-    import Interface.Coordinate
-    import Interface.Input.Settings
-    import Interface.Render
+    import UI.Coordinate
+    import UI.Input.Settings
+    import UI.Render
 
     import System.Random
 

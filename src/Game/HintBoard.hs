@@ -22,9 +22,9 @@ module Game.HintBoard
     import Game.HintBoard.Vertical
     import Game.HintBoard.Horizontal
 
-    import Interface.Coordinate
-    import Interface.Input
-    import Interface.Render
+    import UI.Coordinate
+    import UI.Input
+    import UI.Render
 
     import System.Random
 

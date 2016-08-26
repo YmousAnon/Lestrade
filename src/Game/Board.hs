@@ -13,10 +13,10 @@ module Game.Board
     import Control.Monad
     import Control.Monad.Trans.State
 
-    import Interface.Coordinate
-    import Interface.Input
-    import Interface.Input.Settings
-    import Interface.Render
+    import UI.Coordinate
+    import UI.Input
+    import UI.Input.Settings
+    import UI.Render
 
     import Game.Board.Row
     import Game.Board.Square

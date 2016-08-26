@@ -21,10 +21,10 @@ module Game.Board.Row
     import Game.Board.Square
     import Game.SolutionState
 
-    import Interface.Coordinate
-    import Interface.Input
-    import Interface.Input.Settings
-    import Interface.Render
+    import UI.Coordinate
+    import UI.Input
+    import UI.Input.Settings
+    import UI.Render
 
 
     data Row = Row { rowNum  :: Int

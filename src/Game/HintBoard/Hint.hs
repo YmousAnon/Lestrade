@@ -25,11 +25,11 @@ module Game.HintBoard.Hint
     import Game.Board.Value
     import Game.HintBoard.Decoration
 
-    import Interface.Coordinate
-    import Interface.Input
-    import Interface.Input.Settings
-    import Interface.Render
-    import Interface.Render.Primitive
+    import UI.Coordinate
+    import UI.Input
+    import UI.Input.Settings
+    import UI.Render
+    import UI.Render.Primitive
 
     import System.Random
 

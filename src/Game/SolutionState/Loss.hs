@@ -7,9 +7,9 @@ module Game.SolutionState.Loss
 
     import Graphics.Rendering.OpenGL
 
-    import Interface.Coordinate
-    import Interface.Render
-    import Interface.Render.Primitive
+    import UI.Coordinate
+    import UI.Render
+    import UI.Render.Primitive
 
     import System.IO.Unsafe
 

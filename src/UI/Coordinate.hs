@@ -1,4 +1,4 @@
-module Interface.Coordinate
+module UI.Coordinate
 (
     Coord,
 
@@ -48,7 +48,7 @@ module Interface.Coordinate
 
     import Graphics.Rendering.OpenGL
 
-    import Interface.Input.Settings
+    import UI.Input.Settings
 
 
     type Coord = Int

@@ -17,9 +17,9 @@ module Game.SolutionState.Celebration
 
     import Graphics.UI.GLFW
 
-    import Interface.Coordinate
-    import Interface.Input.Settings
-    import Interface.Render
+    import UI.Coordinate
+    import UI.Input.Settings
+    import UI.Render
 
     import System.Random
 

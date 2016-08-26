@@ -4,23 +4,23 @@ import Game
 
 import Graphics.UI.GLFW
 
-import Interface
-import Interface.Input
-import Interface.Input.Seed
-import Interface.Render
-import Interface.Screen
+import UI
+import UI.Init
+import UI.Input
+import UI.Input.Seed
+import UI.Render
 
 
 main :: IO()
-main = getSeed >>= gameInit >>= guiInit >>= uncurry (loop mouseKeysUp)
+main = getSeed >>= gameInit >>= uiInit (loop mouseKeysUp)
     where
-        loop :: (Screen -> Game -> IO(Action Game)) -> Game -> Screen -> IO()
-        loop action game screen = unlessClose screen $ fpsWait screen $ do
+        loop :: (UI -> Game -> IO(Action Game)) -> Game -> UI -> IO()
+        loop action game ui = unlessClose ui $ fpsWait ui $ do
 
-            display screen game
+            display ui game
 
-            Action (game',action') <- action screen game
+            Action (game',action') <- action ui game
 
-            game'' <- gameTimeStep screen game'
+            game'' <- gameTimeStep ui game'
 
-            loop action' game'' screen
+            loop action' game'' ui

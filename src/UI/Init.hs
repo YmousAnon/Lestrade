@@ -1,6 +1,6 @@
-module Interface
+module UI.Init
 (
-    guiInit,
+    uiInit,
 ) where
 
     import Control.Monad
@@ -9,37 +9,39 @@ module Interface
     import Data.Maybe
 
     import Graphics.GLUtil
-    import Graphics.UI.GLFW as GLFW
+    import Graphics.UI.GLFW          as GLFW
     import Graphics.Rendering.OpenGL
 
-    import Interface.Coordinate
-    import Interface.Input
-    import Interface.Input.Settings
-    import Interface.Render
-    import Interface.Screen
-
+    import Sound.ALUT
     import System.Exit
+
+    import UI
+    import UI.Coordinate
+    import UI.Input
+    import UI.Input.Settings
+    import UI.Render
 
     import Data.StateVar
 
 
-
-    guiInit :: (Clickable a,Renderable a) => a -> IO (a,Screen)
-    guiInit game = do
+    uiInit :: (Clickable a,Renderable a) => (a -> UI -> IO()) -> a -> IO()
+    uiInit loop game = withProgNameAndArgs runALUT $ \_ _ -> do
         successfulInit <- GLFW.init
         unless successfulInit exitFailure
 
-        mw <- createWindow (fromIntegral $ getXMax $ getArea game)
-                           (fromIntegral $ getYMax $ getArea game)
-                           "Lestrade" Nothing Nothing
+        mw      <- createWindow (fromIntegral $ getXMax $ getArea game)
+                                (fromIntegral $ getYMax $ getArea game)
+                                "Lestrade" Nothing Nothing
+        dirty   <- newIORef False
+        t       <- newIORef . fromJust =<< getTime
 
         case mw of
             Nothing -> terminate >> exitFailure
             Just w  -> makeContextCurrent mw
         let w = fromJust mw
 
-        dirty   <- newIORef False
-        t       <- newIORef . fromJust =<< getTime
+        setWindowRefreshCallback w $ Just (writeDirty dirty)
+
         [r,g,b] <- map (/255) . read <$> getSetting "bgrgb"
 
         blend                      $= Enabled
@@ -50,6 +52,4 @@ module Interface
         shadeModel                 $= Smooth
         texture Texture2D          $= Enabled
 
-        setWindowRefreshCallback w $ Just (writeDirty dirty)
-
-        return (game,Screen w dirty t)
+        loop game $ UI w dirty t

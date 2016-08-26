@@ -1,4 +1,4 @@
-module Interface.Render
+module UI.Render
 (
     Renderable,
     render,
@@ -15,8 +15,8 @@ module Interface.Render
     import Graphics.Rendering.OpenGL
     import Graphics.UI.GLFW
 
-    import Interface.Coordinate
-    import Interface.Screen
+    import UI
+    import UI.Coordinate
 
 
     class Renderable a where
@@ -24,12 +24,12 @@ module Interface.Render
         getArea :: a -> Area
 
 
-    display :: Renderable a => Screen -> a -> IO()
-    display s game = whenDirty s $ do
-           resizeScreen s (getArea game)
+    display :: Renderable a => UI -> a -> IO()
+    display ui game = whenDirty ui $ do
+           resizeWindow ui (getArea game)
 
            clear [ColorBuffer, DepthBuffer]
            render (getArea game) game
-           swapBuffers' s
+           swapBuffers' ui
 
-           cleanScreen s
+           cleanWindow ui

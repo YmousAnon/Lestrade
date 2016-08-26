@@ -20,11 +20,12 @@ module Game.Board.Square
     import Game.Board.Value
     import Game.SolutionState
 
-    import Interface.Coordinate
-    import Interface.Input
-    import Interface.Input.Settings
-    import Interface.Render
-    import Interface.Render.Primitive
+    import UI.Coordinate
+    import UI.Input
+    import UI.Input.Settings
+    import UI.Render
+    import UI.Render.Primitive
+    import UI.Audio
 
     import System.Random
 
@@ -95,7 +96,8 @@ module Game.Board.Square
             , bgtile = bgt
             , bgrgb  = rgb
             }
-            else solvedSquare (vali $ head vs') r nC (getAreaStart a)
+            else mainClickAudio >>
+                 solvedSquare (vali $ head vs') r nC (getAreaStart a)
 
         lclick pt s = return s
 

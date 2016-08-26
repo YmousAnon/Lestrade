@@ -1,4 +1,4 @@
-module Interface.Render.Primitive
+module UI.Render.Primitive
 (
     renderColour,
     renderTexture,
@@ -6,11 +6,11 @@ module Interface.Render.Primitive
     loadTexture',
 ) where
 
-    import Graphics.UI.GLFW          as GLFW
-    import Graphics.GLUtil           as GLU
-    import Graphics.Rendering.OpenGL as GL
+    import Graphics.UI.GLFW
+    import Graphics.GLUtil
+    import Graphics.Rendering.OpenGL
 
-    import Interface.Coordinate
+    import UI.Coordinate
 
     import System.IO.Unsafe
 

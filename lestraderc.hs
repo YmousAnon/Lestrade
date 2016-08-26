@@ -20,6 +20,9 @@ wHSpear           = 1
 wHInverseSpear    = 1
 
 
+--Audio
+volume            = 1.0
+
 --Appearance
 tileset           = default
 fps               = 60
