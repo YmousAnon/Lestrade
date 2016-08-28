@@ -137,36 +137,36 @@ module Game.Board.Square
     unsolvedSquare :: [Int] -> Int -> Int -> Point -> IO Square
     unsolvedSquare vis r nC xy = do
         tw  <- read <$> getSetting "tileWidth"
+        let (ssX,ssY) = getSquareSize nC tw
         vs  <- mapM (uncurry (value r False) . \v ->
-               (altPos nC (v-1) tw (sw tw) xy,v)) vis
-        bgt <- value r True (solPos nC tw (sw tw) xy) 0
+               (altPos nC (v-1) tw ssX xy,v)) vis
+        bgt <- value r True (solPos nC tw ssX xy) 0
         bgc <- map (/255) . read <$> getSetting "tilergb"
 
         return Alternatives
             { vals   = vs
             , cols   = nC
             , row    = r
-            , area   = newArea xy (sw tw) (sw tw)
+            , area   = newArea xy ssX ssY
             , bgrgb  = bgc
             , bgtile = bgt
             }
-        where sw = getSquareWidth nC
 
     solvedSquare :: Int -> Int -> Int -> Point -> IO Square
     solvedSquare vi r nC xy = do
-        h   <- read <$> getSetting "tileWidth" :: IO Coord
-        v   <- value r True (solPos nC h (sw h) xy) vi
+        tW  <- read <$> getSetting "tileWidth"
+        let (ssX,ssY) = getSquareSize nC tW
+        v   <- value r True (solPos nC tW ssX xy) vi
         bgc <- map (/255) . read <$> getSetting "tilergb"
 
         return Solution
             { val   = v
             , cols  = nC
             , row   = r
-            , area  = newArea xy (sw h) (sw h)
+            , area  = newArea xy ssX ssY
             , bgrgb = bgc
             , static = False
             }
-        where sw = getSquareWidth nC
 
     genSolvedSquare :: Int -> Int -> State ([Int],StdGen) (IO Square)
     genSolvedSquare nC r = state $ \(vs,g) ->
@@ -184,17 +184,21 @@ module Game.Board.Square
 
 
 
-    getSquareWidth :: Int -> Coord -> Coord
-    getSquareWidth nC h
-      | nC `mod` 2 == 0 = div h 2 * div nC 2
-      | otherwise       = getSquareWidth (nC+1) h
+    getSquareSize :: Int -> Coord -> Point
+    getSquareSize nC tW = (squareSizeX, squareSizeY)
+        where
+            squareSizeX
+                | nC `mod` 2 == 0 = div tW 2 * div nC 2
+                | otherwise       = fst $ getSquareSize (nC+1) tW
 
-
+            squareSizeY
+                | nC `mod` 2 == 0 = tW + div (squareSizeX -tW) 2
+                | otherwise       = snd $ getSquareSize (nC+1) tW
 
     solPos :: Int -> Coord -> Coord -> Point -> Point
     solPos nC tw w (x,y)
         | nC < 5          = (x,y)
-        | nC `mod` 2 == 0 = (x+div (tw*(nC-4)) 8,y+div (w-tw) 2)
+        | nC `mod` 2 == 0 = (x+div (tw*(nC-4)) 8,y+div (w-tw) 4)
         | otherwise       = solPos (nC+1) tw w (x,y)
 
     altPos :: Int -> Int -> Coord -> Coord -> Point -> Point
@@ -208,7 +212,7 @@ module Game.Board.Square
             dy | mod nC 2 == 0 && v >= div nC 2 = div tw 2
                |                  v >  div nC 2 = div tw 2
                | otherwise                      = 0
-            dy' = getX (solPos nC tw w (x,y))-x
+            dy' = getY (solPos nC tw w (x,y))-y
 
 
 
@@ -242,8 +246,3 @@ module Game.Board.Square
                               , bgrgb  = bgrgb s
                               , static = True
                               }
-
-
-
-    --squareState :: Square -> Square -> SolutionState
-    --squareState

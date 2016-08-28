@@ -5,6 +5,7 @@ module UI.Audio.Primitive
     loadAudio,
     playAudio,
 ) where
+
     import Control.Monad
     import Control.Monad.Fix
 
@@ -25,7 +26,6 @@ module UI.Audio.Primitive
 
     playAudio :: CFloat -> Audio -> IO()
     playAudio v s = globalVolume >>= (\gv -> sourceGain s $= v*gv) >> play [s]
-
 
 
 
