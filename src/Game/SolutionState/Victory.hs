@@ -11,17 +11,19 @@ module Game.SolutionState.Victory
 
     import Graphics.Rendering.OpenGL
 
+    import System.IO.Unsafe
+    import System.Random
+
+    import UI.Audio.Primitive
     import UI.Coordinate
     import UI.Render
     import UI.Render.Primitive
-
-    import System.IO.Unsafe
-    import System.Random
 
 
     data Victory = Victory
                    { tex         :: TextureObject
                    , area        :: Area
+                   , hymn        :: IO()
                    , celebration :: Celebration
                    }
 
@@ -38,6 +40,7 @@ module Game.SolutionState.Victory
         return Victory
                { tex         = unsafePerformIO getTexture
                , area        = a'
+               , hymn        = getHymn
                , celebration = c
                }
         where
@@ -53,10 +56,15 @@ module Game.SolutionState.Victory
     getTexture :: IO TextureObject
     getTexture = loadTexture' "res/images/victory.png"
 
+    getHymn :: IO()
+    getHymn = loadAudio "victory.wav" >>= playAudio 1
+
     updateVictory :: Victory -> IO Victory
     updateVictory v = do c' <- updateCelebration $ celebration v
+                         hymn v
                          return Victory
                                 { tex         = tex            v
                                 , area        = area           v
+                                , hymn        = return()
                                 , celebration = c'
                                 }

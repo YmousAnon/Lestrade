@@ -3,10 +3,12 @@ module Game.SolutionState.Loss
     Loss,
 
     newLoss,
+    updateLoss,
 ) where
 
     import Graphics.Rendering.OpenGL
 
+    import UI.Audio.Primitive
     import UI.Coordinate
     import UI.Render
     import UI.Render.Primitive
@@ -17,6 +19,7 @@ module Game.SolutionState.Loss
     data Loss = Loss
                 { tex  :: TextureObject
                 , area :: Area
+                , hymn :: IO()
                 }
 
     instance Renderable Loss where
@@ -29,6 +32,7 @@ module Game.SolutionState.Loss
     newLoss a = Loss
                 { tex  = unsafePerformIO getTexture
                 , area = a'
+                , hymn = getHymn
                 }
         where
             a'    = newArea (x,y) w' w'
@@ -42,3 +46,14 @@ module Game.SolutionState.Loss
 
     getTexture :: IO TextureObject
     getTexture = loadTexture' "res/images/loss.png"
+
+    getHymn :: IO()
+    getHymn = loadAudio "loss.wav" >>= playAudio 1
+
+    updateLoss :: Loss -> IO Loss
+    updateLoss l = do hymn l
+                      return Loss
+                             { tex         = tex  l
+                             , area        = area l
+                             , hymn        = return()
+                             }
