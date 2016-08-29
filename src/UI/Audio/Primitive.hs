@@ -19,8 +19,7 @@ module UI.Audio.Primitive
     type Audio = Source
 
     loadAudio :: FilePath -> IO Audio
-    loadAudio file = do print  ("res/audio/"++file)
-                        buf    <- createBuffer $ File ("res/audio/"++file)
+    loadAudio file = do buf    <- createBuffer $ File ("res/audio/"++file)
                         source <- genObjectName
                         buffer source $= Just buf
                         return source

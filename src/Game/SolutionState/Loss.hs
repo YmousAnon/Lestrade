@@ -45,7 +45,7 @@ module Game.SolutionState.Loss
             (w,h) = getAreaEnd a
 
     getTexture :: IO TextureObject
-    getTexture = loadTexture' "res/images/loss.png"
+    getTexture = loadTexture' "loss.png"
 
     getHymn :: IO()
     getHymn = loadAudio "loss.wav" >>= playAudio 1

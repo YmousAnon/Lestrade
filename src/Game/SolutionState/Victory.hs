@@ -54,7 +54,7 @@ module Game.SolutionState.Victory
             (w,h) = getAreaEnd a
 
     getTexture :: IO TextureObject
-    getTexture = loadTexture' "res/images/victory.png"
+    getTexture = loadTexture' "victory.png"
 
     getHymn :: IO()
     getHymn = loadAudio "victory.wav" >>= playAudio 1

@@ -54,11 +54,11 @@ module UI.Render.Primitive
                               in (x,x',y,y')
 
     whiteSquare :: TextureObject
-    whiteSquare = unsafePerformIO $ loadTexture' "res/images/white.png"
+    whiteSquare = unsafePerformIO $ loadTexture' "white.png"
 
     loadTexture' :: FilePath -> IO TextureObject
     loadTexture' f = do
-        tex <- either error id <$> readTexture f
+        tex <- either error id <$> readTexture ("res/images/"++f)
 
         textureFilter Texture2D $= ((Linear', Nothing), Linear')
 

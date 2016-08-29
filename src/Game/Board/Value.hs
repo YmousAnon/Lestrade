@@ -78,7 +78,7 @@ module Game.Board.Value
     getTexture :: Int -> Int -> IO TextureObject
     getTexture r v    = loadTexture' =<< (++end) <$> root
         where
-            root = ("res/images/tilesets/"++) <$> getSetting "tileset"
+            root = ("tilesets/"++) <$> getSetting "tileset"
             end  = case v of
                         0 -> "/bg.png"
                         _ -> "/row"++show r++"/col"++show v++".png"

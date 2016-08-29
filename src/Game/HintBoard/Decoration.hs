@@ -56,7 +56,7 @@ module Game.HintBoard.Decoration
     getTexture :: DecorationType -> IO TextureObject
     getTexture dt = loadTexture' =<< (++end) <$> root
         where
-            root = (++"/decorations/") . ("res/images/tilesets/"++)
+            root = ("tilesets/"++) . (++"/decorations/")
                    <$> getSetting "tileset"
 
             end = case dt of
