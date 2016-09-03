@@ -18,30 +18,23 @@ module UI.Audio
 
 
     mainClickAudio :: IO()
-    mainClickAudio = (select =<< map ps <$> files)
+    mainClickAudio = select =<< map (loadAndPlayAudio 1) <$> files
         where
-            ps :: FilePath -> IO()
-            ps fp = loadAudio fp >>= playAudio 1
-
             select :: [IO()] -> IO()
             select as = randomRIO (0,length as-1) >>= (as!!)
 
             files :: IO [FilePath]
             files = map ("click/main/"++) . filter (isInfixOf "wav")
-                        <$> getDirectoryContents ("res/audio/click/main/")
+                        <$> getDirectoryContents "res/audio/click/main/"
 
 
     secondaryClickAudio :: Int -> [IO()]
-    secondaryClickAudio i = (select =<< map ps <$> files)
+    secondaryClickAudio i = (select =<< map (loadAndPlayAudio 1) <$> files)
                           : secondaryClickAudio (i+1)
         where
-            ps :: FilePath -> IO()
-            ps fp = loadAudio fp >>= playAudio 1
-
             select :: [IO()] -> IO()
             select as = as!!mod i (length as)
 
             files :: IO[FilePath]
             files = map ("click/secondary/"++) . filter (isInfixOf "wav")
-                        <$> getDirectoryContents ("res/audio/click/secondary/")
-
+                        <$> getDirectoryContents "res/audio/click/secondary/"

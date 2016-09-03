@@ -87,7 +87,7 @@ module UI
 
 
     playMainClick :: UI -> IO()
-    playMainClick ui = mainClick ui
+    playMainClick = mainClick
 
     playSecondaryClick :: UI -> IO()
     playSecondaryClick ui =

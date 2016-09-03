@@ -70,5 +70,5 @@ module UI.Input
     getCursorPoint w game = do
         (_,yM) <- getWindowSize w
         (x,y ) <- getCursorPos  w
-        let dy =  yM-(getYMax $ getArea game)
+        let dy =  yM-getYMax (getArea game)
         return (round x,round y-dy)

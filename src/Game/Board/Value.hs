@@ -59,7 +59,7 @@ module Game.Board.Value
                         }
 
     instance Ord Value where
-        v `compare` v' = (vali v) `compare` (vali v')
+        v `compare` v' = vali v`compare`vali v'
 
 
 

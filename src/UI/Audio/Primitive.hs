@@ -4,6 +4,7 @@ module UI.Audio.Primitive
 
     loadAudio,
     playAudio,
+    loadAndPlayAudio,
 ) where
 
     import Control.Monad
@@ -27,6 +28,8 @@ module UI.Audio.Primitive
     playAudio :: CFloat -> Audio -> IO()
     playAudio v s = globalVolume >>= (sourceGain s $=) . (v*) >> play [s]
 
+    loadAndPlayAudio :: CFloat -> FilePath -> IO()
+    loadAndPlayAudio v fp = loadAudio fp >>= playAudio v
 
 
     globalVolume :: IO CFloat
