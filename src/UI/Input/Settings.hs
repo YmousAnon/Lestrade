@@ -9,28 +9,20 @@ module UI.Input.Settings
     import Data.Maybe
 
     import System.IO
+    import System.IO.Unsafe
 
 
-    getSetting :: String -> IO String
-    getSetting key = Data.Map.lookup key <$> rc >>= \mVal ->
-        case mVal of
-            Just val -> return val
-            Nothing  -> putStrLn error >> return ""
+    rc :: Map String String
+    rc = unsafePerformIO
+       $ fromList
+       . map toTouples
+       . filter (not . Prelude.null)
+       . map removeComments
+       . toLines ""
+       <$> readFile file
         where
-            rc :: IO(Map String String)
-            rc = fromList
-               . map toTouples
-               . filter (not . Prelude.null)
-               . map removeComments
-               . toLines ""
-             <$> readFile file
-                where
-                    file :: FilePath
-                    file = "lestraderc.hs"
-
-            error :: String
-            error = "Fatal error, option "++key++" not specified in \
-                    \configuration file."
+            file :: FilePath
+            file = "lestraderc.hs"
 
             toTouples :: String -> (String,String)
             toTouples s = (\[k,v] -> (k,v)) $ Prelude.map trim $ splitOn "=" s
@@ -49,3 +41,14 @@ module UI.Input.Settings
                 | c == '\n'           = s : toLines ""       cs
                 | c == '\n'           = s : toLines ""       cs
                 | otherwise           =     toLines (s++[c]) cs
+
+    getSetting :: String -> IO String
+    getSetting key =  (\mVal ->
+        case mVal of
+            Just val -> return val
+            Nothing  -> return ""
+            ) (Data.Map.lookup key rc)
+        where
+            error :: String
+            error = "Fatal error, option "++key++" not specified in \
+                    \configuration file."
