@@ -13,7 +13,6 @@ module UI.Coordinate
     getY,
 
     pointToGL,
-    posToPoint,
     pointInArea,
 
 
@@ -83,9 +82,6 @@ module UI.Coordinate
 
     pointToGL :: Area -> Point -> (GLfloat,GLfloat)
     pointToGL window (x,y) = (xCoordToGL window x,yCoordToGL window y)
-
-    posToPoint :: (Double,Double) -> Point
-    posToPoint (x,y) = (round x,round y)
 
     pointInArea :: Point -> Area -> Bool
     pointInArea (x,y) a = x > getXMin a && x < getXMax a

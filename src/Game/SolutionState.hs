@@ -26,15 +26,3 @@ module Game.SolutionState
 
     class Solvable a where
         (|-|) :: a -> a -> SolutionState
-
-
-
-    --Correct
-                -- { board    :: Board
-                -- , solution :: Board
-                -- , vhb      :: HintBoard
-                -- , hhb      :: HintBoard
-                -- , area     :: Area
-                -- }
-
-    --let

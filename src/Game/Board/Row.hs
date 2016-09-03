@@ -102,10 +102,3 @@ module Game.Board.Row
               (s:ss) = squares r
               ss'    = squares $ setRowSquare (Row rN ss) (c-1) s'
               rN     = rowNum r
-
-
-
-    --rowState :: Row -> Row -> SolutionState
-    --rowState (Row _ []    ) (Row _  []      ) = Correct
-    --rowState (Row r (s:ss)) (Row r' (s':ss')) =
-    --    squareState s s'-|-rowState (Row r ss) (Row r' ss')

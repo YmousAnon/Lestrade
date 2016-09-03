@@ -82,7 +82,7 @@ module Game
 
     gameInit :: Int -> IO Game
     gameInit seed = do
-        print ("seed: "++show seed)
+        putStrLn ("seed: "++show seed)
         let g = mkStdGen seed
 
         nC  <- read <$> getSetting "columns"
@@ -124,41 +124,10 @@ module Game
         vhb' <- let xm    = (getXMax $ getArea hhb')
                     vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
                  in hs  >>= addHintList vhb'' >>= fillHintBoard
-
-        --let (ioHHint1,g''' ) = runState (genHHint (1,1) s') g''
-        --hhint1 <- ioHHint1
-
-        --vhb'  <- fillHintBoard =<< addHintList [vhint1,vhint2] emptyVBoard --addHint vhint2 =<< addHint vhint1 emptyHBoard
-        ---- !==! --
-
-        ----print (getYMax $ getArea b')
-        --hhb' <- fillHintBoard =<< addHintList [hhint1,vhint1,vhint2] emptyHBoard
-
-        -- !==! --
-
-
-
-        --(addHint (newEmptyHintBoard (0,y) (getXMax $ getArea b')))
-
-
-        --vhb <- fillHintBoard =<< (addHint (newEmptyHintBoard (0,y) (getXMax $ getArea b')) =<< evalState (genHint s') (us,g''))
-
-
-        --vhb <- fillHintBoard $ newEmptyHintBoard (0,y) (getXMax $ getArea b') Vertical
-        --vhb <- fillHintBoard =<< (addHint (newEmptyHintBoard (0,y) (getXMax $ getArea b')) =<< evalState (genHint s') (us,g''))
-        --vhb <- fillHintBoard =<< (addVHint (newEmptyHintBoard (0,y) (getXMax $ getArea b')) =<< evalState (genHint s') (us,g''))
-        --hhb <- fillHHintBoard $ newEmptyHHintBoard (x,0) (getYMax $ getArea b')
-        --print $ evalState (genHint s') (us,g'')
-        --print =<<
-        --print us
-        --print b'
-        --print b
         print s'
-        --print a
         let a = uncurry (newArea (0,0)) $ (wBW,wBW) >+<
                 getAreaEnd (getArea b'\/getArea vhb'\/getArea hhb')
         v <-  newVictory s' a g''''
-        --v <- updateVictory =<< updateVictory =<< newVictory s' a g'''
         return Game
             { board    = b'
             , solution = s'

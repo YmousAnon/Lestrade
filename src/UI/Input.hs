@@ -31,9 +31,9 @@ module UI.Input
 
 
 
-    mouseKeysUp :: Clickable a => UI -> a -> IO(Action a)
+    mouseKeysUp :: (Renderable a,Clickable a) => UI -> a -> IO(Action a)
     mouseKeysUp ui game = do
-        (lButton,rButton,pt) <- getInput $ window ui
+        (lButton,rButton,pt) <- getInput (window ui) game
 
         let ioGame'    | lButton            = lclick ui pt game
                        | rButton            = rclick ui pt game
@@ -47,21 +47,28 @@ module UI.Input
                game' <- ioGame'
                return $ Action (game', nextAction)
 
-    mouseKeyDown :: Clickable a => UI -> a -> IO(Action a)
+    mouseKeyDown :: (Renderable a,Clickable a) => UI -> a -> IO(Action a)
     mouseKeyDown ui game = do
-        (lButton,rButton,_) <- getInput $ window ui
+        (lButton,rButton,_) <- getInput (window ui) game
 
         let nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
          in return $ Action (game, nextAction)
 
-    getInput :: Window -> IO (Bool,Bool,Point)
-    getInput w = do
+    getInput :: Renderable a => Window -> a -> IO(Bool,Bool,Point)
+    getInput w game = do
         pollEvents
 
         l  <- (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'1
         r  <- (==MouseButtonState'Pressed) <$> getMouseButton w MouseButton'2
 
-        pt <- posToPoint <$> getCursorPos w
+        pt <- getCursorPoint w game
 
         return (l,r,pt)
+
+    getCursorPoint :: Renderable a => Window -> a -> IO Point
+    getCursorPoint w game = do
+        (_,yM) <- getWindowSize w
+        (x,y ) <- getCursorPos  w
+        let dy =  yM-(getYMax $ getArea game)
+        return (round x,round y-dy)
