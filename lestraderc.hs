@@ -38,7 +38,7 @@ rowSpacing        = 0
 separatorSpacing  = 32
 
 ----Colours
-bgrgb             = [050,000,025]
+bgrgb             = [050,000,050]
 tilergb           = [000,000,000]
 hintrgb           = [000,000,000]
 hintselectedrgb   = [255,000,000]
