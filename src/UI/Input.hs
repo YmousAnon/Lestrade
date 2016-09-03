@@ -22,8 +22,8 @@ module UI.Input
 
 
     class Clickable a where
-        lclick :: Point -> a -> IO a
-        rclick :: Point -> a -> IO a
+        lclick :: UI -> Point -> a -> IO a
+        rclick :: UI -> Point -> a -> IO a
 
 
 
@@ -35,9 +35,9 @@ module UI.Input
     mouseKeysUp ui game = do
         (lButton,rButton,pt) <- getInput $ window ui
 
-        let ioGame'    | lButton            = lclick pt game
-                       | rButton            = rclick pt game
-                       | otherwise          = return    game
+        let ioGame'    | lButton            = lclick ui pt game
+                       | rButton            = rclick ui pt game
+                       | otherwise          = return       game
             nextAction | lButton || rButton = mouseKeyDown
                        | otherwise          = mouseKeysUp
             writeDirty | lButton || rButton = dirtyWindow ui

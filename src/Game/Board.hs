@@ -39,8 +39,8 @@ module Game.Board
         getArea        = foldl (\/) Empty . map getArea . rows
 
     instance Clickable Board where
-        lclick pt b = fmap Board (mapM (lclick pt) (rows b))
-        rclick pt b = fmap Board (mapM (rclick pt) (rows b))
+        lclick ui pt b = fmap Board (mapM (lclick ui pt) (rows b))
+        rclick ui pt b = fmap Board (mapM (rclick ui pt) (rows b))
 
     instance Solvable Board where
         (Board []    )|-|(Board []      ) = Correct

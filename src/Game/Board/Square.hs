@@ -13,6 +13,7 @@ module Game.Board.Square
     transplantSolution,
 ) where
 
+    import Control.Monad
     import Control.Monad.Trans.State
 
     import Data.List
@@ -20,6 +21,7 @@ module Game.Board.Square
     import Game.Board.Value
     import Game.SolutionState
 
+    import UI
     import UI.Coordinate
     import UI.Input
     import UI.Input.Settings
@@ -39,12 +41,13 @@ module Game.Board.Square
                 , static :: Bool
                  }
                | Alternatives
-                { vals   :: [Value]
-                , cols   :: Int
-                , row    :: Int
-                , area   :: Area
-                , bgrgb  :: [Float]
-                , bgtile :: Value
+                { allVals :: [Value]
+                , vals    :: [Value]
+                , cols    :: Int
+                , row     :: Int
+                , area    :: Area
+                , bgrgb   :: [Float]
+                , bgtile  :: Value
                  }
 
     instance Show Square where
@@ -79,51 +82,59 @@ module Game.Board.Square
              >> mapM_ (render w) vs
 
     instance Clickable Square where
-        lclick pt Alternatives
-            { vals   = vs
-            , cols   = nC
-            , row    = r
-            , area   = a
-            , bgtile = bgt
-            , bgrgb  = rgb
+        lclick ui pt Alternatives
+            { allVals = avs
+            , vals    = vs
+            , cols    = nC
+            , row     = r
+            , area    = a
+            , bgtile  = bgt
+            , bgrgb   = rgb
             } = let vs' = filter (pointInArea pt . getArea) vs
                  in if null vs'
             then return Alternatives
-            { vals   = vs
-            , cols   = nC
-            , row    = r
-            , area   = a
-            , bgtile = bgt
-            , bgrgb  = rgb
+            { allVals = avs
+            , vals    = vs
+            , cols    = nC
+            , row     = r
+            , area    = a
+            , bgtile  = bgt
+            , bgrgb   = rgb
             }
-            else mainClickAudio >>
+            else playMainClick ui >>
                  solvedSquare (vali $ head vs') r nC (getAreaStart a)
 
-        lclick pt s = return s
+        lclick ui pt s = return s
 
-        rclick pt Alternatives
-            { vals   = vs
-            , cols   = nC
-            , row    = r
-            , area   = a
-            , bgtile = bgt
-            , bgrgb  = rgb
+        rclick ui pt Alternatives
+            { allVals = avs
+            , vals    = vs
+            , cols    = nC
+            , row     = r
+            , area    = a
+            , bgtile  = bgt
+            , bgrgb   = rgb
+            } = when (vs/=vs') (playSecondaryClick ui) >>
+                return Alternatives
+            { allVals = avs
+            , vals    = vs'
+            , cols    = nC
+            , row     = r
+            , area    = a
+            , bgtile  = bgt
+            , bgrgb   = rgb
             }
-            |  not (any (pointInArea
-               pt . getArea) vs) &&
-               pointInArea pt a      = unsolvedSquare [1..nC] r nC $
-                                                      getAreaStart a
-            | otherwise              = return Alternatives
-            { vals   = filter (not . pointInArea pt . getArea) vs
-            , cols   = nC
-            , row    = r
-            , area   = a
-            , bgtile = bgt
-            , bgrgb  = rgb
-            }
+            where
+                dv = filter (pointInArea pt . getArea) vs
+                av = filter (pointInArea pt . getArea) avs
 
-        rclick pt s = if pointInArea pt (getArea $ val s) && not (static s)
-            then unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
+                vs' | null av   = vs
+                    | null dv   = sort $ av++vs
+                    | otherwise = delete (head dv) vs
+
+        rclick ui pt s = if pointInArea pt (getArea $ val s) && not (static s)
+            then playSecondaryClick ui >>
+                 unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
             else return s
 
     instance Solvable Square where
@@ -144,12 +155,13 @@ module Game.Board.Square
         bgc <- map (/255) . read <$> getSetting "tilergb"
 
         return Alternatives
-            { vals   = vs
-            , cols   = nC
-            , row    = r
-            , area   = newArea xy ssX ssY
-            , bgrgb  = bgc
-            , bgtile = bgt
+            { allVals = vs
+            , vals    = vs
+            , cols    = nC
+            , row     = r
+            , area    = newArea xy ssX ssY
+            , bgrgb   = bgc
+            , bgtile  = bgt
             }
 
     solvedSquare :: Int -> Int -> Int -> Point -> IO Square
@@ -218,19 +230,21 @@ module Game.Board.Square
 
     removeVal :: Value -> Square -> Square
     removeVal v Alternatives
-            { vals   = vals
-            , cols   = cols
-            , row    = row
-            , area   = area
-            , bgrgb  = bgrgb
-            , bgtile = bgtile
+            { allVals = avs
+            , vals    = vs
+            , cols    = nC
+            , row     = r
+            , area    = a
+            , bgrgb   = bgrgb
+            , bgtile  = bgtile
             } = Alternatives
-            { vals   = delete v vals
-            , cols   = cols
-            , row    = row
-            , area   = area
-            , bgrgb  = bgrgb
-            , bgtile = bgtile
+            { allVals = avs
+            , vals    = delete v vs
+            , cols    = nC
+            , row     = r
+            , area    = a
+            , bgrgb   = bgrgb
+            , bgtile  = bgtile
             }
     removeVal v s = s
 

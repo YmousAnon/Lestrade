@@ -18,6 +18,7 @@ module Game.HintBoard.Hint
     toggleHideHint,
 ) where
 
+    import Control.Monad
     import Control.Monad.Trans.State
 
     import Data.Set (fromList)
@@ -25,6 +26,7 @@ module Game.HintBoard.Hint
     import Game.Board.Value
     import Game.HintBoard.Decoration
 
+    import UI
     import UI.Coordinate
     import UI.Input
     import UI.Input.Settings
@@ -48,7 +50,6 @@ module Game.HintBoard.Hint
                 return $ (replicate wVertical   Vertical++
                           replicate wHorizontal Horizontal
                          ) !! mod i (wVertical+wHorizontal)
-
 
 
 
@@ -138,12 +139,17 @@ module Game.HintBoard.Hint
                        }
 
     instance Clickable Hint where
-        lclick pt h = if inArea pt (area h)
-                          then toggleSelectHint $ unHideHint h
-                          else return                        h
-        rclick pt h = if inArea pt (area h)
-                          then return $ toggleHideHint       h
-                          else return                        h
+        lclick ui pt h = if inArea pt (area h)
+                            then (>>) (playUnlessEmpty h ui) $
+                                 toggleSelectHint        h
+                            else return                  h
+        rclick ui pt h = if inArea pt (area h)
+                            then (>>) (playUnlessEmpty h ui) $
+                                 return $ toggleHideHint h
+                            else return                  h
+
+    playUnlessEmpty :: Hint -> UI -> IO()
+    playUnlessEmpty h ui = unless (hType h==VHEmpty) $ playSecondaryClick ui
 
     newHint :: [Value] -> Area -> [Area] -> Orientation -> HintType -> IO Hint
     newHint vs a as o ht = do

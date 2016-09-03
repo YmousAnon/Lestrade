@@ -42,8 +42,8 @@ module Game.HintBoard
                     $ map getArea (hints hb)
 
     instance Clickable HintBoard where
-        lclick pt hb = do
-            hs'  <- swapSelectedHint =<< mapM (lclick pt) (hints hb)
+        lclick ui pt hb = do
+            hs'  <- swapSelectedHint =<< mapM (lclick ui pt) (hints hb)
             hs'' <- if any (inArea pt . getArea) hs'
                          then return             hs'
                          else mapM unSelectHint  hs'
@@ -53,8 +53,8 @@ module Game.HintBoard
                    , width    = width    hb
                    , hbOrient = hbOrient hb
                    }
-        rclick pt hb = do
-            hs'  <- mapM (rclick pt) (hints hb)
+        rclick ui pt hb = do
+            hs'  <- mapM (rclick ui pt) (hints hb)
             hs'' <- mapM unSelectHint  hs'
             return HintBoard
                    { hints    = hs''

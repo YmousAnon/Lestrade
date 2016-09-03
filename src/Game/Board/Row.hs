@@ -45,21 +45,21 @@ module Game.Board.Row
         getArea   = foldl (\/) Empty . map getArea . squares
 
     instance Clickable Row where
-        lclick pt r = let ss = squares r
-                          rN = rowNum  r
-                       in do ss' <- mapM (lclick pt) ss
-                             if ss == ss'
-                              then return $ Row rN   ss'
-                              else return $ Row rN $ map (removeVal
-                                                     (val $ head (ss'\\ss)))
-                                                     ss'
+        lclick ui pt r = let ss = squares r
+                             rN = rowNum  r
+                          in do ss' <- mapM (lclick ui pt) ss
+                                if ss == ss'
+                                 then return $ Row rN   ss'
+                                 else return $ Row rN $ map (removeVal
+                                                        (val $ head (ss'\\ss)))
+                                                        ss'
 
-        rclick pt r = do ss <- mapM (rclick pt)  $ squares r
-                         let sols = map fromJust $ filter isJust
-                                                 $ map getSolution ss
-                             ss' = map (\v -> foldl (flip removeVal) v
-                                       sols) ss
-                         return Row { rowNum = rowNum r, squares = ss' }
+        rclick ui pt r = do ss <- mapM (rclick ui pt) $ squares r
+                            let sols = map fromJust   $ filter isJust
+                                                      $ map getSolution ss
+                                ss' = map (\v -> foldl (flip removeVal) v
+                                          sols) ss
+                            return Row { rowNum = rowNum r, squares = ss' }
 
     instance Solvable Row where
         (Row _ []    )|-|(Row _  []      ) = Correct

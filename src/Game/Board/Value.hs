@@ -58,6 +58,9 @@ module Game.Board.Value
                        , fgrgb = fgrgb             v
                         }
 
+    instance Ord Value where
+        v `compare` v' = (vali v) `compare` (vali v')
+
 
 
     value :: Int -> Bool -> Point -> Int -> IO Value

@@ -8,6 +8,8 @@ module UI.Init
     import Data.IORef
     import Data.Maybe
 
+    import Game
+
     import Graphics.GLUtil
     import Graphics.UI.GLFW          as GLFW
     import Graphics.Rendering.OpenGL
@@ -16,6 +18,7 @@ module UI.Init
     import System.Exit
 
     import UI
+    import UI.Audio
     import UI.Coordinate
     import UI.Input
     import UI.Input.Settings
@@ -24,7 +27,7 @@ module UI.Init
     import Data.StateVar
 
 
-    uiInit :: (Clickable a,Renderable a) => (a -> UI -> IO()) -> a -> IO()
+    uiInit :: (Game -> UI -> IO()) -> Game -> IO()
     uiInit loop game = withProgNameAndArgs runALUT $ \_ _ -> do
         successfulInit <- GLFW.init
         unless successfulInit exitFailure
@@ -52,4 +55,5 @@ module UI.Init
         shadeModel                 $= Smooth
         texture Texture2D          $= Enabled
 
-        loop game $ UI w dirty t
+        sAL <- newIORef (secondaryClickAudio 0)
+        loop game $ UI w dirty t mainClickAudio sAL

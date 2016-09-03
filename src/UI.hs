@@ -15,6 +15,9 @@ module UI
     whenDirty,
 
     fpsWait,
+
+    playMainClick,
+    playSecondaryClick,
 ) where
 
     import Control.Concurrent
@@ -30,9 +33,11 @@ module UI
 
 
     data UI = UI
-              { window :: Window
-              , dirty  :: IORef Bool
-              , time   :: IORef Double
+              { window         :: Window
+              , dirty          :: IORef Bool
+              , time           :: IORef Double
+              , mainClick      :: IO()
+              , secondaryClick :: IORef [IO()]
               }
 
 
@@ -78,3 +83,13 @@ module UI
         getTime >>= writeIORef (time ui) . fromJust
 
         action
+
+
+
+    playMainClick :: UI -> IO()
+    playMainClick ui = mainClick ui
+
+    playSecondaryClick :: UI -> IO()
+    playSecondaryClick ui =
+        let ioRCLs = secondaryClick ui
+         in readIORef ioRCLs >>= \(cl:cls) -> cl >> writeIORef ioRCLs cls

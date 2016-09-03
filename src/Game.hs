@@ -49,32 +49,34 @@ module Game
         getArea    = area
 
     instance Clickable Game where
-        lclick pt g = do let lClickUnSolved x = ifUnSolved g (lclick pt) x
-                         b'   <- lClickUnSolved (board g)
-                         vhb' <- lClickUnSolved (vhb   g)
-                         hhb' <- lClickUnSolved (hhb   g)
-                         return Game
-                                { board    = b'
-                                , solution = solution g
-                                , vhb      = vhb'
-                                , hhb      = hhb'
-                                , area     = area     g
-                                , loss     = loss     g
-                                , victory  = victory  g
-                                }
-        rclick pt g = do let rClickUnSolved x = ifUnSolved g (rclick pt) x
-                         b'   <- rClickUnSolved (board g)
-                         vhb' <- rClickUnSolved (vhb   g)
-                         hhb' <- rClickUnSolved (hhb   g)
-                         return Game
-                                { board    = b'
-                                , solution = solution g
-                                , vhb      = vhb'
-                                , hhb      = hhb'
-                                , area     = area     g
-                                , loss     = loss     g
-                                , victory  = victory  g
-                                }
+        lclick ui pt g = do
+            let lClickUnSolved x = ifUnSolved g (lclick ui pt) x
+            b'   <- lClickUnSolved (board g)
+            vhb' <- lClickUnSolved (vhb   g)
+            hhb' <- lClickUnSolved (hhb   g)
+            return Game
+                   { board    = b'
+                   , solution = solution g
+                   , vhb      = vhb'
+                   , hhb      = hhb'
+                   , area     = area     g
+                   , loss     = loss     g
+                   , victory  = victory  g
+                   }
+        rclick ui pt g = do
+            let rClickUnSolved x = ifUnSolved g (rclick ui pt) x
+            b'   <- rClickUnSolved (board g)
+            vhb' <- rClickUnSolved (vhb   g)
+            hhb' <- rClickUnSolved (hhb   g)
+            return Game
+                   { board    = b'
+                   , solution = solution g
+                   , vhb      = vhb'
+                   , hhb      = hhb'
+                   , area     = area     g
+                   , loss     = loss     g
+                   , victory  = victory  g
+                   }
 
 
 
@@ -105,17 +107,6 @@ module Game
             x = getXMax $ getArea b'
 
 
-        -- !==! --
-        --let (ioVHint1,g''' ) = runState (genVHint (0,0) s') g''
-        --    (ioVHint2,g'''') = runState (genVHint (0,0) s') g'''
-        --vhint1 <- ioVHint1
-        --vhint2 <- ioVHint2
-
-
-        --hints <- scrambleIndices []
-        --let (b',g'') = genHintList s 10 <$> runState scrambleIndices
-        --let (hs,g'') = runState (genHintList s 10 <$> scrambleIndices
-        --let (hs,g'') = runState (genHintList s' 10 =<< (scrambleIndices
         let is  = concat [[(r,c) | r <- [0..nR-1]] | c <- [0..nC-1]]
             nHints = round (hPS*fromIntegral (nC*nR))
             (his ,g''') = runState (genHintList s' =<< scrambleIndices nHints
@@ -123,13 +114,6 @@ module Game
 
         is' <- flip removeContained is . snd <$> his
         let (his',g'''') = runState (genHintList s' is') g'
-            --hs = sort . removeDuplicates . concat <$> (fst <$> his)
-            --                                      <*> (fst <$> his)
-            --hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
-            --hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
-            --                                       <*> (fst <$> his'))
-            --hs = fst <$> his
-            --hs = sort . removeDuplicates . (++) <$> (fst <$> his)
             hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
                                                    <*> (fst <$> his'))
 
