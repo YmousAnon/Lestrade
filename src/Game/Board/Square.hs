@@ -133,8 +133,10 @@ module Game.Board.Square
                     | otherwise = delete (head dv) vs
 
         rclick ui pt s = if pointInArea pt (getArea $ val s) && not (static s)
-            then playSecondaryClick ui >>
-                 unsolvedSquare [] (row s) (cols s) (getAreaStart $ area s)
+            then do nC <- read <$> getSetting "columns"
+                    playSecondaryClick ui
+                    unsolvedSquare [1..nC] (row s) (cols s)
+                                   (getAreaStart $ area s)
             else return s
 
     instance Solvable Square where
