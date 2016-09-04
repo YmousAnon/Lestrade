@@ -13,7 +13,7 @@ module Game.SolutionState
 
 
     data SolutionState = UnSolved | Wrong | Correct
-        deriving (Eq,Show)
+        deriving Eq
 
     (-|-) :: SolutionState -> SolutionState -> SolutionState
     UnSolved -|- _        = UnSolved

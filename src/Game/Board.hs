@@ -30,10 +30,6 @@ module Game.Board
 
     data Board = Board { rows :: [Row] }
 
-    instance Show Board where
-        show Board { rows = rs } | null rs   = ""
-                                 | otherwise = concatMap (\r -> '\n':show r) rs
-
     instance Renderable Board where
         render  window = mapM_ (render window) . rows
         getArea        = foldl (\/) Empty . map getArea . rows

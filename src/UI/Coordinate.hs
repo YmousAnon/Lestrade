@@ -99,11 +99,6 @@ module UI.Coordinate
         , wh :: Point
         }
 
-    instance Show Area where
-        show a = show (x,y)++" - "++show (x+w,y+h)
-            where (x,y) = xy a
-                  (w,h) = wh a
-
     instance Movable Area where
         moveTo xy' Area { xy = xy      , wh = wh } =
                    Area { xy = xy'     , wh = wh }

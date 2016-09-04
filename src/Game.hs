@@ -82,7 +82,6 @@ module Game
 
     gameInit :: Int -> IO Game
     gameInit seed = do
-        putStrLn ("seed: "++show seed)
         let g = mkStdGen seed
 
         nC  <- read <$> getSetting "columns"
@@ -103,11 +102,10 @@ module Game
                                                           | r <- [0..nR-1]]
                                                           | c <- [0..nC-1]]
                                                          ,g')
-        let y = getYMax $ getArea b'
+            y = getYMax $ getArea b'
             x = getXMax $ getArea b'
 
-
-        let is          = concat [[(r,c) | r <- [0..nR-1]] | c <- [0..nC-1]]
+            is          = concat [[(r,c) | r <- [0..nR-1]] | c <- [0..nC-1]]
             nHints      = round (hPS*fromIntegral (nC*nR))
             (his ,g''') = runState (genHintList s' True =<<
                                     scrambleIndices nHints is) g''
@@ -116,25 +114,6 @@ module Game
         let (his',g'''') = runState (genHintList s' False is') g'
             hs = removeDuplicates . sort <$> ((++) <$> (fst <$> his)
                                                    <*> (fst <$> his'))
-            --hs =                    sort <$> ((++) <$> (fst <$> his)
-            --hs =                    sort <$> (fst <$> his')
-
-
-        putStrLn ""
-        putStrLn ""
-        putStrLn . show . snd =<< his
-        putStrLn ""
-        putStrLn ""
-        putStrLn $ show is'
-        putStrLn ""
-        putStrLn ""
-
-        --putStrLn ""
-        --print . snd =<< his
-        --putStrLn ""
-        --print is'
-        --putStrLn ""
-        --print . snd =<< his'
 
         hhb' <- let ym    = (getYMax $ getArea b')
                     hhb'' = newEmptyHintBoard (x+pD,wBW) ym Horizontal
@@ -142,10 +121,11 @@ module Game
         vhb' <- let xm    = (getXMax $ getArea hhb')
                     vhb'' = newEmptyHintBoard (wBW,y+pD) xm Vertical
                  in hs  >>= addHintList vhb'' >>= fillHintBoard
-        print s'
+
         let a = uncurry (newArea (0,0))
               $ (wBW,wBW)>+<getAreaEnd (getArea b'\/getArea vhb'\/getArea hhb')
         v <-  newVictory s' a g''''
+
         return Game
             { board    = b'
             , solution = s'

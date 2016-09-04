@@ -115,9 +115,6 @@ module Game.HintBoard.Hint
     instance Ord Hint where
         h `compare` h' = hType h `compare` hType h'
 
-    instance Show Hint where
-        show Hint { vals = vs } = concatMap (\v -> '\n':show v) vs++"\n"
-
     instance Renderable Hint where
         render w Hint
             { vals  = vs

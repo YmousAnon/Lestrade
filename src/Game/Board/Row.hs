@@ -37,9 +37,6 @@ module Game.Board.Row
     instance Ord Row where
         r <= r' = rowNum r <= rowNum r'
 
-    instance Show Row where
-        show = show . squares
-
     instance Renderable Row where
         render  w = mapM_ (render w) . squares
         getArea   = foldl (\/) Empty . map getArea . squares

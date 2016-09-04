@@ -50,12 +50,6 @@ module Game.Board.Square
                 , bgtile  :: Value
                  }
 
-    instance Show Square where
-        show Solution     { val  = v, cols = c } =
-            show v++replicate (length (show [1..c])-length (show v)) ' '
-        show Alternatives { vals = v, cols = c } =
-            show v++replicate (length (show [1..c])-length (show v)) ' '
-
     instance Eq Square where
         Solution     { val  = v } == Solution     { val  = v' } = v == v'
         Alternatives { vals = v } == Alternatives { vals = v' } = v == v'

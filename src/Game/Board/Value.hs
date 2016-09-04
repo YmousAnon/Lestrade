@@ -32,9 +32,6 @@ module Game.Board.Value
                 , fgrgb :: [Float]
                 }
 
-    instance Show Value where
-        show Value { vali = v } = show v
-
     instance Eq Value where
         v == v' = vali v == vali v' && row v == row v'
 

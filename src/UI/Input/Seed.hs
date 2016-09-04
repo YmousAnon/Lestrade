@@ -1,6 +1,7 @@
 module UI.Input.Seed
 (
     getSeed,
+    onlyDigits,
 ) where
 
     import Data.Char
@@ -14,7 +15,8 @@ module UI.Input.Seed
 
     testSeed :: String -> IO Int
     testSeed str
-        | null str       = abs <$> randomIO
+        | null str       = let s = abs <$> randomIO
+                            in s >>= putStrLn . ("Random seed: "++) . show >> s
         | onlyDigits str = return $ read str
         | otherwise      = getSeed
 
@@ -23,4 +25,4 @@ module UI.Input.Seed
     trim = let f = reverse . dropWhile isSpace in f . f
 
     onlyDigits :: String -> Bool
-    onlyDigits (c:cs) = foldr ((&&) . isDigit) True cs
+    onlyDigits = foldr ((&&) . isDigit) True
