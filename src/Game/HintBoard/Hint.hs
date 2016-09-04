@@ -59,20 +59,22 @@ module Game.HintBoard.Hint
 
         deriving(Eq,Ord)
 
-    genHintType :: Orientation -> State StdGen (IO HintType)
-    genHintType o = (if o == Vertical then genVHintType else genHHintType)
-                          <$> state random
+    genHintType :: Orientation -> Bool -> State StdGen (IO HintType)
+    genHintType o allowInverseSpear =
+        (if o == Vertical then genVHintType else genHHintType) <$> state random
         where
             genHHintType :: Int -> IO HintType
             genHHintType i = do
                 wHNeighbour    <- read <$> getSetting "wHNeighbour"
                 wHSpear        <- read <$> getSetting "wHSpear"
                 wHInverseSpear <- read <$> getSetting "wHInverseSpear"
+                let wHInverseSpear' | allowInverseSpear = wHInverseSpear
+                                    | otherwise         = 0
 
                 return $ (replicate wHNeighbour    HNeighbour++
                           replicate wHSpear        HSpear    ++
                           replicate wHInverseSpear HInverseSpear
-                         ) !! mod i (wHNeighbour+wHSpear+wHInverseSpear)
+                         ) !! mod i (wHNeighbour+wHSpear+wHInverseSpear')
 
             genVHintType :: Int -> IO HintType
             genVHintType i = do
@@ -100,13 +102,15 @@ module Game.HintBoard.Hint
         h == h' = let vs  = rmDups $ vals' h
                       vs' = rmDups $ vals' h'
                       overlap = filter (`elem` vs) vs'
-                   in length overlap >= 2
+                   in (length overlap>=2 && (hType h/=VThree||hType h/=VThree))
+                   || (length overlap==3)
             where
                 rmDups  = foldl (\acc x -> if x `elem` acc then acc
                                                            else acc++[x]) []
-                vals' x = if hType x == HInverseSpear
-                              then [head(vals x),last(vals x)]
-                              else vals x
+                vals' x = case hType x of
+                              HInverseSpear -> [head(vals x),last(vals x)]
+                              VTwo          -> take 2 (vals x)
+                              _             -> vals x
 
     instance Ord Hint where
         h `compare` h' = hType h `compare` hType h'

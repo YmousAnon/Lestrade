@@ -49,7 +49,7 @@ module Game.HintBoard.Vertical
 
     genVHint :: Board -> (Int,Int) ->  State StdGen (IO (Hint,[(Int,Int)]))
     genVHint s (ri,ci) = do
-        ioHT <- genHintType Vertical
+        ioHT <- genHintType Vertical True
 
         ri'  <- getRowI $ delete ri              [0..length (rows s)]
         ri'' <- getRowI $ delete ri' $ delete ri [0..length (rows s)]

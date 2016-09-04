@@ -122,22 +122,23 @@ module Game.HintBoard
     scrambleIndices nHs ijs = (ijs!!) <$> state (randomR (0,length ijs-1)) >>=
                               \ij -> (ij:) <$> scrambleIndices (nHs-1) ijs
 
-    genHintList :: Board -> [(Int,Int)] -> State StdGen
-                                                 (IO ([Hint],[(Int,Int)]))
-    genHintList _ []       = return $ return ([],[])
-    genHintList s (ij:ijs) = do
-        h  <- genHint     s ij
-        hs <- genHintList s ijs
+    genHintList :: Board -> Bool -> [(Int,Int)] -> State StdGen (IO ([Hint],
+                                                                [(Int,Int)]))
+    genHintList _ _                 []       = return $ return ([],[])
+    genHintList s allowInverseSpear (ij:ijs) = do
+        h  <- genHint     s allowInverseSpear ij
+        hs <- genHintList s allowInverseSpear ijs
         return $ appendTouple <$> h <*> hs
         where
             appendTouple :: (a,[b]) -> ([a],[b]) -> ([a],[b])
             appendTouple (x,ys) (xs,ys') = (x:xs,ys++ys')
 
-    genHint :: Board -> (Int,Int) -> State StdGen (IO (Hint,[(Int,Int)]))
-    genHint s ij = do
+    genHint :: Board -> Bool -> (Int,Int) -> State StdGen (IO (Hint,
+                                                              [(Int,Int)]))
+    genHint s allowInverseSpear ij = do
         o  <- genHintOrientation
         vh <- genVHint s ij
-        hh <- genHHint s ij
+        hh <- genHHint s ij allowInverseSpear
 
         return $ o >>= \o' -> if o' == Vertical then vh else hh
 

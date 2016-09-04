@@ -46,9 +46,10 @@ module Game.HintBoard.Horizontal
                          vs' | null vs   = []
                              | otherwise = tail vs
 
-    genHHint :: Board -> (Int,Int) -> State StdGen (IO (Hint,[(Int,Int)]))
-    genHHint s (ri,ci) = do
-        ioHT <- genHintType Horizontal
+    genHHint :: Board -> (Int,Int) -> Bool -> State StdGen (IO (Hint,
+                                                               [(Int,Int)]))
+    genHHint s (ri,ci) allowInverseSpear = do
+        ioHT <- genHintType Horizontal allowInverseSpear
 
         ri'  <- getRowI
         ri'' <- getRowI
@@ -64,11 +65,12 @@ module Game.HintBoard.Horizontal
         return $ ioHT >>= \ht ->
             case ht of
                 HNeighbour    -> do h <- genHNeighbourHint    rcis            s
-                                    return (h,rcis)
+                                    return (h,take 2 rcis)
                 HSpear        -> do h <- genHSpearHint        rcis rev        s
                                     return (h,rcis)
                 HInverseSpear -> do h <- genHInverseSpearHint rcis rev invSel s
-                                    return (h,[head rcis,last rcis])
+                                    let rcis' = sortBy sndGT rcis
+                                    return (h,[head rcis',last rcis'])
         where
             getRowI :: State StdGen Int
             getRowI = state $ randomR (0,length (rows s)-1)
@@ -94,7 +96,7 @@ module Game.HintBoard.Horizontal
     genHSpearHint rcis rev s = newHHint HSpear (map (uncurry getV) rcis') (0,0)
         where
             rcis' :: [(Int,Int)]
-            rcis' = (if rev then reverse else id) $ sortBy fstGT rcis
+            rcis' = (if rev then reverse else id) $ sortBy sndGT rcis
 
             getV :: Int -> Int -> Value
             getV ri ci = val $ getRowSquare (rows s !! ri) ci
@@ -102,7 +104,7 @@ module Game.HintBoard.Horizontal
     genHInverseSpearHint :: [(Int,Int)] -> Bool -> Int -> Board -> IO Hint
     genHInverseSpearHint rcis rev invSel s = do
         nC <- read <$> getSetting "columns"
-        let rcis'   = (if rev then reverse else id) $ sortBy fstGT rcis
+        let rcis'   = (if rev then reverse else id) $ sortBy sndGT rcis
             ci'     = delete (snd(rcis'!!1)) [0..nC-1] !! mod invSel (nC-1)
             rcis''  = [head rcis',(fst (rcis'!!1),ci'),rcis'!!2]
 
@@ -111,8 +113,8 @@ module Game.HintBoard.Horizontal
             getV :: Int -> Int -> Value
             getV ri ci = val $ getRowSquare (rows s !! ri) ci
 
-    fstGT :: (a,Int) -> (a,Int) -> Ordering
-    fstGT (_,c) (_,c') = compare c c'
+    sndGT :: (a,Int) -> (a,Int) -> Ordering
+    sndGT (_,c) (_,c') = compare c c'
 
 
 
